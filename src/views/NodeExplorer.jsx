@@ -509,26 +509,30 @@ function HierarchyStrip({ ancestorPath, currentNode, childNodes, onSelectNode })
 
   return (
     <nav className="hierarchy-strip" aria-label="概念层级导航">
-      <div className="hierarchy-strip-path">
+      <div className="hierarchy-strip-main">
+        <span className="hierarchy-strip-label">当前位置</span>
+        <div className="hierarchy-strip-path">
         {ancestorPath.slice(0, -1).map(node => (
           <button key={node.id} onClick={() => onSelectNode(node.id)} title={`返回 ${node.title}`}>
             <span>{node.level}</span>{node.title}<ChevronRight size={11} />
           </button>
         ))}
         <strong><span>{currentNode.level}</span>{currentNode.title}</strong>
-      </div>
-      <div className="hierarchy-strip-children">
+        </div>
         {parent && (
           <button className="hierarchy-parent-link" onClick={() => onSelectNode(parent.id)}>
             <CornerLeftUp size={12} /> 返回父级
           </button>
         )}
-        {childNodes.length > 0 ? childNodes.map(child => (
+      </div>
+      {childNodes.length > 0 && <div className="hierarchy-strip-children">
+        <span className="hierarchy-strip-label">继续下钻</span>
+        <div className="hierarchy-child-scroll">{childNodes.map(child => (
           <button key={child.id} onClick={() => onSelectNode(child.id)} title={`进入 ${child.title}`}>
             {child.title}<ChevronRight size={12} />
           </button>
-        )) : <span className="hierarchy-strip-empty">叶节点</span>}
-      </div>
+        ))}</div>
+      </div>}
     </nav>
   );
 }

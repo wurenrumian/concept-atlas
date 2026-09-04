@@ -1595,35 +1595,33 @@ button.flow-box {
 }
 
 .hierarchy-strip {
-  position: sticky;
-  top: 8px;
-  z-index: 8;
+  position: relative;
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 6px;
   flex: 0 0 auto;
-  width: min(760px, calc(100% - 220px));
-  min-height: 46px;
-  margin: -2px 0 12px;
-  padding: 7px 14px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 9px;
-  background: color-mix(in srgb, var(--bg-surface) 96%, var(--primary) 4%);
-  box-shadow: 0 5px 14px color-mix(in srgb, var(--bg-canvas) 70%, transparent);
-  overflow-x: auto;
-  white-space: nowrap;
+  width: 100%;
+  min-height: 38px;
+  margin: 0 0 10px;
+  padding: 0 2px 8px;
+  border-bottom: 1px solid var(--border-medium);
 }
+
+.hierarchy-strip-main, .hierarchy-strip-children { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.hierarchy-strip-main { min-height: 30px; }
+.hierarchy-strip-label { flex: 0 0 auto; color: var(--text-dim); font-size: 10px; font-weight: 700; letter-spacing: .04em; }
 
 .hierarchy-strip-path,
 .hierarchy-strip-children {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 2px;
 }
 
 .hierarchy-strip-path {
-  min-width: max-content;
-  flex: 1 0 auto;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
 }
 
 .hierarchy-strip-path button,
@@ -1633,11 +1631,11 @@ button.flow-box {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  min-height: 30px;
-  padding: 4px 10px;
+  min-height: 26px;
+  padding: 3px 6px;
   border-radius: 5px;
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .hierarchy-strip-path button:hover,
@@ -1659,10 +1657,10 @@ button.flow-box {
 }
 
 .hierarchy-strip-children {
-  flex: 0 0 auto;
-  padding-left: 8px;
-  border-left: 1px solid var(--border-medium);
+  padding-left: 0;
 }
+
+.hierarchy-child-scroll { display: flex; gap: 5px; overflow-x: auto; min-width: 0; }
 
 .hierarchy-strip-children button {
   border: 1px solid var(--border-subtle);
