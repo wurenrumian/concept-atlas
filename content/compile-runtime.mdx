@@ -1,0 +1,332 @@
+<ExplainPage
+  id="compiler-runtime"
+  title="程序编译与运行"
+  summary="源码经过多级转换，最终成为由 CPU 执行的机器状态变化。"
+>
+  <ConceptGraph root="program-runtime">
+
+    {/* L0: 全局概览 */}
+    <ConceptNode
+      id="program-runtime"
+      title="程序编译与运行"
+      level="L0"
+      parent={null}
+      input="源代码文本"
+      output="进程生命周期与硬件执行状态"
+      summary="源码经过编译、加载和执行，最终驱动内存与系统状态变化。"
+    >
+      <Overview>
+        源代码经过静态多阶段编译、操作系统动态加载并由 CPU 硬件流水线逐条解释执行，完成从人类高层抽象到物理晶体管状态变迁的完整映射。
+      </Overview>
+      <Definition>
+        程序编译与运行描述了从人类可读文本源码到硬件微架构执行状态变迁的端到端全链路生命周期。
+      </Definition>
+      <Prerequisite>
+        计算机组成原理
+      </Prerequisite>
+      <Prerequisite>
+        操作系统基础概念
+      </Prerequisite>
+      <Boundary>
+        具体行为受编程语言规范、编译器版本与优化等级、ABI 接口标准、操作系统内核调度及 CPU 目标指令集架构 (ISA) 的深度制约。
+      </Boundary>
+      <Children>
+        <ConceptRef id="compile" />
+        <ConceptRef id="runtime" />
+      </Children>
+    </ConceptNode>
+
+    {/* L1: 编译阶段 */}
+    <ConceptNode
+      id="compile"
+      title="编译阶段"
+      level="L1"
+      parent="program-runtime"
+      input="源码文件 (.c / .cpp / .rs)"
+      output="目标文件 / 可执行二进制 (.o / .exe / ELF)"
+      summary="将人类可读的源代码转换为目标平台上的可执行机器指令或中间字节码。"
+    >
+      <Overview>
+        编译阶段在构建期执行，主要完成词法分析、语法语义校验、平台无关优化以及针对硬件指令集的代码发射。
+      </Overview>
+      <Definition>
+        通过流水线化的静态转换器，将高抽象级语言语法树降级为低层中间表示 (IR) 与硬件二进制机器码的过程。
+      </Definition>
+      <Mechanism>
+        源代码 ➔ Token 流 ➔ 抽象语法树 (AST) ➔ 静态单赋值中间代码 (SSA IR) ➔ 机器指令序列
+      </Mechanism>
+      <Prerequisite>
+        形式文法与自动机
+      </Prerequisite>
+      <Prerequisite>
+        LLVM / GCC 编译器架构
+      </Prerequisite>
+      <Boundary>
+        编译期属于静态分析阶段，无法预知全部动态用户输入与运行时环境条件，因此静态优化必须遵循保守正确性假定。
+      </Boundary>
+      <Children>
+        <ConceptRef id="parse" />
+        <ConceptRef id="codegen" />
+      </Children>
+    </ConceptNode>
+
+    {/* L1: 运行阶段 */}
+    <ConceptNode
+      id="runtime"
+      title="运行阶段"
+      level="L1"
+      parent="program-runtime"
+      input="可执行文件与运行入参"
+      output="进程状态变迁、I/O 系统调用与退出码"
+      summary="操作系统加载程序映像至虚拟内存空间，CPU 依据程序计数器持续推进指令周期。"
+    >
+      <Overview>
+        可执行文件从磁盘读入，操作系统为其创建进程控制块 (PCB)、建立虚拟内存映射，并将 CPU 控权转交至程序入口点。
+      </Overview>
+      <Definition>
+        二进制指令流在操作系统和硬件协作下，在真实物理资源上并发、分时、受限执行的过程。
+      </Definition>
+      <Mechanism>
+        ELF 解析 ➔ 创建虚拟地址空间 ➔ 映射只读/读写段 ➔ 设置栈堆 ➔ 初始化 PC ➔ 指令周期执行
+      </Mechanism>
+      <Prerequisite>
+        虚拟内存与分页机制
+      </Prerequisite>
+      <Prerequisite>
+        CPU 指令周期 (Fetch-Decode-Execute)
+      </Prerequisite>
+      <Boundary>
+        运行期受限于硬件 MMU 保护模式、操作系统资源限额以及并发竞态条件。
+      </Boundary>
+      <Children>
+        <ConceptRef id="loader" />
+        <ConceptRef id="execute" />
+      </Children>
+    </ConceptNode>
+
+    {/* L2: 词法与语法分析 */}
+    <ConceptNode
+      id="parse"
+      title="词法与语法分析"
+      level="L2"
+      parent="compile"
+      input="原始源代码字符流 (String / Stream)"
+      output="Token 标记流与抽象语法树 (AST)"
+      summary="字符流经过词法切分与形式文法归约，构建出体现程序层级嵌套结构的 AST。"
+    >
+      <Overview>
+        作为编译前端的核心，它负责验证源码是否符合语言的形式文法规则，并将扁平字符转换为结构化树状模型。
+      </Overview>
+      <Definition>
+        词法分析器 (Lexer) 依据正则文法将字符归并为 Token；语法分析器 (Parser) 依据上下文无关文法 (CFG) 验证 Token 序列并构建派生树。
+      </Definition>
+      <Mechanism>
+        字符流 (Character Stream) ➔ 正则匹配 ➔ Token 流 (Token Stream) ➔ 递归下降 / LALR 解析 ➔ 抽象语法树 (AST)
+      </Mechanism>
+      <Implementation language="cpp" title="递归下降解析器核心骨架">
+{`// 简化的递归下降语法解析器
+ASTNode* parseExpression(TokenStream& tokens) {
+    auto left = parseTerm(tokens);
+    while (tokens.peek().type == TokenType::PLUS || tokens.peek().type == TokenType::MINUS) {
+        Token op = tokens.consume();
+        auto right = parseTerm(tokens);
+        left = std::make_unique<BinaryExprAST>(op, std::move(left), std::move(right));
+    }
+    return left;
+}`}
+      </Implementation>
+      <Boundary>
+        存在语法二义性 (Ambiguity) 与悬挂 Else 冲突，需通过设定文法优先级或显式消除二义性规则进行约束；遇到语法错误需提供错误恢复机制。
+      </Boundary>
+      <Children>
+        <ConceptRef id="lexer" />
+        <ConceptRef id="ast" />
+      </Children>
+    </ConceptNode>
+
+    {/* L2: 优化与代码生成 */}
+    <ConceptNode
+      id="codegen"
+      title="优化与代码生成"
+      level="L2"
+      parent="compile"
+      input="抽象语法树 (AST) / 中间表示 (IR)"
+      output="目标平台机器汇编与可重定位目标文件 (.o)"
+      summary="遍历 IR 进行控制流与数据流优化，完成寄存器分配并生成硬件指令。"
+    >
+      <Overview>
+        编译中后端负责将语义合法的 AST 降阶为高通用性的 IR（如 LLVM IR），执行常量折叠、死代码消除、循环展开，并最终映射到目标硬件 ISA。
+      </Overview>
+      <Definition>
+        利用图着色算法进行物理寄存器分配，根据目标硬件流水线特点完成指令选择与指令重排的代码生成机制。
+      </Definition>
+      <Mechanism>
+        AST ➔ LLVM IR ➔ 数据流分析优化 (SSA Opts) ➔ 指令选择 (ISel) ➔ 寄存器分配 (RegAlloc) ➔ 机器码发射
+      </Mechanism>
+      <Counterexample title="未定义行为 (UB) 导致编译器激进优化">
+        C/C++ 中有符号整数溢出属于 UB，编译器可能基于“溢出不可能发生”假设直接优化消除防御性安全检查分支，产生安全隐患。
+      </Counterexample>
+      <Boundary>
+        优化级别 (如 -O2 vs -O3) 会在执行速度、代码体积与编译耗时之间权衡；极端优化可能改变浮点精度语义。
+      </Boundary>
+    </ConceptNode>
+
+    {/* L2: 加载与内存映射 */}
+    <ConceptNode
+      id="loader"
+      title="加载与内存映射"
+      level="L2"
+      parent="runtime"
+      input="ELF / PE 可执行二进制文件"
+      output="映射就绪的进程虚拟地址空间与堆栈环境"
+      summary="解析可执行文件头与段表，建立进程虚拟地址空间并将各段映射到内存。"
+    >
+      <Overview>
+        当执行 execve 系统调用时，内核加载器解析二进制文件格式，为代码段、数据段分配虚拟内存区域 (VMA)，并准备好堆、栈及动态链接器环境。
+      </Overview>
+      <Definition>
+        利用操作系统内存管理单元 (MMU) 的按需分页机制，将磁盘上的二进制镜像结构化投影到虚拟内存页表中的过程。
+      </Definition>
+      <Mechanism>
+        解析 ELF Header ➔ 创建 mm_struct ➔ mmap 映射代码段 (.text) / 数据段 (.data) ➔ 初始化栈帧与环境变量 ➔ 移交控制权
+      </Mechanism>
+      <Example title="ELF 段映射到虚拟内存">
+        只读代码段 (.text) 映射为 PROT_READ | PROT_EXEC；已初始化全局数据段 (.data) 映射为 PROT_READ | PROT_WRITE，二者在物理页上实施权限隔离。
+      </Example>
+      <Boundary>
+        内存映射多采用延迟绑定与按需调页 (Demand Paging)，真实物理内存直到首次发生缺页中断 (Page Fault) 时才分配。
+      </Boundary>
+    </ConceptNode>
+
+    {/* L2: CPU 取指与执行 */}
+    <ConceptNode
+      id="execute"
+      title="CPU 取指与执行"
+      level="L2"
+      parent="runtime"
+      input="指令指针 (PC / RIP) 所指向的机器指令"
+      output="通用寄存器、状态标志位与内存单元状态变化"
+      summary="CPU 硬件按照取指、译码、执行、访存、写回等微流水线持续推进物理状态。"
+    >
+      <Overview>
+        硬件执行引擎以纳秒级时钟周期循环驱动，通过多级流水线、分支预测与乱序执行引擎，高效完成机器指令的物理电平翻转。
+      </Overview>
+      <Definition>
+        CPU 微架构依据指令集架构规范，通过硬件控制逻辑在寄存器堆、ALU、L1/L2/L3 Cache 与总线之间流转数据的微操作过程。
+      </Definition>
+      <Mechanism>
+        Fetch (取指) ➔ Decode (译码) ➔ Execute (执行) ➔ Memory Access (访存) ➔ Write Back (写回)
+      </Mechanism>
+      <Boundary>
+        非法内存访问触发 SIGSEGV；遇到硬件中断或时钟中断时 CPU 自动保存上下文并进入内核中断处理例程。
+      </Boundary>
+    </ConceptNode>
+
+    {/* L3: 词法分析器 */}
+    <ConceptNode
+      id="lexer"
+      title="词法分析器"
+      level="L3"
+      parent="parse"
+      input="源代码连续字符流"
+      output="顺序 Token 序列"
+      summary="将无结构的源代码字符序列切分为带有类别标记和字面量的 Token 序列。"
+    >
+      <Overview>
+        利用确定有限状态自动机 (DFA)，依据最长匹配原则识别关键字、标识符、字面量和操作符，并剔除空白与注释。
+      </Overview>
+      <Definition>
+        形式化词法扫描器，通过正则表达式转换生成的 DFA 自动机进行字符状态转移识别。
+      </Definition>
+      <Boundary>
+        最长前缀匹配优先原则可能引发边界分词歧义（如 C++ 中的 `>>` 与模板嵌套 `vector<vector<int>>`）。
+      </Boundary>
+    </ConceptNode>
+
+    {/* L3: 抽象语法树 AST */}
+    <ConceptNode
+      id="ast"
+      title="抽象语法树 (AST)"
+      level="L3"
+      parent="parse"
+      input="Token 流"
+      output="嵌套层级的 AST 根节点对象"
+      summary="以纯粹树状结构保存程序的语法嵌套语义，丢弃无关标点与括号细节。"
+    >
+      <Overview>
+        AST 是编译中端和各类代码分析工具（如 Linter、Babel）最通用的中间模型，忠实反映表达式与语句的嵌套优先级。
+      </Overview>
+      <Definition>
+        源代码语法结构的抽象层级表达形式，树上的每个节点代表源码中的一种语法构造。
+      </Definition>
+      <Example title="算术表达式 AST 构造">
+        对于 `a + b * c`，乘法节点作为右子树，加法节点作为根节点，正确体现运算符优先级。
+      </Example>
+    </ConceptNode>
+
+    {/* ================= 关系定义 (Tree vs Graph Relations) ================= */}
+    
+    {/* 产出与生成关系 */}
+    <Relation
+      from="lexer"
+      to="parse"
+      type="produces"
+      label="提供 Token 流"
+      description="词法分析器输出 Token 流供语法分析器消费"
+    />
+    <Relation
+      from="parse"
+      to="ast"
+      type="produces"
+      label="构建生成"
+      description="语法解析过程完成并输出抽象语法树 (AST)"
+    />
+    <Relation
+      from="compile"
+      to="runtime"
+      type="precedes"
+      label="编译后运行"
+      description="编译期产出可执行文件，作为运行期的前置输入"
+    />
+
+    {/* 消费与使用关系 */}
+    <Relation
+      from="ast"
+      to="codegen"
+      type="uses"
+      label="遍历消费"
+      description="代码生成与优化器消费 AST 构建 SSA 中间代码"
+    />
+    <Relation
+      from="loader"
+      to="execute"
+      type="precedes"
+      label="内存就绪后取指"
+      description="加载器设置好 PC 寄存器与内存段后移交 CPU 开始执行"
+    />
+
+    {/* 前置与依赖关系 */}
+    <Relation
+      from="lexer"
+      to="ast"
+      type="prerequisite"
+      label="前置输入"
+      description="词法分析产出的 Token 是构建 AST 的绝对前置"
+    />
+    <Relation
+      from="codegen"
+      to="loader"
+      type="produces"
+      label="生成可执行镜像"
+      description="代码生成器产出符合 ELF / PE 规范的二进制文件供 Loader 加载"
+    />
+    <Relation
+      from="execute"
+      to="runtime"
+      type="implements"
+      label="硬件执行实现"
+      description="CPU 指令执行周期是运行阶段在硬件层面的具体物理实现"
+    />
+
+  </ConceptGraph>
+</ExplainPage>
