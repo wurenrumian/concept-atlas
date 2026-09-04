@@ -102,15 +102,6 @@ export function NodeExplorer({
           </div>
         </div>
 
-        {parentNode && (
-          <div className="side-section">
-            <button className="back-parent-btn" onClick={() => onSelectNode(parentNode.id)}>
-              <CornerLeftUp size={14} />
-              <span>返回父级：{parentNode.title}</span>
-            </button>
-          </div>
-        )}
-
         <div className="side-section">
           <div className="side-label">同层节点</div>
           <div className="sibling-list">
@@ -132,12 +123,12 @@ export function NodeExplorer({
           </div>
         </div>
 
-        <div className="side-section tree-section">
-          <div className="side-label">概念层级树</div>
+        <details className="side-section tree-section compact-tree">
+          <summary className="side-label">完整层级树</summary>
           <div className="concept-nav-tree">
             {renderNavTree(nodes, graph.meta.rootId, currentNode.id, onSelectNode)}
           </div>
-        </div>
+        </details>
       </aside>
 
       {/* 2. Middle Column: Current Node Explanation Card */}

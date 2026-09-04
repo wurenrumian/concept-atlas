@@ -411,6 +411,29 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
   margin-bottom: 28px;
 }
 
+.compact-tree {
+  margin-top: 8px;
+  margin-bottom: 0;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 12px;
+}
+
+.compact-tree > summary {
+  list-style: none;
+  cursor: pointer;
+  margin-bottom: 0;
+}
+
+.compact-tree > summary::-webkit-details-marker { display: none; }
+.compact-tree > summary::after {
+  content: '＋';
+  margin-left: auto;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+.compact-tree[open] > summary { margin-bottom: 12px; }
+.compact-tree[open] > summary::after { content: '−'; }
+
 .side-label {
   display: flex;
   align-items: center;
