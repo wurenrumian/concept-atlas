@@ -1438,7 +1438,7 @@ button.flow-box {
 .explorer-center {
   min-width: 0;
   overflow: hidden;
-  padding: 58px 20px 20px;
+  padding: 16px 20px 20px;
   background:
     linear-gradient(rgba(56, 189, 248, 0.025) 1px, transparent 1px),
     linear-gradient(90deg, rgba(56, 189, 248, 0.025) 1px, transparent 1px),
@@ -1596,13 +1596,13 @@ button.flow-box {
 
 .hierarchy-strip {
   position: sticky;
-  top: 0;
+  top: 8px;
   z-index: 8;
   display: flex;
   align-items: center;
   gap: 10px;
   flex: 0 0 auto;
-  width: 100%;
+  width: min(760px, calc(100% - 220px));
   min-height: 46px;
   margin: -2px 0 12px;
   padding: 7px 14px;
@@ -2136,7 +2136,8 @@ button.flow-box {
   .node-explorer-layout { display: block; overflow-y: auto; }
   .explorer-side { max-height: none; border: 0; }
   .left-side { display: none; }
-  .explorer-center { padding: 56px 12px 18px; }
+  .explorer-center { padding: 16px 12px 18px; }
+  .hierarchy-strip { width: 100%; top: 4px; }
   .draft-board { min-width: 0; }
   .semantic-split { grid-template-columns: 1fr; }
   .draft-board .semantic-grid { grid-template-columns: 1fr; }
