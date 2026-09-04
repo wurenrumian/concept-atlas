@@ -8,6 +8,7 @@ export function RelationGraph({
   currentNodeId,
   onSelectNode,
   onSwitchView,
+  theme = 'dark',
 }) {
   const { nodes, relations } = graph;
   const svgRef = useRef(null);
@@ -221,11 +222,12 @@ export function RelationGraph({
 
     // Node Title Label
     nodesSelection.append('text')
-      .attr('dy', d => (d.level === 'L0' ? 36 : 28))
+      .attr('dy', d => (d.level === 'L0' ? 38 : 30))
       .attr('text-anchor', 'middle')
-      .attr('fill', '#e2e8f0')
+      .attr('fill', theme === 'light' ? '#0f172a' : '#f8fafc')
       .attr('font-size', '12px')
-      .attr('font-weight', d => d.id === selectedNodeId ? 'bold' : 'normal')
+      .attr('font-family', "'Plus Jakarta Sans', -apple-system, sans-serif")
+      .attr('font-weight', d => d.id === selectedNodeId ? '700' : '500')
       .text(d => d.title);
 
     // Node Level Pill
@@ -264,7 +266,7 @@ export function RelationGraph({
     return () => {
       svg.on('.zoom', null);
     };
-  }, [graphNodes, graphLinks, selectedNodeId]);
+  }, [graphNodes, graphLinks, selectedNodeId, theme]);
 
   return (
     <div className="relation-graph-layout">

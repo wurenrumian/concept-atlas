@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Network, Compass, Sparkles } from 'lucide-react';
+import { Network, Compass, Sparkles, Sun, Moon } from 'lucide-react';
 import { buildGraphModel } from '../model/concept-schema.js';
 import { extractConceptData } from '../model/normalize-content.js';
 import { NodeExplorer } from '../views/NodeExplorer.jsx';
@@ -19,6 +19,20 @@ export function App({ mdxContent, initialData }) {
     return buildGraphModel({ meta: {}, nodes: [], relations: [] });
   });
 
+  // Theme state ('light' | 'dark')
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('concept_atlas_theme') || 'dark';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('concept_atlas_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
   // Global shared state
   const [currentView, setCurrentView] = useState('explore'); // 'explore' | 'graph'
   const [currentNodeId, setCurrentNodeId] = useState(graph.meta.rootId || '');
@@ -35,6 +49,8 @@ export function App({ mdxContent, initialData }) {
         setCurrentView('explore');
       } else if (e.key === '2' || e.key === 'g') {
         setCurrentView('graph');
+      } else if (e.key === 't') {
+        toggleTheme();
       } else if (e.key === 'Escape') {
         // Return to root or parent
         const curr = graph.nodes.get(currentNodeId);
@@ -53,29 +69,44 @@ export function App({ mdxContent, initialData }) {
       {/* Top Header Navigation */}
       <header className="app-header">
         <div className="brand-section">
-          <div className="brand-title">
-            <Sparkles size={16} color="#87a6ff" />
-            <span>CONCEPT ATLAS</span>
+          <div className="brand-logo-badge">
+            <Sparkles size={18} />
           </div>
-          <div className="brand-doc-title">
-            {graph.meta.title || '知识概念图谱'}
+          <div className="brand-text-wrap">
+            <div className="brand-title">CONCEPT ATLAS</div>
+            <div className="brand-doc-title">
+              {graph.meta.title || '知识概念图谱'}
+            </div>
           </div>
         </div>
 
-        <div className="view-tabs">
+        <div className="header-controls">
+          <div className="view-tabs">
+            <button
+              className={`view-tab ${currentView === 'explore' ? 'active' : ''}`}
+              onClick={() => setCurrentView('explore')}
+              title="切换到节点探索视图 (按快捷键 E / 1)"
+            >
+              <Compass size={15} />
+              <span>概念探索</span>
+            </button>
+            <button
+              className={`view-tab ${currentView === 'graph' ? 'active' : ''}`}
+              onClick={() => setCurrentView('graph')}
+              title="切换到全局拓扑图谱 (按快捷键 G / 2)"
+            >
+              <Network size={15} />
+              <span>知识网络</span>
+            </button>
+          </div>
+
           <button
-            className={`view-tab ${currentView === 'explore' ? 'active' : ''}`}
-            onClick={() => setCurrentView('explore')}
+            className="theme-toggle-btn"
+            onClick={toggleTheme}
+            title={`切换主题 (当前: ${theme === 'dark' ? '暗色' : '亮色'}，快捷键 T)`}
+            aria-label="切换主题"
           >
-            <Compass size={14} />
-            <span>节点探索</span>
-          </button>
-          <button
-            className={`view-tab ${currentView === 'graph' ? 'active' : ''}`}
-            onClick={() => setCurrentView('graph')}
-          >
-            <Network size={14} />
-            <span>全局关系图谱</span>
+            {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
           </button>
         </div>
       </header>
@@ -97,6 +128,7 @@ export function App({ mdxContent, initialData }) {
             currentNodeId={currentNodeId}
             onSelectNode={setCurrentNodeId}
             onSwitchView={setCurrentView}
+            theme={theme}
           />
         )}
       </main>
