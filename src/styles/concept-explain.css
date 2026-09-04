@@ -2309,6 +2309,32 @@ button.flow-box {
    SEMANTIC PRESENTATION COMPONENTS (Matrix, Compare, Callouts)
    ========================================================================== */
 
+.semantic-learning-objectives,
+.semantic-key-question,
+.semantic-evidence,
+.semantic-invariant,
+.semantic-failure-mode {
+  border: 1px solid var(--line-subtle, rgba(148, 163, 184, .24));
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: var(--surface-soft, rgba(15, 23, 42, .28));
+}
+
+.semantic-learning-objectives ul { margin: 8px 0 0; padding-left: 20px; }
+.semantic-learning-objectives li { margin: 4px 0; }
+.semantic-key-question { display: flex; align-items: baseline; gap: 10px; border-color: rgba(56, 189, 248, .35); }
+.semantic-key-question strong { color: var(--text-primary, #e2e8f0); }
+.semantic-evidence { display: grid; gap: 7px; border-color: rgba(52, 211, 153, .3); }
+.evidence-command { overflow-x: auto; color: #a7f3d0; }
+.evidence-observes { color: var(--text-secondary, #cbd5e1); }
+.semantic-invariant { border-color: rgba(129, 140, 248, .35); }
+.semantic-invariant > div:last-child { margin-top: 6px; }
+.semantic-failure-mode { border-color: rgba(251, 146, 60, .38); }
+.semantic-failure-mode dl { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; margin: 8px 0 0; }
+.semantic-failure-mode dt { color: var(--text-muted, #94a3b8); font-size: .8rem; }
+.semantic-failure-mode dd { margin: 0; }
+.failure-details { margin-top: 10px; }
+
 .semantic-callout {
   padding: 16px 20px;
   border-radius: 10px;

@@ -250,6 +250,60 @@ export function Details({ summary = '详细展开', children }) {
 }
 Details.displayName = 'Details';
 
+export function LearningObjectives({ items = [], children }) {
+  const goals = Array.isArray(items) ? items.filter(Boolean) : [];
+  return (
+    <section className="semantic-learning-objectives">
+      <div className="semantic-tag">◎ 学习目标</div>
+      {goals.length > 0 ? <ul>{goals.map((item, index) => <li key={index}>{item}</li>)}</ul> : children}
+    </section>
+  );
+}
+LearningObjectives.displayName = 'LearningObjectives';
+
+export function KeyQuestion({ children }) {
+  return (
+    <aside className="semantic-key-question">
+      <span className="semantic-tag">? 引导问题</span>
+      <strong>{children}</strong>
+    </aside>
+  );
+}
+KeyQuestion.displayName = 'KeyQuestion';
+
+export function Evidence({ command, observes, children }) {
+  return (
+    <div className="semantic-evidence">
+      <div className="semantic-tag">⌕ 可验证证据</div>
+      {command && <code className="evidence-command">{command}</code>}
+      {(observes || children) && <div className="evidence-observes">{observes || children}</div>}
+    </div>
+  );
+}
+Evidence.displayName = 'Evidence';
+
+export function Invariant({ title = '不变量', children }) {
+  return (
+    <div className="semantic-invariant">
+      <div className="semantic-tag">◆ {title}</div>
+      <div>{children}</div>
+    </div>
+  );
+}
+Invariant.displayName = 'Invariant';
+
+export function FailureMode({ symptom, cause, evidence, remedy, children }) {
+  const rows = [['现象', symptom], ['原因', cause], ['证据', evidence], ['建议', remedy]].filter(([, value]) => value);
+  return (
+    <div className="semantic-failure-mode">
+      <div className="semantic-tag">⚠ 故障模式</div>
+      {rows.length > 0 && <dl>{rows.map(([label, value]) => <React.Fragment key={label}><dt>{label}</dt><dd>{value}</dd></React.Fragment>)}</dl>}
+      {children && <div className="failure-details">{children}</div>}
+    </div>
+  );
+}
+FailureMode.displayName = 'FailureMode';
+
 export function Columns({ children }) {
   return <div className="semantic-columns">{children}</div>;
 }

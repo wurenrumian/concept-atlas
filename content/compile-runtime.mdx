@@ -3,6 +3,8 @@
     <ConceptNode id="execution-system" title="执行系统：从意图到副作用" level="L0" input="源码、工具链与机器" output="行为、资源变化与退出状态" summary="把编译与运行看成跨层契约，而不是只有编译器参与的流水线。">
       <Definition>“运行起来”同时意味着语义被解释、依赖被绑定、地址被授予、时间被调度、结果被暴露。任何一层契约破裂，都可能表现为构建失败、启动失败、性能退化或悄无声息的错误。</Definition>
       <Prerequisite>先掌握源代码、进程、虚拟地址和文件描述符四个概念。</Prerequisite>
+      <LearningObjectives items={['区分构建、装载与执行阶段', '为每个阶段找到可验证证据', '从首个错误点缩小故障边界']} />
+      <KeyQuestion>为什么“编译成功”仍然不能保证程序能启动？</KeyQuestion>
       <Input>源码快照、目标三元组、编译器版本、依赖锁文件、配置与凭据。</Input>
       <Output>可执行映像、进程地址空间、系统调用轨迹、标准输出与退出码。</Output>
       <Callout type="info" title="阅读地图">沿着“意图 → 表示 → 身份 → 地址 → 时间 → 副作用”下钻；每个节点都给出可观测证据，方便把概念变成排障动作。</Callout>
@@ -47,10 +49,13 @@
       <Definition>常见变换包括常量折叠、内联、循环变换、死代码删除、向量化和寄存器分配，依据 SSA、别名分析与成本模型。</Definition>
       <Input>优化级别、目标 CPU 特性、调试/剖析开关。</Input><Output>指令序列、栈布局、异常表与优化报告。</Output>
       <Callout type="success" title="性能问题的证据链">先用基准和采样确认热点，再查看优化报告与生成汇编；不要仅凭源代码缩进推断 CPU 路径。</Callout>
+      <Evidence command="objdump -dr app.o" observes="检查生成指令与尚未解决的重定位。" />
+      <Invariant title="优化不变量">在语言规则允许的前提下，优化前后的可观察行为必须等价。</Invariant>
     </ConceptNode>
     <ConceptNode id="linking" title="符号解析与重定位" level="L2" parent="toolchain" input="目标文件、静态库、共享库" output="符号地址已确定的映像" summary="链接器把分散的名字变成地址，并选择哪些代码进入最终文件。">
       <Definition>符号表描述定义与引用；重定位记录此处需要填入哪个地址或偏移。动态链接把部分决定推迟到装载或首次调用。</Definition>
       <Details summary="链接失败如何定位">先确认符号存在，再确认名称修饰与 ABI，随后检查库顺序、架构和可见性，最后检查链接脚本与段布局。</Details>
+      <FailureMode symptom="undefined reference" cause="符号未定义或 ABI 不匹配" evidence="nm -C、readelf -Ws" remedy="确认库版本、链接顺序与目标架构" />
       <Children><ConceptRef id="relocation" /><ConceptRef id="abi" /></Children>
     </ConceptNode>
     <ConceptNode id="relocation" title="重定位、PLT 与 GOT" level="L3" parent="linking" input="机器码中的占位引用" output="相对/绝对地址与延迟绑定入口" summary="位置无关代码把地址决定拆成两步：共享代码可复用，进程私有表在装载时修补。">

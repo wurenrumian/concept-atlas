@@ -111,6 +111,11 @@ const SEMANTIC_COMPONENTS = new Set([
   'Split',
   'Tabs',
   'RelationPath',
+  'LearningObjectives',
+  'KeyQuestion',
+  'Evidence',
+  'Invariant',
+  'FailureMode',
 ]);
 
 function isSemanticComponent(name) {
