@@ -202,8 +202,8 @@ export function RelationGraph({
           // local push, while unrelated nodes only receive a gentle baseline
           // separation so the whole map does not balloon.
           .force('adaptive-repel', createAdaptiveRepulsion(positionedLinks, {
-            connectedStrength: -420,
-            disconnectedStrength: -48,
+            connectedStrength: -560,
+            disconnectedStrength: -120,
             distanceMax: 360,
             distanceMin: 28,
           }))
