@@ -2343,6 +2343,11 @@ button.flow-box {
 .semantic-failure-mode dt { color: var(--text-muted, #94a3b8); font-size: .8rem; }
 .semantic-failure-mode dd { margin: 0; }
 .failure-details { margin-top: 10px; }
+.semantic-tradeoff { border: 1px solid rgba(250, 204, 21, .3); border-radius: 12px; padding: 12px 14px; background: var(--surface-soft, rgba(15,23,42,.24)); }
+.tradeoff-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-top: 8px; }
+.tradeoff-option { display: grid; gap: 4px; padding: 9px; border-radius: 8px; background: rgba(148,163,184,.08); }
+.tradeoff-option span { color: var(--text-secondary, #cbd5e1); font-size: .86rem; }
+.tradeoff-option b { color: var(--text-muted, #94a3b8); font-size: .72rem; margin-right: 5px; }
 
 .semantic-callout {
   padding: 16px 20px;

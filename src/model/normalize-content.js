@@ -116,6 +116,7 @@ const SEMANTIC_COMPONENTS = new Set([
   'Evidence',
   'Invariant',
   'FailureMode',
+  'Tradeoff',
 ]);
 
 function isSemanticComponent(name) {

@@ -304,6 +304,27 @@ export function FailureMode({ symptom, cause, evidence, remedy, children }) {
 }
 FailureMode.displayName = 'FailureMode';
 
+export function Tradeoff({ title = '工程权衡', options = [], children }) {
+  return (
+    <div className="semantic-tradeoff">
+      <div className="semantic-tag">⚖ {title}</div>
+      {options.length > 0 ? (
+        <div className="tradeoff-options">
+          {options.map((option, index) => (
+            <div className="tradeoff-option" key={index}>
+              <strong>{option.name || option.label || `方案 ${index + 1}`}</strong>
+              {option.benefit && <span><b>收益</b>{option.benefit}</span>}
+              {option.cost && <span><b>代价</b>{option.cost}</span>}
+              {option.when && <span><b>适用</b>{option.when}</span>}
+            </div>
+          ))}
+        </div>
+      ) : children}
+    </div>
+  );
+}
+Tradeoff.displayName = 'Tradeoff';
+
 export function Columns({ children }) {
   return <div className="semantic-columns">{children}</div>;
 }

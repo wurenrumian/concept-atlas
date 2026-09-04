@@ -51,6 +51,7 @@
       <Callout type="success" title="性能问题的证据链">先用基准和采样确认热点，再查看优化报告与生成汇编；不要仅凭源代码缩进推断 CPU 路径。</Callout>
       <Evidence command="objdump -dr app.o" observes="检查生成指令与尚未解决的重定位。" />
       <Invariant title="优化不变量">在语言规则允许的前提下，优化前后的可观察行为必须等价。</Invariant>
+      <Tradeoff title="调试构建还是发布构建" options={[{name:'调试构建', benefit:'符号完整、定位快', cost:'体积和运行开销更大', when:'开发与故障复现'}, {name:'发布构建', benefit:'性能和体积更优', cost:'诊断信息需要单独保存', when:'生产部署'}]} />
     </ConceptNode>
     <ConceptNode id="linking" title="符号解析与重定位" level="L2" parent="toolchain" input="目标文件、静态库、共享库" output="符号地址已确定的映像" summary="链接器把分散的名字变成地址，并选择哪些代码进入最终文件。">
       <Definition>符号表描述定义与引用；重定位记录此处需要填入哪个地址或偏移。动态链接把部分决定推迟到装载或首次调用。</Definition>
