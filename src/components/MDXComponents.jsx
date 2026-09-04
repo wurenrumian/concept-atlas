@@ -338,19 +338,20 @@ export function RelationMap({ title = '关系速览', items = [], children, widt
 RelationMap.displayName = 'RelationMap';
 
 export function RelationPath({ title = '关系链', steps = [], children }) {
+  const safeSteps = Array.isArray(steps) ? steps.filter(Boolean) : [];
   return (
     <div className="semantic-relation-path">
       {title && <div className="semantic-widget-head"><span>{title}</span><code>PATH</code></div>}
-      {steps.length > 0 ? (
+      {safeSteps.length > 0 ? (
         <div className="relation-path-steps">
-          {steps.map((step, index) => (
+          {safeSteps.map((step, index) => (
             <React.Fragment key={index}>
               <div className={`relation-path-node tone-${step.tone || 'info'}`}>
                 <span className="relation-path-kicker">{step.level || `0${index + 1}`}</span>
                 <strong>{step.node || step.title}</strong>
                 {step.note && <small>{step.note}</small>}
               </div>
-              {index < steps.length - 1 && <div className="relation-path-edge"><span>{steps[index + 1].relation || '→'}</span></div>}
+              {index < safeSteps.length - 1 && <div className="relation-path-edge"><span>{safeSteps[index].relation || '→'}</span></div>}
             </React.Fragment>
           ))}
         </div>
