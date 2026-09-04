@@ -23,6 +23,18 @@ export function NodeExplorer({
     setCanvasScale(scale);
   };
 
+  const updateScaleAtPoint = (event) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const factor = Math.exp(-event.deltaY * 0.002);
+    const nextScale = Math.max(0.65, Math.min(1.6, +(canvasScale * factor).toFixed(3)));
+    const focusX = event.clientX - rect.left;
+    const focusY = event.clientY - rect.top;
+    const contentX = (focusX - canvasPan.x) / canvasScale;
+    const contentY = (focusY - canvasPan.y) / canvasScale;
+    setCanvasScale(nextScale);
+    setCanvasPan({ x: focusX - contentX * nextScale, y: focusY - contentY * nextScale });
+  };
+
   const handleCanvasPointerDown = (event) => {
     if (event.target.closest('button, a, input, select, textarea')) return;
     dragRef.current = {
@@ -40,6 +52,8 @@ export function NodeExplorer({
   const handleCanvasPointerMove = (event) => {
     if (!dragRef.current || dragRef.current.pointerId !== event.pointerId) return;
     event.preventDefault();
+    const distance = Math.hypot(event.clientX - dragRef.current.startX, event.clientY - dragRef.current.startY);
+    if (distance < 6) return;
     dragRef.current.moved = true;
     setCanvasPan({
       x: dragRef.current.panX + event.clientX - dragRef.current.startX,
@@ -163,8 +177,10 @@ export function NodeExplorer({
               suppressClickRef.current = false;
             }}
             onWheel={(event) => {
+              // Two-finger trackpad scrolling remains document scrolling. Hold Ctrl/Cmd to zoom.
+              if (!event.ctrlKey && !event.metaKey) return;
               event.preventDefault();
-              updateScale(canvasScale + (event.deltaY < 0 ? 0.05 : -0.05));
+              updateScaleAtPoint(event);
             }}
           >
             <div className="draft-floating-tools">
