@@ -1,0 +1,21 @@
+{
+  "name": "my-concept-atlas",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": { "dev": "vite", "build": "node scripts/build.mjs", "clean:temp": "node scripts/clean-temp.mjs" },
+  "dependencies": {
+    "@mdx-js/rollup": "^3.0.1",
+    "clsx": "^2.1.1",
+    "d3": "^7.9.0",
+    "lucide-react": "^0.475.0",
+    "mermaid": "^11.17.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^5.4.14",
+    "vite-plugin-singlefile": "^2.1.0"
+  }
+}
