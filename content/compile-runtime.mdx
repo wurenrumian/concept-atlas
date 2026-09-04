@@ -1,174 +1,67 @@
-<ExplainPage
-  id="compiler-runtime"
-  title="程序编译与运行"
-  summary="源码先被编译器逐层理解和降级，再由链接器、操作系统与 CPU 共同把它变成真实的进程行为。"
->
+<ExplainPage id="compiler-runtime" title="程序编译与运行" summary="源码经过编译、链接、装载，最终成为进程中的机器状态变化。" layout="editorial" density="compact">
   <ConceptGraph root="program-runtime">
-    <ConceptNode id="program-runtime" title="程序编译与运行" level="L0" parent={null} input="源代码、编译选项、依赖库、运行环境" output="进程状态、标准输出、文件/网络 I/O 与退出码" summary="从源码文本到 CPU 执行和进程退出的端到端生命周期。">
-      <Overview>“写完代码然后运行”其实跨越了两条相互衔接的流水线：构建期把源代码变成可装载的二进制，运行期再由操作系统创建进程、解析依赖、调度线程，最后由 CPU 执行指令并产生外部可见的副作用。</Overview>
-      <Definition>编译与运行是一个跨越语言规则、编译器、链接器、ABI、操作系统和硬件 ISA 的分层系统。每一层都会把上层抽象转换成下一层可以验证、组合或执行的表示。</Definition>
-      <Mechanism>源码 ➜ 预处理结果 ➜ Token / AST ➜ 类型与控制流信息 ➜ IR ➜ 汇编 / 目标文件 ➜ 链接后的可执行文件 ➜ 虚拟地址空间 ➜ 指令与系统调用 ➜ 进程退出</Mechanism>
-      <Split ratio="1.25fr .75fr">
+    <ConceptNode id="program-runtime" title="程序编译与运行" level="L0" input="源代码与运行环境" output="进程状态与外部 I/O" summary="从源码文本到 CPU 执行的完整生命周期。">
+      <Overview>程序运行不是一个瞬间动作，而是编译器、链接器、操作系统和 CPU 共同完成的一条转换链。</Overview>
+      <Split ratio="1.3fr .7fr">
         <Stack gap="sm">
-          <Flow steps={['写源码', '编译前端理解语义', '后端优化并生成目标文件', '链接依赖', 'OS 加载进程', 'CPU 执行']} />
-          <NoteGrid notes={[
-        { title: '静态阶段', content: '编译器发现语法、类型和部分控制流错误' },
-        { title: '组合阶段', content: '链接器解决跨文件符号与库依赖' },
-        { title: '动态阶段', content: '加载器建立地址空间并完成运行时准备' },
-        { title: '观察结果', content: '输出、文件、网络、信号与退出码' }
-          ]} />
+          <RelationPath title="端到端主路径" steps={[{ node: '源码', level: '输入', tone: 'info' }, { node: '目标文件', level: '编译', relation: 'produces', tone: 'success' }, { node: '可执行文件', level: '链接', relation: 'precedes', tone: 'warning' }, { node: '进程', level: '运行', relation: 'loads', tone: 'danger' }]} />
+          <Flow steps={['编译', '链接', '装载', '执行', 'I/O']} />
         </Stack>
-        <Insight title="最重要的分界线" tone="info">编译器只能依据已知源码和假设进行推理；文件不存在、端口被占用、权限不足、内存耗尽等问题，通常要到运行期才会暴露。</Insight>
+        <Insight title="关键分界" tone="info">编译成功只代表静态约束通过；文件、权限、库版本和资源问题通常在运行期才暴露。</Insight>
       </Split>
-      <RelationPath title="一条可追踪的端到端关系链" steps={[
-        { node: '源码', level: '输入', tone: 'info' },
-        { node: '目标文件', relation: 'produces', level: '产物', tone: 'success' },
-        { node: '可执行文件', relation: 'precedes', level: '装载', tone: 'warning' },
-        { node: '进程状态', relation: 'uses', level: '运行', tone: 'danger' }
-      ]} />
-      <Prerequisite>基本数据结构、函数调用和内存模型</Prerequisite>
-      <Prerequisite>操作系统进程、虚拟内存与系统调用</Prerequisite>
-      <Prerequisite>计算机组成、ISA 与汇编基础</Prerequisite>
-      <Boundary>以下示例以 C/C++、类 Unix 环境和 ELF 为主。Windows 的 PE/COFF、MSVC ABI、DLL 加载和其他语言的字节码运行时会采用不同细节，但整体分层思路仍然适用。</Boundary>
+      <NoteGrid notes={[{ title: '静态阶段', content: '语法、类型、控制流' }, { title: '组合阶段', content: '符号、段和重定位' }, { title: '动态阶段', content: '地址空间与线程' }, { title: '可观察结果', content: '输出、文件、网络、退出码' }]} />
       <Children><ConceptRef id="compile" /><ConceptRef id="link" /><ConceptRef id="runtime" /></Children>
+      <Boundary>示例以 C/C++、类 Unix 和 ELF 为主；Windows PE/COFF 或字节码运行时的细节会不同。</Boundary>
     </ConceptNode>
 
-    <ConceptNode id="compile" title="编译阶段" level="L1" parent="program-runtime" input="源文件、头文件、宏定义、编译器选项" output="汇编文本与可重定位目标文件 (.o / .obj)" summary="将单个源文件从字符和语法逐步降级为目标平台代码。">
-      <Overview>编译器通常按“前端—中端—后端”组织：前端回答代码是否合法、表达了什么；中端在较平台无关的 IR 上分析和优化；后端把 IR 映射到目标 ISA、寄存器和调用约定。</Overview>
-      <Definition>编译是保持语言语义约束的静态转换过程。它可能产生诊断信息、调试信息、汇编或目标文件，并不等于已经生成了一个能独立启动的完整程序。</Definition>
+    <ConceptNode id="compile" title="编译阶段" level="L1" parent="program-runtime" input="源文件与编译选项" output="目标文件" summary="把单个源文件逐层转换为目标平台代码。">
+      <Overview>编译器前端理解语义，中端在 IR 上优化，后端再生成目标 ISA 指令。</Overview>
       <Grid columns="auto" gap="sm">
-      <Mermaid title="单个源文件的编译流水线" width="560px" height="260px" chart={`flowchart LR
-  A[源码] --> B[预处理]
-  B --> C[词法 / 语法分析]
-  C --> D[语义分析]
-  D --> E[IR 与优化]
-  E --> F[指令选择与寄存器分配]
-  F --> G[目标文件]
-  style A fill:#172554,stroke:#38bdf8,color:#e0f2fe
-  style G fill:#064e3b,stroke:#34d399,color:#ecfdf5`} />
-      <RelationMap title="阶段产物与可观察命令" width="390px" items={[
-        { from: '源码', type: '预处理', to: '.i / .ii', note: '查看宏展开与头文件结果' },
-        { from: '源码', type: '编译', to: '.s', note: '查看目标汇编' },
-        { from: '源码', type: '编译', to: '.o / .obj', note: '尚未解决全部外部符号' },
-        { from: '多个 .o', type: '链接', to: '可执行文件', note: '形成可装载镜像' }
-      ]} />
+        <Mermaid title="编译流水线" width="100%" height="250px" chart={`flowchart LR
+          A[源码] --> B[预处理]
+          B --> C[解析]
+          C --> D[语义分析]
+          D --> E[IR 优化]
+          E --> F[代码生成]
+          F --> G[目标文件]
+          style A fill:#172554,stroke:#38bdf8,color:#e0f2fe
+          style G fill:#064e3b,stroke:#34d399,color:#ecfdf5`} />
+        <RelationMap title="阶段产物" items={[{ from: '源码', type: '预处理', to: '.i / .ii' }, { from: '源码', type: '编译', to: '.s' }, { from: '源码', type: '汇编', to: '.o / .obj' }, { from: '多个目标文件', type: '链接', to: '可执行文件' }]} />
       </Grid>
-      <Details summary="一次构建到底检查了什么？"><p>预处理器处理宏和条件编译；前端检查文法、名称和类型；优化器证明某些变换保持语义；汇编器编码指令并生成重定位记录。任一阶段失败，后续阶段都不会得到可信输入。</p></Details>
-      <Implementation language="bash" title="逐阶段观察 GCC / Clang 产物">
-{`cc -E main.c -o main.i      # 预处理：宏展开、头文件拼接
-cc -S main.c -o main.s      # 编译到汇编
-cc -c main.c -o main.o      # 汇编并生成目标文件
-cc main.o -o app            # 链接为可执行文件
-./app                       # 由操作系统加载并运行`}
-      </Implementation>
-      <Insight title="目标文件还不是程序" tone="warn">`.o` 中可能仍保留对 `printf`、其他源文件函数或全局变量的未解析引用。链接器必须把这些符号绑定到地址，程序才具备完整的启动入口和依赖关系。</Insight>
-      <Prerequisite>形式文法、类型系统和控制流图</Prerequisite><Prerequisite>目标平台调用约定与 ELF / PE 基础</Prerequisite>
-      <Boundary>编译成功只说明输入满足当前编译选项下的静态约束；数据竞争、悬空指针、未定义行为和错误的外部输入仍可能在运行期出现。</Boundary>
-      <Children><ConceptRef id="preprocess" /><ConceptRef id="parse" /><ConceptRef id="semantic" /><ConceptRef id="codegen" /></Children>
+      <Implementation language="bash" title="逐阶段观察产物">{`cc -E main.c -o main.i
+cc -S main.c -o main.s
+cc -c main.c -o main.o
+cc main.o -o app`}</Implementation>
+      <Children><ConceptRef id="parse" /><ConceptRef id="codegen" /></Children>
     </ConceptNode>
 
-    <ConceptNode id="preprocess" title="预处理与翻译单元" level="L2" parent="compile" input="源文件与头文件" output="展开后的翻译单元" summary="在正式语法分析前处理宏、条件编译和文件包含。">
-      <Overview>预处理器主要做文本层面的替换与拼接，因此宏展开可能改变后续 Token 序列，同一份源码在不同编译选项下可以变成不同程序。</Overview>
-      <Definition>`#include` 是把文件内容纳入当前翻译单元，`#define` 是替换规则；它们不是类型安全的函数调用或模块导入。</Definition>
-      <Example title="条件编译改变程序形状"><p><code>#ifdef DEBUG</code> 可以保留日志分支，<code>cc -DDEBUG</code> 与不带该选项的构建会得到不同的翻译单元。</p></Example>
-      <Counterexample title="宏并不遵守普通表达式的求值直觉"><p><code>#define SQUARE(x) x * x</code> 代入 <code>SQUARE(a + b)</code> 会得到错误优先级；应使用括号，或优先使用类型安全的函数/模板。</p></Counterexample>
-      <Boundary>头文件重复包含、宏名污染和条件分支漂移会增加构建时间与排查难度；现代项目通常用 include guard、模块或明确的构建配置降低风险。</Boundary>
+    <ConceptNode id="parse" title="解析与语义分析" level="L2" parent="compile" input="字符流与 Token" output="带语义信息的 AST / IR" summary="确认代码结构合法，并判断它表达的操作是否有意义。">
+      <Mechanism>字符流 ➜ Token ➜ AST ➜ 名称解析 ➜ 类型检查 ➜ IR</Mechanism>
+      <Compare items={[{ label: '语法错误', rows: ['发现时机', '问题'], values: ['Parser', '结构不符合文法'] }, { label: '语义错误', rows: ['发现时机', '问题'], values: ['Semantic', '类型或名称不成立'] }]} />
+      <Boundary>解析成功不等于行为正确；类型错误、未定义行为和资源问题仍可能在后续阶段出现。</Boundary>
+    </ConceptNode>
+    <ConceptNode id="codegen" title="IR 优化与代码生成" level="L2" parent="compile" input="AST / IR" output="机器码与重定位信息" summary="优化中间表示，并根据目标 ISA 发射指令。">
+      <DecisionMatrix title="优化等级取舍" headers={['选项', '目标', '代价']} rows={[['-O0', '调试', '代码慢'], ['-O2', '通用发布', '编译更久'], ['-O3', '激进优化', '需评估体积与数值行为']]} />
+      <Counterexample title="未定义行为不是可移植语义">不能把一次优化构建中的机器码行为当作语言规范保证。</Counterexample>
     </ConceptNode>
 
-    <ConceptNode id="parse" title="词法与语法分析" level="L2" parent="compile" input="预处理后的 Token 流" output="抽象语法树 (AST)" summary="把字符序列组织成符合语言文法的结构树。">
-      <Overview>Lexer 识别关键字、标识符、字面量和操作符；Parser 按文法组合 Token。AST 保留程序结构，通常丢弃空白、注释和不影响语义的括号细节。</Overview><Mechanism>字符流 ➜ DFA / 最长匹配 ➜ Token ➜ 递归下降 / LR 解析 ➜ AST</Mechanism>
-      <Implementation language="cpp" title="递归下降解析器骨架">
-{`Expr* parseAdditive(TokenStream& ts) {
-    Expr* left = parseMultiplicative(ts);
-    while (ts.peekIs("+") || ts.peekIs("-")) {
-        Token op = ts.consume();
-        Expr* right = parseMultiplicative(ts);
-        left = new BinaryExpr(op, left, right);
-    }
-    return left;
-}`}
-      </Implementation>
-      <Boundary>文法二义性、错误恢复和运算符优先级会影响诊断质量；解析成功只代表“像一个合法句子”，不代表它的名字、类型或行为正确。</Boundary>
-      <Children><ConceptRef id="lexer" /><ConceptRef id="ast" /></Children>
+    <ConceptNode id="link" title="链接阶段" level="L1" parent="program-runtime" input="目标文件与库" output="可执行文件" summary="解析跨文件符号，合并段并生成可装载映像。">
+      <Mechanism>读取目标文件 ➜ 符号解析 ➜ 地址分配 ➜ 重定位 ➜ ELF / PE</Mechanism>
+      <RelationMap title="链接器解决的问题" items={[{ from: 'main.o', type: '引用', to: 'helper.o' }, { from: 'app', type: '依赖', to: 'libc.so' }, { from: '符号', type: '定位', to: '虚拟地址' }]} />
+      <Boundary>链接成功不保证运行时共享库一定可找到，架构和 ABI 不兼容也可能导致启动失败。</Boundary>
     </ConceptNode>
-    <ConceptNode id="lexer" title="词法分析器" level="L3" parent="parse" input="连续字符流" output="带类型和字面量的 Token 序列" summary="使用有限状态自动机识别源代码中的最小词法单元。">
-      <Definition>词法分析器按照最长前缀匹配，把字符归类为关键字、标识符、数字、字符串、注释和操作符，并记录源位置以支持错误提示。</Definition>
-      <Example title="一个表达式的 Token 化"><p><code>total += price * 2;</code> 可拆为标识符、复合赋值操作符、标识符、乘法操作符、整数和分号。</p></Example>
-      <Boundary>注释和空白通常在此阶段丢弃；但缩进敏感语言、字符串转义、Unicode 标识符等规则会让扫描器携带更多上下文。</Boundary>
+    <ConceptNode id="runtime" title="运行阶段" level="L1" parent="program-runtime" input="可执行文件与环境" output="进程状态和 I/O" summary="操作系统创建进程，加载依赖，并在调度下推进执行。">
+      <Timeline events={[{ label: '装载', content: '建立虚拟地址空间' }, { label: '初始化', content: '准备运行时与线程' }, { label: '执行', content: 'CPU 执行用户代码' }, { label: '退出', content: '交付退出码' }]} />
+      <Insight title="环境也是输入" tone="success">当前目录、环境变量、时钟、随机源、文件系统和网络状态都会影响结果。</Insight>
+      <Children><ConceptRef id="loader" /><ConceptRef id="execute" /></Children>
     </ConceptNode>
-    <ConceptNode id="ast" title="抽象语法树 AST" level="L3" parent="parse" input="Token 流" output="嵌套的语法节点" summary="以树结构表达表达式、声明、语句和控制流的嵌套关系。">
-      <Overview>AST 让编译器、Linter、格式化器和重构工具可以按语法结构处理程序，而不是依赖脆弱的字符串搜索。</Overview>
-      <Example title="运算符优先级"><p>表达式 <code>a + b * c</code> 的根是加法，右子树是乘法；树结构因此保留了先乘后加的语义。</p></Example>
-      <Glossary term="AST">Abstract Syntax Tree，抽象语法树。</Glossary><Glossary term="Node span">节点对应的源码起止位置，用于错误诊断和工具跳转。</Glossary>
-    </ConceptNode>
-    <ConceptNode id="semantic" title="语义分析与类型检查" level="L2" parent="compile" input="AST、符号表与类型规则" output="带类型和绑定信息的 AST / IR" summary="确认语法结构表达的操作在语言规则下有意义。">
-      <Overview>语义分析建立作用域和符号表，解析名称绑定，检查类型兼容性，并为后续优化补充控制流、常量和生命周期信息。</Overview><Mechanism>声明收集 ➜ 名称解析 ➜ 类型推导 / 检查 ➜ 控制流检查 ➜ 注释 AST / 生成 IR</Mechanism>
-      <Compare items={[{ label: '语法错误', rows: ['问题', '发现时机'], values: ['结构不符合文法', 'Parser 阶段'] }, { label: '语义错误', rows: ['问题', '发现时机'], values: ['结构合法但类型/名称不成立', 'Semantic 阶段'] }]} />
-      <Example title="为什么需要类型检查"><p><code>user + 1</code> 可能是语法合法的表达式，但如果 <code>user</code> 是对象，语言规则未必允许这种加法；编译器会在生成机器码前拒绝或要求显式转换。</p></Example>
-      <Boundary>动态语言可能把更多检查推迟到运行期；泛型、隐式转换和重载解析则会让编译期推理更加复杂。</Boundary>
-    </ConceptNode>
-    <ConceptNode id="codegen" title="IR 优化与代码生成" level="L2" parent="compile" input="类型正确的 AST / IR" output="机器码、汇编与重定位信息" summary="在中间表示上优化，再根据目标 ISA 生成指令。">
-      <Overview>IR 把语言前端与硬件后端解耦。优化器可以做常量折叠、死代码消除、内联、循环变换和数据流分析，后端再完成指令选择、寄存器分配与指令调度。</Overview><Mechanism>AST ➜ SSA IR ➜ 控制流 / 数据流分析 ➜ 指令选择 ➜ 寄存器分配 ➜ 机器码发射</Mechanism>
-      <DecisionMatrix title="优化等级的工程权衡" headers={['选项', '典型目标', '代价 / 风险']} rows={[['-O0', '调试和快速编译', '代码慢、体积较大'], ['-O2', '通用发布构建', '编译更久，调试位置可能变化'], ['-O3', '激进性能优化', '体积、编译时间和数值行为需评估']]} />
-      <Counterexample title="未定义行为不是一种可移植语义"><p>C/C++ 有符号整数溢出等 UB 允许编译器基于“不应发生”进行推理。开启优化后，防御性分支可能被删除；不能把一次构建的机器码行为当作语言保证。</p></Counterexample>
-      <Boundary>优化必须在语言规范、浮点模型、别名规则和目标 ABI 允许的范围内保持可观察行为一致；调试时应结合符号信息、反汇编和优化报告。</Boundary>
-    </ConceptNode>
+    <ConceptNode id="loader" title="装载与虚拟内存" level="L2" parent="runtime" summary="把文件段和共享库映射进进程地址空间"><Mechanism>校验格式 ➜ 映射代码与数据 ➜ 准备栈堆 ➜ 加载共享库 ➜ 设置入口</Mechanism></ConceptNode>
+    <ConceptNode id="execute" title="CPU 取指与执行" level="L2" parent="runtime" summary="CPU 按 ISA 语义推进指令，同时由微架构优化实际执行。"><Flow steps={['Fetch', 'Decode', 'Schedule', 'Execute', 'Commit']} /></ConceptNode>
 
-    <ConceptNode id="link" title="链接与装载映像" level="L1" parent="program-runtime" input="多个目标文件、静态库、共享库" output="可执行文件或共享对象" summary="把分散的代码和数据组合起来，解析符号并决定最终地址布局。">
-      <Overview>编译以单个翻译单元为边界，链接器负责跨文件组合：匹配符号引用与定义，合并段，处理重定位，选择静态或动态库，并写入程序入口等元数据。</Overview><Mechanism>读取目标文件 ➜ 符号解析 ➜ 段合并与地址分配 ➜ 重定位 ➜ 生成 ELF / PE</Mechanism>
-      <RelationMap title="链接器解决的三类问题" items={[{ from: 'main.o', type: '引用', to: 'helper.o', note: '跨目标文件函数调用' }, { from: 'app', type: '依赖', to: 'libc.so', note: '动态库可在运行时解析' }, { from: '符号表', type: '定位', to: '虚拟地址', note: '重定位修正引用位置' }]} />
-      <Example title="静态链接与动态链接"><p>静态库代码被复制进最终镜像，部署简单但文件可能更大；共享库由运行时加载器映射，多个进程可复用页面，但部署时必须满足库版本与搜索路径。</p></Example>
-      <Glossary term="符号">函数、全局变量等可被其他目标文件引用的命名实体。</Glossary><Glossary term="重定位">链接或加载时根据最终地址修正机器码/数据引用。</Glossary>
-      <Boundary>链接成功不保证运行时库一定可找到；容器、环境变量、RPATH、架构和 ABI 不兼容都可能让程序在启动时失败。</Boundary>
-    </ConceptNode>
-
-    <ConceptNode id="runtime" title="运行阶段" level="L1" parent="program-runtime" input="可执行文件、环境变量、参数与资源" output="进程状态、I/O、副作用与退出码" summary="操作系统把二进制变成进程，并在调度下推进它的执行。">
-      <Overview>运行期始于启动命令，不止是 CPU 执行：内核创建进程上下文，加载器建立虚拟地址空间，运行时初始化库与线程，程序随后通过指令和系统调用改变自身及外部世界。</Overview><Definition>运行是二进制在特定 OS、硬件、权限、输入和时间环境下的动态行为；同一可执行文件可能因环境不同得到不同结果。</Definition>
-      <Timeline events={[{ label: '启动', content: 'shell / OS 找到可执行文件并创建进程' }, { label: '装载', content: '映射代码、数据、栈，并解析动态依赖' }, { label: '初始化', content: '设置参数、环境、运行时库与线程状态' }, { label: '执行', content: 'CPU 运行用户代码，必要时进入内核' }, { label: '退出', content: '清理资源并向父进程交付退出码' }]} />
-      <Insight title="运行结果是输入的一部分" tone="success">程序不仅接收命令行参数，也接收当前目录、环境变量、标准输入、时钟、随机源、文件系统和网络状态。</Insight><Prerequisite>虚拟内存、进程/线程和调度</Prerequisite><Prerequisite>系统调用、文件描述符与信号</Prerequisite><Boundary>线程竞态、未初始化内存、时序依赖和外部资源不可用会使结果不稳定；复现问题时应记录版本、架构、环境和输入。</Boundary>
-      <Children><ConceptRef id="loader" /><ConceptRef id="startup" /><ConceptRef id="execute" /><ConceptRef id="io" /></Children>
-    </ConceptNode>
-    <ConceptNode id="loader" title="加载、动态链接与虚拟内存" level="L2" parent="runtime" input="ELF / PE 文件与共享库" output="可执行的进程地址空间" summary="解析文件段并建立代码、数据、堆、栈和共享库映射。">
-      <Overview>执行新程序时，内核根据文件格式创建地址空间并映射段；动态加载器再定位共享库和符号。很多页面采用按需分页，首次访问时才真正触发物理页准备。</Overview><Mechanism>校验文件格式 ➜ 创建地址空间 ➜ mmap .text/.rodata/.data ➜ 准备栈堆 ➜ 映射共享库 ➜ 设置入口 PC</Mechanism>
-      <Implementation language="bash" title="观察一个 Linux 进程的装载结果">
-{`readelf -h app              # 查看入口点与文件格式
-readelf -l app              # 查看可装载段和权限
-ldd app                     # 查看动态库依赖（仅用于诊断）
- cat /proc/PID/maps          # 查看进程的虚拟地址映射`}
-      </Implementation>
-      <Example title="权限隔离"><p><code>.text</code> 通常可读可执行但不可写，数据段通常可读写但不可执行；这种 W^X 思路能降低代码被数据覆盖后直接执行的风险。</p></Example>
-      <Boundary>ASLR 会随机化部分地址；权限、库搜索路径、架构不匹配或缺少共享库都可能让程序尚未进入 <code>main</code> 就启动失败。</Boundary>
-    </ConceptNode>
-    <ConceptNode id="startup" title="运行时启动与 main" level="L2" parent="runtime" input="入口地址、argv、环境变量与 ABI 状态" output="用户定义的 main 函数开始运行" summary="在 main 之前完成栈、运行时库、全局对象和初始化函数的准备。">
-      <Overview>可执行文件入口通常不是用户写的 <code>main</code>。启动代码从 ABI 规定的位置读取参数，初始化 C/C++ 运行时，再调用 <code>main</code>；main 返回后还会执行退出处理。</Overview><Flow steps={['内核跳到入口', '运行时读取 argc/argv', '初始化库与全局对象', '调用 main', 'atexit 清理', '返回退出码']} /><Example title="为什么 main 之前就可能失败"><p>动态库初始化、全局对象构造、运行时检查和环境配置都发生在 main 之前；“断点没进 main”不等于程序没有执行代码。</p></Example><Boundary>不同语言运行时、静态初始化顺序、线程局部存储和异常支持会改变启动路径；不要假定所有可执行程序都有同样的入口包装。</Boundary>
-    </ConceptNode>
-    <ConceptNode id="execute" title="CPU 取指与执行" level="L2" parent="runtime" input="PC/RIP 指向的机器指令与寄存器状态" output="寄存器、标志位、缓存和内存状态变化" summary="CPU 按 ISA 语义推进指令，同时由微架构优化实际执行。">
-      <Overview>从程序员视角看，PC 指向下一条指令；从硬件视角看，流水线、缓存、分支预测和乱序执行共同完成取指、译码、执行、访存和写回。</Overview><Mechanism>Fetch ➜ Decode ➜ Rename / Schedule ➜ Execute ➜ Memory Access ➜ Commit</Mechanism><Compare items={[{ label: 'ISA 视角', rows: ['关注对象', '保证'], values: ['指令、寄存器和内存模型', '软件可依赖的架构语义'] }, { label: '微架构视角', rows: ['关注对象', '保证'], values: ['流水线、缓存和执行端口', '实现性能，不改变架构结果'] }]} /><Boundary>非法指令、页错误、除零、访问保护和中断会打断用户态路径；CPU 保存必要上下文后转入内核或异常处理。</Boundary>
-    </ConceptNode>
-    <ConceptNode id="io" title="系统调用与 I/O" level="L2" parent="runtime" input="用户态请求与文件描述符" output="内核状态或外部设备状态变化" summary="程序通过受控入口请求操作系统访问文件、网络、进程和设备。">
-      <Overview>普通函数调用只在当前地址空间内跳转；系统调用则跨越用户态/内核态边界，由内核检查权限、管理资源并返回结果或错误码。</Overview>
-
-      <Implementation language="c" title="输出并不等于直接操作硬件">
-{`int main(void) {
-    const char msg[] = "hello\\n";
-    write(1, msg, sizeof(msg) - 1); // 1 通常是 stdout
-    return 0;
-}`}
-      </Implementation>
-      <Example title="观察系统调用"><p>Linux 上可用 <code>strace ./app</code> 查看打开文件、写标准输出、分配内存和退出等调用；这比只看源码更接近运行期事实。</p></Example>
-      <Boundary>系统调用可能被信号中断、受权限限制或因资源不可用而失败；健壮程序必须检查返回值。</Boundary>
-    </ConceptNode>
-
-    <Relation from="preprocess" to="parse" type="precedes" label="产生 Token 输入" description="预处理结果才会被词法和语法分析器读取。" />
-    <Relation from="parse" to="semantic" type="precedes" label="提供 AST" description="语法树是名称解析和类型检查的输入。" />
-    <Relation from="semantic" to="codegen" type="produces" label="生成带语义信息的 IR" description="后端依赖前端确认过的类型、控制流和符号信息。" />
-    <Relation from="codegen" to="link" type="produces" label="提供目标文件" description="代码生成器和汇编器产出可供链接的目标文件。" />
-    <Relation from="link" to="loader" type="precedes" label="生成可装载镜像" description="链接后的 ELF/PE 文件成为加载器的输入。" />
-    <Relation from="loader" to="startup" type="precedes" label="设置入口环境" description="地址空间和初始寄存器状态就绪后才进入启动代码。" />
-    <Relation from="startup" to="execute" type="implements" label="启动用户代码" description="运行时完成准备后，CPU 执行 main 及其调用链。" />
-    <Relation from="execute" to="io" type="uses" label="通过指令发起请求" description="用户代码执行系统调用指令，进入内核完成 I/O。" />
-    <Relation from="io" to="runtime" type="produces" label="产生外部副作用" description="系统调用改变文件、网络、进程或终端状态，并影响最终退出结果。" />
-    <Relation from="compile" to="runtime" type="precedes" label="构建后才能启动" description="编译和链接生成的镜像是运行阶段的输入。" />
-    <Relation from="codegen" to="execute" type="depends-on" label="ISA 语义契约" description="后端生成的指令必须符合执行 CPU 的指令集与 ABI。" />
+    <Relation from="compile" to="link" type="precedes" label="提供目标文件" />
+    <Relation from="link" to="runtime" type="precedes" label="生成可装载映像" />
+    <Relation from="parse" to="codegen" type="produces" label="提供带语义信息的 IR" />
+    <Relation from="loader" to="execute" type="precedes" label="准备执行环境" />
+    <Relation from="codegen" to="execute" type="depends-on" label="遵守 ISA 契约" />
   </ConceptGraph>
 </ExplainPage>

@@ -1438,7 +1438,7 @@ button.flow-box {
 .explorer-center {
   min-width: 0;
   overflow: hidden;
-  padding: 16px 20px 20px;
+  padding: 58px 20px 20px;
   background:
     linear-gradient(rgba(56, 189, 248, 0.025) 1px, transparent 1px),
     linear-gradient(90deg, rgba(56, 189, 248, 0.025) 1px, transparent 1px),
@@ -2136,7 +2136,7 @@ button.flow-box {
   .node-explorer-layout { display: block; overflow-y: auto; }
   .explorer-side { max-height: none; border: 0; }
   .left-side { display: none; }
-  .explorer-center { padding: 18px 12px; }
+  .explorer-center { padding: 56px 12px 18px; }
   .draft-board { min-width: 0; }
   .semantic-split { grid-template-columns: 1fr; }
   .draft-board .semantic-grid { grid-template-columns: 1fr; }
