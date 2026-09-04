@@ -198,6 +198,15 @@ export function RelationGraph({
     const simulation = isConceptMode
       ? d3.forceSimulation(positionedNodes)
           .force('link', d3.forceLink(positionedLinks).id(d => d.id).distance(185).strength(0.9))
+          // Keep semantic neighbours legible: connected pairs get a stronger
+          // local push, while unrelated nodes only receive a gentle baseline
+          // separation so the whole map does not balloon.
+          .force('adaptive-repel', createAdaptiveRepulsion(positionedLinks, {
+            connectedStrength: -420,
+            disconnectedStrength: -48,
+            distanceMax: 360,
+            distanceMin: 28,
+          }))
           .force('center', d3.forceCenter(width / 2, height / 2))
           .force('collision', d3.forceCollide().radius(34).strength(0.35))
       : null;
@@ -530,6 +539,69 @@ function decorateParallelLinks(links) {
     });
   });
   return links;
+}
+
+/**
+ * Pair-aware charge force for the concept graph.
+ *
+ * D3's built-in many-body force has one charge for every pair. Concept maps
+ * need a little more nuance: nodes that are explicitly related should have
+ * room for their edge and label, while unrelated nodes should stay compact.
+ */
+function createAdaptiveRepulsion(links, {
+  connectedStrength = -420,
+  disconnectedStrength = -48,
+  distanceMin = 28,
+  distanceMax = 360,
+} = {}) {
+  let nodes = [];
+  let relatedPairs = new Set();
+
+  const pairKey = (a, b) => {
+    const aId = typeof a === 'object' ? a.id : a;
+    const bId = typeof b === 'object' ? b.id : b;
+    return aId < bId ? `${aId}::${bId}` : `${bId}::${aId}`;
+  };
+
+  function force(alpha) {
+    for (let i = 0; i < nodes.length; i += 1) {
+      const source = nodes[i];
+      for (let j = i + 1; j < nodes.length; j += 1) {
+        const target = nodes[j];
+        let dx = target.x - source.x;
+        let dy = target.y - source.y;
+        let distance = Math.hypot(dx, dy);
+
+        // Deterministic nudge for coincident initial positions.
+        if (!distance) {
+          dx = (i + 1) * 0.01;
+          dy = (j + 1) * 0.01;
+          distance = Math.hypot(dx, dy);
+        }
+        if (distance > distanceMax) continue;
+
+        const clampedDistance = Math.max(distance, distanceMin);
+        const strength = relatedPairs.has(pairKey(source, target))
+          ? connectedStrength
+          : disconnectedStrength;
+        const magnitude = (strength * alpha) / (clampedDistance * clampedDistance);
+        const forceX = dx * magnitude;
+        const forceY = dy * magnitude;
+
+        source.vx -= forceX;
+        source.vy -= forceY;
+        target.vx += forceX;
+        target.vy += forceY;
+      }
+    }
+  }
+
+  force.initialize = (initializedNodes) => {
+    nodes = initializedNodes;
+    relatedPairs = new Set(links.map(link => pairKey(link.source, link.target)));
+  };
+
+  return force;
 }
 
 function linkPath(link) {
