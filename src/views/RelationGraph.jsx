@@ -162,6 +162,11 @@ export function RelationGraph({
 
     const zoomBehavior = d3.zoom()
       .scaleExtent([0.2, 3])
+      .filter((event) => event.type !== 'wheel' || event.ctrlKey || event.metaKey)
+      .wheelDelta((event) => {
+        const delta = event.deltaMode === 1 ? event.deltaY * 16 : event.deltaY;
+        return -delta * 0.0015;
+      })
       .on('zoom', (event) => {
         g.attr('transform', event.transform);
       });
