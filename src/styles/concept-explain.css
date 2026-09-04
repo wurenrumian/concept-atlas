@@ -166,6 +166,19 @@ button {
   outline: none;
 }
 
+button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 3px;
+}
+
+/* Optional semantic layout primitives */
+.semantic-stack { display: flex; flex-direction: column; }
+.semantic-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.semantic-split { display: grid; grid-template-columns: var(--split-ratio, 1fr 1fr); align-items: start; }
+.gap-sm { gap: 8px; } .gap-md { gap: 16px; } .gap-lg { gap: 28px; }
+.semantic-tabs details { border-bottom: 1px solid var(--border-subtle); padding: 8px 0; }
+.semantic-tabs summary { cursor: pointer; font-weight: 700; color: var(--text-primary); }
+
 /* Scrollbar beautification */
 ::-webkit-scrollbar {
   width: 6px;
@@ -2032,9 +2045,24 @@ button.flow-box {
 }
 
 @media (max-width: 760px) {
+  .node-explorer-layout { display: block; overflow-y: auto; }
+  .explorer-side { max-height: none; border: 0; }
+  .left-side { display: none; }
+  .explorer-center { padding: 18px 12px; }
+  .draft-board { min-width: 0; }
+  .semantic-split { grid-template-columns: 1fr; }
   .draft-board .content-blocks {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+@media (max-width: 760px) {
+  .relation-graph-layout { display: flex; flex-direction: column; }
+  .graph-main { min-height: 62vh; }
+  .graph-side-panel { max-height: 38vh; border-left: 0; border-top: 1px solid var(--border-medium); padding: 16px; }
+  .graph-control-bar { left: 10px; right: 10px; top: 10px; flex-wrap: wrap; gap: 6px; }
+  .graph-control-bar .filter-group { display: none; }
+  .graph-legend-ribbon { display: none; }
 }
 
 .graph-side-panel {

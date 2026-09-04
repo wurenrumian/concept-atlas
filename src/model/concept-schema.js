@@ -51,12 +51,14 @@ export function normalizeNode(raw) {
  */
 export function buildGraphModel(rawGraph) {
   const nodes = new Map();
+  const diagnostics = [];
   const rawNodes = rawGraph.nodes || [];
   const rawRelations = rawGraph.relations || [];
 
   // Register all nodes
   rawNodes.forEach(n => {
     const node = normalizeNode(n);
+    if (nodes.has(node.id)) diagnostics.push({ level: 'error', code: 'DUPLICATE_NODE_ID', nodeId: node.id });
     nodes.set(node.id, node);
   });
 
@@ -79,7 +81,10 @@ export function buildGraphModel(rawGraph) {
           childNode.parent = node.id;
         }
       }
+      else diagnostics.push({ level: 'warning', code: 'MISSING_CHILD', nodeId: node.id, targetId: childId });
     });
+    if (node.parent && !nodes.has(node.parent)) diagnostics.push({ level: 'warning', code: 'ORPHAN_NODE', nodeId: node.id, targetId: node.parent });
+    if (!LEVEL_DEFS[node.level]) diagnostics.push({ level: 'warning', code: 'UNKNOWN_LEVEL', nodeId: node.id, level: node.level });
   });
 
   // Filter valid relations
@@ -117,7 +122,8 @@ export function buildGraphModel(rawGraph) {
       rootId: rootId || (nodes.size > 0 ? Array.from(nodes.keys())[0] : null)
     },
     nodes,
-    relations: validRelations
+    relations: validRelations,
+    diagnostics
   };
 }
 

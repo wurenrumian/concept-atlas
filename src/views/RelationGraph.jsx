@@ -51,7 +51,18 @@ export function RelationGraph({
       );
     }
 
-    const nodeIds = new Set(filteredNodes.map(n => n.id));
+    const matchedIds = new Set(filteredNodes.map(n => n.id));
+    // Preserve one-hop context for filtered matches instead of showing isolated nodes.
+    const nodeIds = new Set(matchedIds);
+    allNodes.forEach(n => {
+      if (n.parent && matchedIds.has(n.id)) nodeIds.add(n.parent);
+      if (n.parent && matchedIds.has(n.parent)) nodeIds.add(n.id);
+    });
+    relations.forEach(r => {
+      if (matchedIds.has(r.from)) nodeIds.add(r.to);
+      if (matchedIds.has(r.to)) nodeIds.add(r.from);
+    });
+    filteredNodes = allNodes.filter(n => nodeIds.has(n.id));
 
     // Relations include parent-child (tree) and graph relations
     const links = [];

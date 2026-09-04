@@ -348,7 +348,7 @@ export function NodeExplorer({
                 </div>
                 <div className="subnodes-grid">
                   {childNodes.map(child => (
-                    <div
+                    <button
                       key={child.id}
                       className="subnode-card"
                       onClick={() => onSelectNode(child.id)}
@@ -361,7 +361,7 @@ export function NodeExplorer({
                       </div>
                       <h3 className="sn-title">{child.title}</h3>
                       <p className="sn-summary">{child.summary || '点击进入该概念下钻探索…'}</p>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </section>
@@ -422,7 +422,7 @@ export function NodeExplorer({
                 {outgoingRelations.map((rel, i) => {
                   const targetNode = nodes.get(rel.to);
                   return (
-                    <div
+                    <button
                       key={i}
                       className="relation-link-card"
                       onClick={() => targetNode && onSelectNode(targetNode.id)}
@@ -437,7 +437,7 @@ export function NodeExplorer({
                       {rel.description && (
                         <div className="rel-desc">{rel.description}</div>
                       )}
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -454,7 +454,7 @@ export function NodeExplorer({
                 {incomingRelations.map((rel, i) => {
                   const sourceNode = nodes.get(rel.from);
                   return (
-                    <div
+                    <button
                       key={i}
                       className="relation-link-card"
                       onClick={() => sourceNode && onSelectNode(sourceNode.id)}
@@ -469,7 +469,7 @@ export function NodeExplorer({
                       {rel.description && (
                         <div className="rel-desc">{rel.description}</div>
                       )}
-                    </div>
+                    </button>
                   );
                 })}
               </div>

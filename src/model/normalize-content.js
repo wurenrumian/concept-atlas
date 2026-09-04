@@ -14,6 +14,8 @@ export function extractConceptData(explainPageElement) {
       title: explainPageElement.props.title || '',
       summary: explainPageElement.props.summary || '',
       rootId: null,
+      layout: explainPageElement.props.layout || 'editorial',
+      density: explainPageElement.props.density || 'reading',
     },
     nodes: [],
     relations: []
@@ -104,6 +106,10 @@ const SEMANTIC_COMPONENTS = new Set([
   'RelationMap',
   'Insight',
   'NoteGrid',
+  'Stack',
+  'Grid',
+  'Split',
+  'Tabs',
 ]);
 
 function isSemanticComponent(name) {

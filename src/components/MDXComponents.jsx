@@ -24,8 +24,8 @@ function ensureMermaid() {
 }
 
 // Data Layer Components
-export function ExplainPage({ id, title, summary, children }) {
-  return <div data-component="ExplainPage" data-id={id} data-title={title} data-summary={summary}>{children}</div>;
+export function ExplainPage({ id, title, summary, layout = 'editorial', density = 'reading', children }) {
+  return <div data-component="ExplainPage" data-id={id} data-title={title} data-summary={summary} data-layout={layout} data-density={density}>{children}</div>;
 }
 ExplainPage.displayName = 'ExplainPage';
 
@@ -254,6 +254,27 @@ export function Columns({ children }) {
   return <div className="semantic-columns">{children}</div>;
 }
 Columns.displayName = 'Columns';
+
+/** Optional layout primitives. They express intent while the template owns the CSS. */
+export function Stack({ gap = 'md', children }) {
+  return <div className={`semantic-stack gap-${gap}`}>{children}</div>;
+}
+Stack.displayName = 'Stack';
+
+export function Grid({ columns = 'auto', gap = 'md', children }) {
+  return <div className={`semantic-grid grid-${columns} gap-${gap}`}>{children}</div>;
+}
+Grid.displayName = 'Grid';
+
+export function Split({ ratio = '1fr 1fr', children }) {
+  return <div className="semantic-split" style={{ '--split-ratio': ratio }}>{children}</div>;
+}
+Split.displayName = 'Split';
+
+export function Tabs({ items = [], children }) {
+  return <div className="semantic-tabs" data-tab-count={items.length || undefined}>{items.length ? items.map((item, i) => <details key={i} open={i === 0}><summary>{item.label || item.title}</summary><div>{item.content}</div></details>) : children}</div>;
+}
+Tabs.displayName = 'Tabs';
 
 export function Mermaid({ chart = '', title = '关系草图', width = 'auto', height = 'auto', x = 0, y = 0, position = 'flow' }) {
   const ref = React.useRef(null);

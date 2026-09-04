@@ -42,14 +42,15 @@ export function App({ mdxContent, initialData }) {
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Toggle views with 1 and 2 or 'g' and 'e' if not focused on input
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) {
+      if (e.isComposing || e.metaKey || e.ctrlKey || e.altKey || ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName) || document.activeElement?.isContentEditable) {
         return;
       }
-      if (e.key === '1' || e.key === 'e') {
+      const key = e.key.toLowerCase();
+      if (e.key === '1' || key === 'e') {
         setCurrentView('explore');
-      } else if (e.key === '2' || e.key === 'g') {
+      } else if (e.key === '2' || key === 'g') {
         setCurrentView('graph');
-      } else if (e.key === 't') {
+      } else if (key === 't') {
         toggleTheme();
       } else if (e.key === 'Escape') {
         // Return to root or parent
