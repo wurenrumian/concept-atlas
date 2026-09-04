@@ -588,10 +588,12 @@ function createAdaptiveRepulsion(links, {
         const forceX = dx * magnitude;
         const forceY = dy * magnitude;
 
-        source.vx -= forceX;
-        source.vy -= forceY;
-        target.vx += forceX;
-        target.vy += forceY;
+        // `strength < 0` is repulsive: move source opposite to the vector
+        // toward target, and target in the opposite direction as well.
+        source.vx += forceX;
+        source.vy += forceY;
+        target.vx -= forceX;
+        target.vy -= forceY;
       }
     }
   }
