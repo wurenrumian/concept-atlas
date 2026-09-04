@@ -1951,6 +1951,36 @@ button.flow-box {
   padding: 12px 14px;
 }
 
+/* Layout primitives are orchestration layers, not another card around their children. */
+.draft-board .custom-section:has(.semantic-grid),
+.draft-board .custom-section:has(.semantic-split),
+.draft-board .custom-section:has(.semantic-stack) {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  width: 100%;
+}
+
+.draft-board .semantic-grid,
+.draft-board .semantic-split {
+  width: 100%;
+  align-items: stretch;
+}
+.draft-board .semantic-grid { grid-template-columns: minmax(0, 1.35fr) minmax(250px, .9fr); }
+
+.draft-board .semantic-grid > .semantic-mermaid,
+.draft-board .semantic-grid > .semantic-relation-map {
+  width: 100% !important;
+  max-width: none;
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--border-medium);
+  border-radius: 10px;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+}
+
 .draft-board .semantic-mermaid,
 .draft-board .semantic-relation-map {
   width: fit-content;
@@ -1986,6 +2016,7 @@ button.flow-box {
   overflow: auto;
   padding: 4px;
   max-width: 100%;
+  min-width: 0;
 }
 
 .mermaid-canvas svg {
@@ -2080,6 +2111,7 @@ button.flow-box {
   .explorer-center { padding: 18px 12px; }
   .draft-board { min-width: 0; }
   .semantic-split { grid-template-columns: 1fr; }
+  .draft-board .semantic-grid { grid-template-columns: 1fr; }
   .draft-board .content-blocks {
     grid-template-columns: minmax(0, 1fr);
   }
