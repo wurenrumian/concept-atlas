@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Network, Compass, Sun, Moon, Search, X } from 'lucide-react';
+import { Network, Compass, Sun, Moon, Search, X, Link as LinkIcon } from 'lucide-react';
 import { buildGraphModel } from '../model/concept-schema.js';
 import { extractConceptData } from '../model/normalize-content.js';
 import { NodeExplorer } from '../views/NodeExplorer.jsx';
@@ -46,6 +46,7 @@ export function App({ mdxContent, initialData }) {
   });
   const [historyIndex, setHistoryIndex] = useState(0);
   const [globalQuery, setGlobalQuery] = useState('');
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const searchResults = useMemo(() => {
     const query = globalQuery.trim().toLowerCase();
@@ -196,6 +197,22 @@ export function App({ mdxContent, initialData }) {
             aria-label="切换主题"
           >
             {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+          </button>
+          <button
+            className="theme-toggle-btn"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(window.location.href);
+                setLinkCopied(true);
+                window.setTimeout(() => setLinkCopied(false), 1400);
+              } catch {
+                setLinkCopied(false);
+              }
+            }}
+            title={linkCopied ? '已复制当前节点链接' : '复制当前节点链接'}
+            aria-label={linkCopied ? '已复制当前节点链接' : '复制当前节点链接'}
+          >
+            <LinkIcon size={16} />
           </button>
         </div>
         {currentView === 'explore' ? (
