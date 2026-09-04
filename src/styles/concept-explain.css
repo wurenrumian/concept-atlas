@@ -178,6 +178,11 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
 .gap-sm { gap: 8px; } .gap-md { gap: 16px; } .gap-lg { gap: 28px; }
 .semantic-tabs details { border-bottom: 1px solid var(--border-subtle); padding: 8px 0; }
 .semantic-tabs summary { cursor: pointer; font-weight: 700; color: var(--text-primary); }
+.mermaid-tools { display: inline-flex; align-items: center; gap: 5px; }
+.mermaid-tools button { width: 22px; height: 22px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--bg-subtle); font-weight: 700; }
+.mermaid-tools button:hover { color: var(--primary); border-color: var(--primary); }
+.mermaid-canvas { overflow: hidden; min-height: 120px; display: grid; place-items: center; cursor: grab; }
+.mermaid-canvas-inner { transform-origin: center center; transition: transform .15s ease; }
 
 /* Scrollbar beautification */
 ::-webkit-scrollbar {
@@ -915,7 +920,7 @@ button.flow-box {
 .content-blocks {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 14px;
 }
 
 .node-block {

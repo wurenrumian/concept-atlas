@@ -280,6 +280,8 @@ export function Mermaid({ chart = '', title = '关系草图', width = 'auto', he
   const ref = React.useRef(null);
   const id = React.useId().replace(/:/g, '');
   const [error, setError] = React.useState('');
+  const [scale, setScale] = React.useState(1);
+  const [pan, setPan] = React.useState({ x: 0, y: 0 });
 
   React.useEffect(() => {
     let cancelled = false;
@@ -300,13 +302,15 @@ export function Mermaid({ chart = '', title = '关系草图', width = 'auto', he
     return () => { cancelled = true; };
   }, [chart, id]);
 
+  const zoom = (delta) => setScale(value => Math.max(0.5, Math.min(3, +(value + delta).toFixed(2))));
+  const reset = () => { setScale(1); setPan({ x: 0, y: 0 }); };
   return (
     <div className={`semantic-mermaid ${widgetClass(position)}`} style={widgetStyle({ width, height, x, y, position })}>
       <div className="semantic-widget-head">
         <span>{title}</span>
-        <code>MERMAID</code>
+        <div className="mermaid-tools"><code>MERMAID</code><button type="button" onClick={() => zoom(-0.1)} aria-label="缩小图表">−</button><span>{Math.round(scale * 100)}%</span><button type="button" onClick={() => zoom(0.1)} aria-label="放大图表">＋</button><button type="button" onClick={reset} aria-label="重置图表">↺</button></div>
       </div>
-      {error ? <pre className="mermaid-error">{error}</pre> : <div ref={ref} className="mermaid-canvas" />}
+      {error ? <pre className="mermaid-error">{error}</pre> : <div className="mermaid-canvas" onWheel={(event) => { event.preventDefault(); zoom(event.deltaY < 0 ? 0.1 : -0.1); }}><div className="mermaid-canvas-inner" style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})` }} ref={ref} /></div>}
     </div>
   );
 }

@@ -8,14 +8,18 @@
       <Overview>“写完代码然后运行”其实跨越了两条相互衔接的流水线：构建期把源代码变成可装载的二进制，运行期再由操作系统创建进程、解析依赖、调度线程，最后由 CPU 执行指令并产生外部可见的副作用。</Overview>
       <Definition>编译与运行是一个跨越语言规则、编译器、链接器、ABI、操作系统和硬件 ISA 的分层系统。每一层都会把上层抽象转换成下一层可以验证、组合或执行的表示。</Definition>
       <Mechanism>源码 ➜ 预处理结果 ➜ Token / AST ➜ 类型与控制流信息 ➜ IR ➜ 汇编 / 目标文件 ➜ 链接后的可执行文件 ➜ 虚拟地址空间 ➜ 指令与系统调用 ➜ 进程退出</Mechanism>
-      <Flow steps={['写源码', '编译前端理解语义', '后端优化并生成目标文件', '链接依赖', 'OS 加载进程', 'CPU 执行']} />
-      <NoteGrid notes={[
+      <Split ratio="1.25fr .75fr">
+        <Stack gap="sm">
+          <Flow steps={['写源码', '编译前端理解语义', '后端优化并生成目标文件', '链接依赖', 'OS 加载进程', 'CPU 执行']} />
+          <NoteGrid notes={[
         { title: '静态阶段', content: '编译器发现语法、类型和部分控制流错误' },
         { title: '组合阶段', content: '链接器解决跨文件符号与库依赖' },
         { title: '动态阶段', content: '加载器建立地址空间并完成运行时准备' },
         { title: '观察结果', content: '输出、文件、网络、信号与退出码' }
-      ]} />
-      <Insight title="最重要的分界线" tone="info">编译器只能依据已知源码和假设进行推理；文件不存在、端口被占用、权限不足、内存耗尽等问题，通常要到运行期才会暴露。</Insight>
+          ]} />
+        </Stack>
+        <Insight title="最重要的分界线" tone="info">编译器只能依据已知源码和假设进行推理；文件不存在、端口被占用、权限不足、内存耗尽等问题，通常要到运行期才会暴露。</Insight>
+      </Split>
       <Prerequisite>基本数据结构、函数调用和内存模型</Prerequisite>
       <Prerequisite>操作系统进程、虚拟内存与系统调用</Prerequisite>
       <Prerequisite>计算机组成、ISA 与汇编基础</Prerequisite>
@@ -26,7 +30,8 @@
     <ConceptNode id="compile" title="编译阶段" level="L1" parent="program-runtime" input="源文件、头文件、宏定义、编译器选项" output="汇编文本与可重定位目标文件 (.o / .obj)" summary="将单个源文件从字符和语法逐步降级为目标平台代码。">
       <Overview>编译器通常按“前端—中端—后端”组织：前端回答代码是否合法、表达了什么；中端在较平台无关的 IR 上分析和优化；后端把 IR 映射到目标 ISA、寄存器和调用约定。</Overview>
       <Definition>编译是保持语言语义约束的静态转换过程。它可能产生诊断信息、调试信息、汇编或目标文件，并不等于已经生成了一个能独立启动的完整程序。</Definition>
-      <Mermaid title="单个源文件的编译流水线" width="560px" chart={`flowchart LR
+      <Grid columns="auto" gap="sm">
+      <Mermaid title="单个源文件的编译流水线" width="560px" height="260px" chart={`flowchart LR
   A[源码] --> B[预处理]
   B --> C[词法 / 语法分析]
   C --> D[语义分析]
@@ -41,6 +46,7 @@
         { from: '源码', type: '编译', to: '.o / .obj', note: '尚未解决全部外部符号' },
         { from: '多个 .o', type: '链接', to: '可执行文件', note: '形成可装载镜像' }
       ]} />
+      </Grid>
       <Details summary="一次构建到底检查了什么？"><p>预处理器处理宏和条件编译；前端检查文法、名称和类型；优化器证明某些变换保持语义；汇编器编码指令并生成重定位记录。任一阶段失败，后续阶段都不会得到可信输入。</p></Details>
       <Implementation language="bash" title="逐阶段观察 GCC / Clang 产物">
 {`cc -E main.c -o main.i      # 预处理：宏展开、头文件拼接
