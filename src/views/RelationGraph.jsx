@@ -198,9 +198,8 @@ export function RelationGraph({
     const simulation = isConceptMode
       ? d3.forceSimulation(positionedNodes)
           .force('link', d3.forceLink(positionedLinks).id(d => d.id).distance(130))
-          .force('charge', d3.forceManyBody().strength(-380))
           .force('center', d3.forceCenter(width / 2, height / 2))
-          .force('collision', d3.forceCollide().radius(42))
+          .force('collision', d3.forceCollide().radius(34).strength(0.35))
       : null;
 
     // Links group
