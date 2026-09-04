@@ -147,6 +147,12 @@ export function NodeExplorer({
 
       {/* 2. Middle Column: Current Node Explanation Card */}
       <main className="explorer-center">
+        <HierarchyStrip
+          ancestorPath={ancestorPath}
+          currentNode={currentNode}
+          childNodes={childNodes}
+          onSelectNode={onSelectNode}
+        />
         <div className="center-scrollable">
           {/* Header toolbar */}
           <div className="center-toolbar">
@@ -245,13 +251,6 @@ export function NodeExplorer({
             </div>
 
           </article>
-
-          <HierarchyStrip
-            ancestorPath={ancestorPath}
-            currentNode={currentNode}
-            childNodes={childNodes}
-            onSelectNode={onSelectNode}
-          />
 
           {/* Core Mechanism / Definition Section */}
           <div className="content-blocks">

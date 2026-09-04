@@ -175,7 +175,7 @@ export function RelationGraph({
 
     const isConceptMode = graphMode === 'concept';
     const visibleGraphLinks = isConceptMode
-      ? graphLinks
+      ? graphLinks.filter(link => link.type !== 'parent-child')
       : graphLinks.filter(link => link.type === 'parent-child');
     // Hierarchy mode is deterministic. Concept mode intentionally restores
     // the exploratory, draggable force graph for cross-layer relationships.
@@ -389,7 +389,7 @@ export function RelationGraph({
         <div className="graph-legend-ribbon">
           <div className="legend-title">图例说明:</div>
           <div className="legend-items">
-            {Object.keys(RELATION_TYPES).slice(0, 7).map(typeKey => (
+            {Object.keys(RELATION_TYPES).filter(typeKey => graphMode !== 'concept' || typeKey !== 'parent-child').slice(0, 7).map(typeKey => (
               <div key={typeKey} className="legend-item">
                 <span className="legend-dot" style={{ backgroundColor: RELATION_TYPES[typeKey].color }} />
                 <span>{RELATION_TYPES[typeKey].label}</span>
