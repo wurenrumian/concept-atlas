@@ -197,7 +197,7 @@ export function RelationGraph({
 
     const simulation = isConceptMode
       ? d3.forceSimulation(positionedNodes)
-          .force('link', d3.forceLink(positionedLinks).id(d => d.id).distance(130))
+          .force('link', d3.forceLink(positionedLinks).id(d => d.id).distance(185).strength(0.9))
           .force('center', d3.forceCenter(width / 2, height / 2))
           .force('collision', d3.forceCollide().radius(34).strength(0.35))
       : null;
@@ -597,6 +597,11 @@ function positionEdgeLabels(links, nodes, width, height) {
       link.labelY = y;
       link.labelVisible = true;
       occupied.push({ left: x - halfWidth, right: x + halfWidth, top: y - 8, bottom: y + 8 });
+    } else {
+      // Labels are part of the default reading path; keep them visible even in dense graphs.
+      link.labelX = midpoint.x;
+      link.labelY = midpoint.y;
+      link.labelVisible = true;
     }
   });
 }
