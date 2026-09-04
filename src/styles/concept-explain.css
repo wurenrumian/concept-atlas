@@ -1987,6 +1987,28 @@ button.flow-box {
   box-shadow: var(--shadow-sm);
 }
 
+.semantic-relation-path {
+  width: 100%;
+  margin: 0 0 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--border-medium);
+  border-radius: 10px;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+}
+.relation-path-steps { display: flex; align-items: stretch; overflow-x: auto; padding: 2px 0 4px; }
+.relation-path-node { flex: 1 0 150px; min-width: 150px; padding: 10px 12px; border: 1px solid var(--border-medium); border-top: 3px solid var(--accent-cyan); border-radius: 8px; background: var(--bg-card); }
+.relation-path-node.tone-success { border-top-color: var(--accent-emerald); }
+.relation-path-node.tone-warning { border-top-color: var(--accent-amber); }
+.relation-path-node.tone-danger { border-top-color: var(--accent-rose); }
+.relation-path-kicker, .relation-path-node strong, .relation-path-node small { display: block; }
+.relation-path-kicker { color: var(--text-dim); font: 700 10px 'Fira Code', monospace; margin-bottom: 4px; }
+.relation-path-node strong { color: var(--text-primary); font-size: 13px; }
+.relation-path-node small { margin-top: 4px; color: var(--text-muted); font-size: 11px; }
+.relation-path-edge { flex: 0 0 72px; display: grid; place-items: center; position: relative; color: var(--text-accent); font: 700 10px 'Fira Code', monospace; }
+.relation-path-edge::before { content: ''; position: absolute; left: 4px; right: 4px; top: 50%; border-top: 1px dashed var(--border-strong); }
+.relation-path-edge span { z-index: 1; padding: 2px 4px; background: var(--bg-surface); }
+
 .draft-board .semantic-mermaid,
 .draft-board .semantic-relation-map {
   width: fit-content;

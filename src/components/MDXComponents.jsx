@@ -337,6 +337,29 @@ export function RelationMap({ title = '关系速览', items = [], children, widt
 }
 RelationMap.displayName = 'RelationMap';
 
+export function RelationPath({ title = '关系链', steps = [], children }) {
+  return (
+    <div className="semantic-relation-path">
+      {title && <div className="semantic-widget-head"><span>{title}</span><code>PATH</code></div>}
+      {steps.length > 0 ? (
+        <div className="relation-path-steps">
+          {steps.map((step, index) => (
+            <React.Fragment key={index}>
+              <div className={`relation-path-node tone-${step.tone || 'info'}`}>
+                <span className="relation-path-kicker">{step.level || `0${index + 1}`}</span>
+                <strong>{step.node || step.title}</strong>
+                {step.note && <small>{step.note}</small>}
+              </div>
+              {index < steps.length - 1 && <div className="relation-path-edge"><span>{steps[index + 1].relation || '→'}</span></div>}
+            </React.Fragment>
+          ))}
+        </div>
+      ) : children}
+    </div>
+  );
+}
+RelationPath.displayName = 'RelationPath';
+
 export function Insight({ title = '关键判断', tone = 'info', children, width = 'auto', height = 'auto', x = 0, y = 0, position = 'flow' }) {
   return (
     <aside className={`semantic-insight insight-${tone} ${widgetClass(position)}`} style={widgetStyle({ width, height, x, y, position })}>

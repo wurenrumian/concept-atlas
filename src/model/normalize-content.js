@@ -110,6 +110,7 @@ const SEMANTIC_COMPONENTS = new Set([
   'Grid',
   'Split',
   'Tabs',
+  'RelationPath',
 ]);
 
 function isSemanticComponent(name) {

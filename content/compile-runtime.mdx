@@ -20,6 +20,12 @@
         </Stack>
         <Insight title="最重要的分界线" tone="info">编译器只能依据已知源码和假设进行推理；文件不存在、端口被占用、权限不足、内存耗尽等问题，通常要到运行期才会暴露。</Insight>
       </Split>
+      <RelationPath title="一条可追踪的端到端关系链" steps={[
+        { node: '源码', level: '输入', tone: 'info' },
+        { node: '目标文件', relation: 'produces', level: '产物', tone: 'success' },
+        { node: '可执行文件', relation: 'precedes', level: '装载', tone: 'warning' },
+        { node: '进程状态', relation: 'uses', level: '运行', tone: 'danger' }
+      ]} />
       <Prerequisite>基本数据结构、函数调用和内存模型</Prerequisite>
       <Prerequisite>操作系统进程、虚拟内存与系统调用</Prerequisite>
       <Prerequisite>计算机组成、ISA 与汇编基础</Prerequisite>
