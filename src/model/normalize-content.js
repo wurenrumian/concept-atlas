@@ -100,6 +100,10 @@ const SEMANTIC_COMPONENTS = new Set([
   'Counterexample',
   'Boundary',
   'Glossary',
+  'Mermaid',
+  'RelationMap',
+  'Insight',
+  'NoteGrid',
 ]);
 
 function isSemanticComponent(name) {

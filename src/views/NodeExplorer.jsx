@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronRight, ArrowUpRight, CornerDownRight, ArrowLeft, Network, CornerLeftUp } from 'lucide-react';
+import { ChevronRight, ArrowUpRight, CornerDownRight, ArrowLeft, Network, CornerLeftUp, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { getAncestorPath, getSiblingNodes } from '../model/concept-schema.js';
 import { LEVEL_DEFS } from '../model/relation-types.js';
 
@@ -12,6 +12,49 @@ export function NodeExplorer({
   onSelectLevel
 }) {
   const { nodes, relations } = graph;
+  const [canvasScale, setCanvasScale] = React.useState(1);
+  const [canvasPan, setCanvasPan] = React.useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = React.useState(false);
+  const dragRef = React.useRef(null);
+  const suppressClickRef = React.useRef(false);
+
+  const updateScale = (nextScale) => {
+    const scale = Math.max(0.65, Math.min(1.6, +nextScale.toFixed(2)));
+    setCanvasScale(scale);
+  };
+
+  const handleCanvasPointerDown = (event) => {
+    if (event.target.closest('button, a, input, select, textarea')) return;
+    dragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      panX: canvasPan.x,
+      panY: canvasPan.y,
+      moved: false,
+    };
+    setIsDragging(true);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handleCanvasPointerMove = (event) => {
+    if (!dragRef.current || dragRef.current.pointerId !== event.pointerId) return;
+    event.preventDefault();
+    dragRef.current.moved = true;
+    setCanvasPan({
+      x: dragRef.current.panX + event.clientX - dragRef.current.startX,
+      y: dragRef.current.panY + event.clientY - dragRef.current.startY,
+    });
+  };
+
+  const handleCanvasPointerUp = (event) => {
+    if (dragRef.current?.pointerId === event.pointerId) {
+      suppressClickRef.current = dragRef.current.moved;
+      dragRef.current = null;
+      setIsDragging(false);
+      event.currentTarget.releasePointerCapture?.(event.pointerId);
+    }
+  };
   const currentNode = nodes.get(currentNodeId) || nodes.get(graph.meta.rootId) || null;
 
   if (!currentNode) {
@@ -102,9 +145,6 @@ export function NodeExplorer({
         <div className="center-scrollable">
           {/* Header toolbar */}
           <div className="center-toolbar">
-            <div className="node-id-tag">
-              CONCEPT ID · <code>{currentNode.id}</code>
-            </div>
             <div className="level-indicators">
               {Object.keys(LEVEL_DEFS).map(lvl => (
                 <button
@@ -117,17 +157,54 @@ export function NodeExplorer({
                 </button>
               ))}
             </div>
-            <button
-              className="view-graph-btn"
-              onClick={() => onSwitchView('graph')}
-              title="在图谱中聚焦此节点"
-            >
-              <Network size={14} />
-              <span>查看全局关系</span>
-            </button>
           </div>
 
-          {/* Hero Explanatory Card */}
+          <div
+            className={`draft-viewport ${isDragging ? 'is-dragging' : ''}`}
+            onPointerDown={handleCanvasPointerDown}
+            onPointerMove={handleCanvasPointerMove}
+            onPointerUp={handleCanvasPointerUp}
+            onPointerCancel={handleCanvasPointerUp}
+            onClickCapture={(event) => {
+              if (!suppressClickRef.current) return;
+              event.preventDefault();
+              event.stopPropagation();
+              suppressClickRef.current = false;
+            }}
+            onWheel={(event) => {
+              event.preventDefault();
+              updateScale(canvasScale + (event.deltaY < 0 ? 0.05 : -0.05));
+            }}
+          >
+            <div className="draft-floating-tools">
+              <button
+                className="view-graph-btn"
+                onClick={() => onSwitchView('graph')}
+                title="在图谱中聚焦此节点"
+              >
+                <Network size={14} />
+                <span>查看全局关系</span>
+              </button>
+              <div className="draft-zoom-controls" aria-label="草稿缩放">
+                <button onClick={() => updateScale(canvasScale - 0.1)} title="缩小">
+                  <ZoomOut size={14} />
+                </button>
+                <span>{Math.round(canvasScale * 100)}%</span>
+                <button onClick={() => updateScale(canvasScale + 0.1)} title="放大">
+                  <ZoomIn size={14} />
+                </button>
+                <button onClick={() => { setCanvasScale(1); setCanvasPan({ x: 0, y: 0 }); }} title="重置画布">
+                  <RotateCcw size={13} />
+                </button>
+              </div>
+            </div>
+            <div
+              className="draft-board"
+              style={{
+                transform: `translate(${canvasPan.x}px, ${canvasPan.y}px) scale(${canvasScale})`,
+              }}
+            >
+          {/* Compact concept note header */}
           <article className="concept-hero-card">
             <div className="hero-level-banner" style={{ color: levelInfo.color }}>
               <span className="badge">{levelInfo.tag}</span>
@@ -160,44 +237,14 @@ export function NodeExplorer({
               </div>
             </div>
 
-            {/* Upstream -> Current -> Downstream flow ribbon */}
-            <div className="local-flow-ribbon">
-              <button
-                className={`flow-box upstream ${parentNode ? 'clickable' : 'disabled'}`}
-                onClick={() => parentNode && onSelectNode(parentNode.id)}
-                disabled={!parentNode}
-              >
-                <span className="box-type">上游阶段</span>
-                <span className="box-title">{parentNode ? parentNode.title : '已是根节点'}</span>
-              </button>
-              <div className="flow-arrow">➔</div>
-              <div className="flow-box current-focus">
-                <span className="box-type">当前聚焦</span>
-                <span className="box-title">{currentNode.title}</span>
-              </div>
-              <div className="flow-arrow">➔</div>
-              <div className={`flow-box downstream ${childNodes.length > 0 ? 'clickable' : 'disabled'}`}>
-                <span className="box-type">下钻子节点 ({childNodes.length})</span>
-                {childNodes.length > 0 ? (
-                  <div className="flow-node-list">
-                    {childNodes.map(child => (
-                      <button
-                        key={child.id}
-                        className="flow-node-link"
-                        onClick={() => onSelectNode(child.id)}
-                        title={`切换到：${child.title}`}
-                      >
-                        <span>{child.title}</span>
-                        <ChevronRight size={12} />
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <span className="box-title">已是最末节点</span>
-                )}
-              </div>
-            </div>
           </article>
+
+          <HierarchyStrip
+            ancestorPath={ancestorPath}
+            currentNode={currentNode}
+            childNodes={childNodes}
+            onSelectNode={onSelectNode}
+          />
 
           {/* Core Mechanism / Definition Section */}
           <div className="content-blocks">
@@ -283,9 +330,13 @@ export function NodeExplorer({
 
             {/* Custom presentation sections (Compare, Flow, etc.) */}
             {currentNode.customSections.map((sec, i) => (
-              <section key={i} className="node-block custom-section">
-                {sec}
-              </section>
+              sec?.props?.position === 'absolute' ? (
+                <React.Fragment key={i}>{sec}</React.Fragment>
+              ) : (
+                <section key={i} className="node-block custom-section">
+                  {sec}
+                </section>
+              )
             ))}
 
             {/* Sub-node Exploration Cards (Drill Down Entrance) */}
@@ -315,6 +366,15 @@ export function NodeExplorer({
                 </div>
               </section>
             )}
+          </div>
+          <NodeInspector
+            currentNode={currentNode}
+            nodes={nodes}
+            outgoingRelations={outgoingRelations}
+            incomingRelations={incomingRelations}
+            onSelectNode={onSelectNode}
+          />
+            </div>
           </div>
         </div>
       </main>
@@ -435,6 +495,89 @@ export function NodeExplorer({
         </div>
       </aside>
     </div>
+  );
+}
+
+function HierarchyStrip({ ancestorPath, currentNode, childNodes, onSelectNode }) {
+  const parent = ancestorPath.length > 1 ? ancestorPath[ancestorPath.length - 2] : null;
+
+  return (
+    <nav className="hierarchy-strip" aria-label="概念层级导航">
+      <div className="hierarchy-strip-path">
+        {ancestorPath.slice(0, -1).map(node => (
+          <button key={node.id} onClick={() => onSelectNode(node.id)} title={`返回 ${node.title}`}>
+            <span>{node.level}</span>{node.title}<ChevronRight size={11} />
+          </button>
+        ))}
+        <strong><span>{currentNode.level}</span>{currentNode.title}</strong>
+      </div>
+      <div className="hierarchy-strip-children">
+        {parent && (
+          <button className="hierarchy-parent-link" onClick={() => onSelectNode(parent.id)}>
+            <CornerLeftUp size={12} /> 返回父级
+          </button>
+        )}
+        {childNodes.length > 0 ? childNodes.map(child => (
+          <button key={child.id} onClick={() => onSelectNode(child.id)} title={`进入 ${child.title}`}>
+            {child.title}<ChevronRight size={12} />
+          </button>
+        )) : <span className="hierarchy-strip-empty">叶节点</span>}
+      </div>
+    </nav>
+  );
+}
+
+function NodeInspector({ currentNode, nodes, outgoingRelations, incomingRelations, onSelectNode }) {
+  const relationCard = (rel, targetId, direction) => {
+    const target = nodes.get(targetId);
+    return (
+      <button className="inline-relation" key={`${direction}-${rel.from}-${rel.to}-${rel.type}`} onClick={() => target && onSelectNode(target.id)}>
+        <span className="inline-relation-type" style={{ color: rel.typeInfo?.color }}>{rel.typeLabel}</span>
+        <span className="inline-relation-main">
+          <b>{target ? target.title : targetId}</b>
+          {direction === 'out' ? <CornerDownRight size={13} /> : <ArrowLeft size={13} />}
+        </span>
+        {rel.description && <small>{rel.description}</small>}
+      </button>
+    );
+  };
+
+  return (
+    <section className="inline-inspector">
+      <div className="inline-inspector-head">
+        <div>
+          <span className="side-label">当前节点的延伸笔记</span>
+          <h2>关联、边界与前置知识</h2>
+        </div>
+        <span className="inline-inspector-count">{outgoingRelations.length + incomingRelations.length} 条关系</span>
+      </div>
+      <div className="inline-inspector-grid">
+        {currentNode.prerequisites.length > 0 && (
+          <div className="inline-note-block">
+            <span className="insp-label">前置知识</span>
+            <div className="inline-pill-flow">
+              {currentNode.prerequisites.map((item, index) => <span className="insp-pill" key={index}>{item}</span>)}
+            </div>
+          </div>
+        )}
+        {currentNode.boundaries.length > 0 && (
+          <div className="inline-note-block">
+            <span className="insp-label">边界条件</span>
+            {currentNode.boundaries.map((boundary, index) => (
+              <div className="inline-boundary" key={index}><b>{boundary.title}</b><span>{boundary.content}</span></div>
+            ))}
+          </div>
+        )}
+        <div className="inline-note-block relation-column">
+          <span className="insp-label">延伸关系 · 出</span>
+          {outgoingRelations.length > 0 ? outgoingRelations.map(rel => relationCard(rel, rel.to, 'out')) : <span className="empty-subtext">暂无向外关联</span>}
+        </div>
+        <div className="inline-note-block relation-column">
+          <span className="insp-label">前驱关系 · 入</span>
+          {incomingRelations.length > 0 ? incomingRelations.map(rel => relationCard(rel, rel.from, 'in')) : <span className="empty-subtext">暂无前驱来源</span>}
+        </div>
+      </div>
+    </section>
   );
 }
 

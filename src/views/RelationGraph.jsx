@@ -20,6 +20,7 @@ export function RelationGraph({
   const [filterLevel, setFilterLevel] = useState('ALL');
   const [filterRelationType, setFilterRelationType] = useState('ALL');
   const [highlightNeighbors, setHighlightNeighbors] = useState(true);
+  const [graphMode, setGraphMode] = useState('hierarchy');
 
   // Convert nodes map to array
   const allNodes = useMemo(() => Array.from(nodes.values()), [nodes]);
@@ -156,18 +157,35 @@ export function RelationGraph({
 
     svg.call(zoomBehavior);
 
-    // Deterministic layered tree layout. Parent/child edges define the
-    // coordinate system; semantic relations are drawn on top as secondary
-    // links and no longer pull nodes out of their hierarchy.
-    const positionedNodes = layoutTree(graphNodes, width, height);
+    const isConceptMode = graphMode === 'concept';
+    const visibleGraphLinks = isConceptMode
+      ? graphLinks
+      : graphLinks.filter(link => link.type === 'parent-child');
+    // Hierarchy mode is deterministic. Concept mode intentionally restores
+    // the exploratory, draggable force graph for cross-layer relationships.
+    const positionedNodes = isConceptMode
+      ? graphNodes.map((node, index) => ({
+          ...node,
+          x: width / 2 + ((index % 4) - 1.5) * 80,
+          y: height / 2 + (Math.floor(index / 4) - 1) * 80,
+        }))
+      : layoutTree(graphNodes, width, height);
     const nodeById = new Map(positionedNodes.map(node => [node.id, node]));
-    const positionedLinks = decorateParallelLinks(graphLinks
+    const positionedLinks = decorateParallelLinks(visibleGraphLinks
       .map(link => ({
         ...link,
         source: nodeById.get(typeof link.source === 'object' ? link.source.id : link.source),
         target: nodeById.get(typeof link.target === 'object' ? link.target.id : link.target),
       }))
       .filter(link => link.source && link.target));
+
+    const simulation = isConceptMode
+      ? d3.forceSimulation(positionedNodes)
+          .force('link', d3.forceLink(positionedLinks).id(d => d.id).distance(130))
+          .force('charge', d3.forceManyBody().strength(-380))
+          .force('center', d3.forceCenter(width / 2, height / 2))
+          .force('collision', d3.forceCollide().radius(42))
+      : null;
 
     // Links group
     const linkGroup = g.append('g').attr('class', 'links');
@@ -185,14 +203,20 @@ export function RelationGraph({
       .attr('marker-end', d => d.typeInfo?.hasArrow ? `url(#arrow-${d.type})` : null)
       .attr('opacity', d => d.type === 'parent-child' ? 0.9 : 0.48);
 
-    // Link labels
+    // Keep the canvas uncluttered. Relation details remain available in the
+    // inspector; a native SVG tooltip provides quick context on hover.
+    links.append('title')
+      .text(d => `${d.label}${d.description ? `：${d.description}` : ''}`);
+
     const linkLabels = links.append('text')
       .attr('class', 'graph-edge-label')
       .attr('fill', d => d.typeInfo?.color || '#94a3b8')
       .attr('font-size', '10px')
       .attr('text-anchor', 'middle')
-      .attr('dy', -4)
-      .text(d => d.label);
+      .attr('dy', -5)
+      // Parent-child is visually self-explanatory and its repeated label
+      // only creates collisions with actual semantic relation labels.
+      .text(d => d.type === 'parent-child' ? '' : d.label);
 
     // Nodes group
     const nodeGroup = g.append('g').attr('class', 'nodes');
@@ -206,6 +230,25 @@ export function RelationGraph({
         setSelectedNodeId(d.id);
         onSelectNode(d.id);
       });
+
+    if (isConceptMode) {
+      nodesSelection.call(d3.drag()
+        .on('start', (event, d) => {
+          if (!event.active) simulation.alphaTarget(0.3).restart();
+          d.fx = d.x;
+          d.fy = d.y;
+        })
+        .on('drag', (event, d) => {
+          d.fx = event.x;
+          d.fy = event.y;
+        })
+        .on('end', (event, d) => {
+          if (!event.active) simulation.alphaTarget(0);
+          d.fx = null;
+          d.fy = null;
+        })
+      );
+    }
 
     // Outer glow for selected or level
     nodesSelection.append('circle')
@@ -238,16 +281,24 @@ export function RelationGraph({
       .attr('font-size', '9px')
       .text(d => d.level);
 
-    linkPaths.attr('d', linkPath);
+    const renderPositions = () => {
+      linkPaths.attr('d', linkPath);
+      positionEdgeLabels(positionedLinks, positionedNodes, width, height);
+      linkLabels
+        .attr('x', d => d.labelX ?? linkMidpoint(d).x)
+        .attr('y', d => d.labelY ?? linkMidpoint(d).y)
+        .attr('display', d => d.labelVisible ? null : 'none');
+      nodesSelection.attr('transform', d => `translate(${d.x},${d.y})`);
+    };
 
-    linkLabels
-      .attr('x', d => linkMidpoint(d).x)
-      .attr('y', d => linkMidpoint(d).y);
-
-    nodesSelection.attr('transform', d => `translate(${d.x},${d.y})`);
+    if (simulation) {
+      simulation.on('tick', renderPositions);
+    } else {
+      renderPositions();
+    }
 
     // Auto-focus selected node center
-    if (selectedNodeId) {
+    if (!isConceptMode && selectedNodeId) {
       const targetNode = positionedNodes.find(n => n.id === selectedNodeId);
       if (targetNode) {
         const transform = d3.zoomIdentity
@@ -258,9 +309,10 @@ export function RelationGraph({
     }
 
     return () => {
+      simulation?.stop();
       svg.on('.zoom', null);
     };
-  }, [graphNodes, graphLinks, selectedNodeId, theme]);
+  }, [graphNodes, graphLinks, selectedNodeId, theme, graphMode]);
 
   return (
     <div className="relation-graph-layout">
@@ -268,6 +320,24 @@ export function RelationGraph({
       <div className="graph-main" ref={containerRef}>
         {/* Top Control Bar */}
         <div className="graph-control-bar">
+          <div className="graph-mode-switch" role="tablist" aria-label="图谱模式">
+            <button
+              className={graphMode === 'hierarchy' ? 'active' : ''}
+              onClick={() => setGraphMode('hierarchy')}
+              role="tab"
+              aria-selected={graphMode === 'hierarchy'}
+            >
+              层级结构
+            </button>
+            <button
+              className={graphMode === 'concept' ? 'active' : ''}
+              onClick={() => setGraphMode('concept')}
+              role="tab"
+              aria-selected={graphMode === 'concept'}
+            >
+              概念关系
+            </button>
+          </div>
           <div className="search-box">
             <Search size={14} className="search-icon" />
             <input
@@ -463,6 +533,66 @@ function linkPath(link) {
   const controlX = (source.x + target.x) / 2 + normalX * offset;
   const controlY = (source.y + target.y) / 2 + normalY * offset;
   return `M${source.x},${source.y} Q${controlX},${controlY} ${target.x},${target.y}`;
+}
+
+function positionEdgeLabels(links, nodes, width, height) {
+  const occupied = [];
+  const nodeBoxes = nodes.map(node => ({
+    left: node.x - 28,
+    right: node.x + 28,
+    top: node.y - 28,
+    bottom: node.y + 28,
+  }));
+
+  links.forEach(link => {
+    link.labelVisible = false;
+  });
+
+  const candidates = links
+    .filter(link => link.type !== 'parent-child' && link.label)
+    .map(link => {
+      const midpoint = linkMidpoint(link);
+      const halfWidth = Math.max(18, Math.min(70, link.label.length * 5.2));
+      return { link, midpoint, halfWidth };
+    })
+    .sort((a, b) => a.midpoint.y - b.midpoint.y);
+
+  candidates.forEach(({ link, midpoint, halfWidth }) => {
+    const positions = [
+      [midpoint.x, midpoint.y],
+      [midpoint.x, midpoint.y - 20],
+      [midpoint.x, midpoint.y + 20],
+      [midpoint.x - 28, midpoint.y],
+      [midpoint.x + 28, midpoint.y],
+      [midpoint.x, midpoint.y - 38],
+      [midpoint.x, midpoint.y + 38],
+    ];
+
+    const position = positions.find(([x, y]) => {
+      const box = { left: x - halfWidth, right: x + halfWidth, top: y - 8, bottom: y + 8 };
+      if (box.left < 8 || box.right > width - 8 || box.top < 70 || box.bottom > height - 8) return false;
+      if (occupied.some(other => boxesOverlap(box, other, 6))) return false;
+      if (nodeBoxes.some(node => boxesOverlap(box, node, 4))) return false;
+      return true;
+    });
+
+    if (position) {
+      const [x, y] = position;
+      link.labelX = x;
+      link.labelY = y;
+      link.labelVisible = true;
+      occupied.push({ left: x - halfWidth, right: x + halfWidth, top: y - 8, bottom: y + 8 });
+    }
+  });
+}
+
+function boxesOverlap(a, b, padding = 0) {
+  return !(
+    a.right + padding < b.left ||
+    a.left - padding > b.right ||
+    a.bottom + padding < b.top ||
+    a.top - padding > b.bottom
+  );
 }
 
 function linkMidpoint(link) {

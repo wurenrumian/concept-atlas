@@ -61,6 +61,8 @@ concept-atlas/
 
 ## 常用开发命令
 
+完整的内容编写、组件参数、Mermaid 和画布布局说明请阅读：[docs/USAGE.md](docs/USAGE.md)
+
 ### 启动本地开发服务
 ```bash
 npm run dev

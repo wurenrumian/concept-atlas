@@ -1,4 +1,27 @@
 import React from 'react';
+import mermaid from 'mermaid';
+
+let mermaidReady = false;
+
+function ensureMermaid() {
+  if (mermaidReady) return;
+  mermaid.initialize({
+    startOnLoad: false,
+    securityLevel: 'loose',
+    theme: 'base',
+    look: 'handDrawn',
+    themeVariables: {
+      primaryColor: '#172554',
+      primaryTextColor: '#e0f2fe',
+      primaryBorderColor: '#38bdf8',
+      lineColor: '#64748b',
+      secondaryColor: '#172554',
+      tertiaryColor: '#0f172a',
+      fontFamily: 'Plus Jakarta Sans, sans-serif',
+    },
+  });
+  mermaidReady = true;
+}
 
 // Data Layer Components
 export function ExplainPage({ id, title, summary, children }) {
@@ -231,3 +254,102 @@ export function Columns({ children }) {
   return <div className="semantic-columns">{children}</div>;
 }
 Columns.displayName = 'Columns';
+
+export function Mermaid({ chart = '', title = '关系草图', width = 'auto', height = 'auto', x = 0, y = 0, position = 'flow' }) {
+  const ref = React.useRef(null);
+  const id = React.useId().replace(/:/g, '');
+  const [error, setError] = React.useState('');
+
+  React.useEffect(() => {
+    let cancelled = false;
+    async function renderChart() {
+      if (!ref.current || !chart.trim()) return;
+      try {
+        ensureMermaid();
+        const { svg } = await mermaid.render(`mermaid-${id}`, chart.trim());
+        if (!cancelled && ref.current) {
+          ref.current.innerHTML = svg;
+          setError('');
+        }
+      } catch (err) {
+        if (!cancelled) setError(err.message || 'Mermaid 图表语法错误');
+      }
+    }
+    renderChart();
+    return () => { cancelled = true; };
+  }, [chart, id]);
+
+  return (
+    <div className={`semantic-mermaid ${widgetClass(position)}`} style={widgetStyle({ width, height, x, y, position })}>
+      <div className="semantic-widget-head">
+        <span>{title}</span>
+        <code>MERMAID</code>
+      </div>
+      {error ? <pre className="mermaid-error">{error}</pre> : <div ref={ref} className="mermaid-canvas" />}
+    </div>
+  );
+}
+Mermaid.displayName = 'Mermaid';
+
+export function RelationMap({ title = '关系速览', items = [], children, width = 'auto', height = 'auto', x = 0, y = 0, position = 'flow' }) {
+  return (
+    <div className={`semantic-relation-map ${widgetClass(position)}`} style={widgetStyle({ width, height, x, y, position })}>
+      <div className="semantic-widget-head"><span>{title}</span><code>RELATIONS</code></div>
+      {items.length > 0 ? (
+        <div className="relation-map-grid">
+          {items.map((item, index) => (
+            <div className="relation-map-row" key={index}>
+              <span className="relation-map-source">{item.from || item.source}</span>
+              <span className="relation-map-arrow">{item.type || '→'}</span>
+              <span className="relation-map-target">{item.to || item.target}</span>
+              {item.note && <small>{item.note}</small>}
+            </div>
+          ))}
+        </div>
+      ) : children}
+    </div>
+  );
+}
+RelationMap.displayName = 'RelationMap';
+
+export function Insight({ title = '关键判断', tone = 'info', children, width = 'auto', height = 'auto', x = 0, y = 0, position = 'flow' }) {
+  return (
+    <aside className={`semantic-insight insight-${tone} ${widgetClass(position)}`} style={widgetStyle({ width, height, x, y, position })}>
+      <div className="insight-kicker">{tone === 'warn' ? '⚠' : tone === 'success' ? '✓' : '◆'} {title}</div>
+      <div className="insight-body">{children}</div>
+    </aside>
+  );
+}
+Insight.displayName = 'Insight';
+
+export function NoteGrid({ notes = [], children, width = 'auto', height = 'auto', x = 0, y = 0, position = 'flow' }) {
+  return (
+    <div className={`semantic-note-grid ${widgetClass(position)}`} style={widgetStyle({ width, height, x, y, position })}>
+      {notes.length > 0 ? notes.map((note, index) => (
+        <div className="semantic-note" key={index}>
+          <strong>{note.title || note.label}</strong>
+          <span>{note.content || note.text || note.description}</span>
+        </div>
+      )) : children}
+    </div>
+  );
+}
+NoteGrid.displayName = 'NoteGrid';
+
+function widgetStyle({ width, height, x, y, position }) {
+  const style = {};
+  if (width && width !== 'auto') style.width = width;
+  if (height && height !== 'auto') style.height = height;
+  if (position === 'absolute') {
+    style.position = 'absolute';
+    style.left = `${x}px`;
+    style.top = `${y}px`;
+  } else if (x || y) {
+    style.transform = `translate(${x}px, ${y}px)`;
+  }
+  return style;
+}
+
+function widgetClass(position) {
+  return position === 'absolute' ? 'semantic-widget-absolute' : '';
+}

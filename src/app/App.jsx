@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Network, Compass, Sparkles, Sun, Moon } from 'lucide-react';
+import { Network, Compass, Sun, Moon } from 'lucide-react';
 import { buildGraphModel } from '../model/concept-schema.js';
 import { extractConceptData } from '../model/normalize-content.js';
 import { NodeExplorer } from '../views/NodeExplorer.jsx';
@@ -66,21 +66,9 @@ export function App({ mdxContent, initialData }) {
 
   return (
     <div className="app-container">
-      {/* Top Header Navigation */}
-      <header className="app-header">
-        <div className="brand-section">
-          <div className="brand-logo-badge">
-            <Sparkles size={18} />
-          </div>
-          <div className="brand-text-wrap">
-            <div className="brand-title">CONCEPT ATLAS</div>
-            <div className="brand-doc-title">
-              {graph.meta.title || '知识概念图谱'}
-            </div>
-          </div>
-        </div>
-
-        <div className="header-controls">
+      {/* Main workspace */}
+      <main className="app-main">
+        <div className="app-toolbar">
           <div className="view-tabs">
             <button
               className={`view-tab ${currentView === 'explore' ? 'active' : ''}`}
@@ -109,10 +97,6 @@ export function App({ mdxContent, initialData }) {
             {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
           </button>
         </div>
-      </header>
-
-      {/* Main View Area */}
-      <main className="app-main">
         {currentView === 'explore' ? (
           <NodeExplorer
             graph={graph}
