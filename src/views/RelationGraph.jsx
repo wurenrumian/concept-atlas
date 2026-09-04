@@ -161,13 +161,13 @@ export function RelationGraph({
     // links and no longer pull nodes out of their hierarchy.
     const positionedNodes = layoutTree(graphNodes, width, height);
     const nodeById = new Map(positionedNodes.map(node => [node.id, node]));
-    const positionedLinks = graphLinks
+    const positionedLinks = decorateParallelLinks(graphLinks
       .map(link => ({
         ...link,
         source: nodeById.get(typeof link.source === 'object' ? link.source.id : link.source),
         target: nodeById.get(typeof link.target === 'object' ? link.target.id : link.target),
       }))
-      .filter(link => link.source && link.target);
+      .filter(link => link.source && link.target));
 
     // Links group
     const linkGroup = g.append('g').attr('class', 'links');
@@ -183,7 +183,7 @@ export function RelationGraph({
       .attr('stroke-width', d => d.type === 'parent-child' ? 2 : 1.5)
       .attr('stroke-dasharray', d => d.typeInfo?.strokeDasharray || 'none')
       .attr('marker-end', d => d.typeInfo?.hasArrow ? `url(#arrow-${d.type})` : null)
-      .attr('opacity', 0.7);
+      .attr('opacity', d => d.type === 'parent-child' ? 0.9 : 0.48);
 
     // Link labels
     const linkLabels = links.append('text')
@@ -238,17 +238,11 @@ export function RelationGraph({
       .attr('font-size', '9px')
       .text(d => d.level);
 
-    linkPaths.attr('d', d => {
-      if (d.type !== 'parent-child') {
-        return `M${d.source.x},${d.source.y} L${d.target.x},${d.target.y}`;
-      }
-      const midY = d.source.y + (d.target.y - d.source.y) / 2;
-      return `M${d.source.x},${d.source.y} V${midY} H${d.target.x} V${d.target.y}`;
-    });
+    linkPaths.attr('d', linkPath);
 
     linkLabels
-      .attr('x', d => (d.source.x + d.target.x) / 2)
-      .attr('y', d => (d.source.y + d.target.y) / 2);
+      .attr('x', d => linkMidpoint(d).x)
+      .attr('y', d => linkMidpoint(d).y);
 
     nodesSelection.attr('transform', d => `translate(${d.x},${d.y})`);
 
@@ -431,4 +425,60 @@ function layoutTree(nodes, width, height) {
     x: node.x + offsetX,
     y: node.depth * 155 + offsetY,
   }));
+}
+
+function decorateParallelLinks(links) {
+  const groups = new Map();
+  links.forEach(link => {
+    if (link.type === 'parent-child') return;
+    const sourceId = link.source.id;
+    const targetId = link.target.id;
+    const key = [sourceId, targetId].sort().join('::');
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(link);
+  });
+
+  groups.forEach(group => {
+    group.forEach((link, index) => {
+      link.parallelIndex = index;
+      link.parallelCount = group.length;
+    });
+  });
+  return links;
+}
+
+function linkPath(link) {
+  const { source, target } = link;
+  if (link.type === 'parent-child') {
+    const midY = source.y + (target.y - source.y) / 2;
+    return `M${source.x},${source.y} V${midY} H${target.x} V${target.y}`;
+  }
+
+  const dx = target.x - source.x;
+  const dy = target.y - source.y;
+  const length = Math.max(Math.hypot(dx, dy), 1);
+  const normalX = -dy / length;
+  const normalY = dx / length;
+  const offset = ((link.parallelIndex ?? 0) - ((link.parallelCount ?? 1) - 1) / 2) * 26;
+  const controlX = (source.x + target.x) / 2 + normalX * offset;
+  const controlY = (source.y + target.y) / 2 + normalY * offset;
+  return `M${source.x},${source.y} Q${controlX},${controlY} ${target.x},${target.y}`;
+}
+
+function linkMidpoint(link) {
+  if (link.type === 'parent-child') {
+    return {
+      x: (link.source.x + link.target.x) / 2,
+      y: (link.source.y + link.target.y) / 2,
+    };
+  }
+
+  const dx = link.target.x - link.source.x;
+  const dy = link.target.y - link.source.y;
+  const length = Math.max(Math.hypot(dx, dy), 1);
+  const offset = ((link.parallelIndex ?? 0) - ((link.parallelCount ?? 1) - 1) / 2) * 26;
+  return {
+    x: (link.source.x + link.target.x) / 2 - (dy / length) * offset,
+    y: (link.source.y + link.target.y) / 2 + (dx / length) * offset,
+  };
 }
