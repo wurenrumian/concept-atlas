@@ -10,6 +10,8 @@
 
 ```text
 concept-atlas/
+├── skills/
+│   └── concept-atlas-dense-explain/ # Agent Skills 标准发布目录（跨主流 agent）
 ├── package.json                 # 项目依赖与运行脚本
 ├── README.md                    # 项目说明文档
 ├── vite.config.js               # Vite + MDX 构建配置
@@ -38,6 +40,30 @@ concept-atlas/
 ├── tmp/                         # 临时生成文件目录
 └── dist/                        # 正式构建输出目录
 ```
+
+## 作为通用 Agent Skill 安装
+
+仓库内的 `skills/concept-atlas-dense-explain/SKILL.md` 遵循 Agent Skills 开放格式，可由 Claude Code、Codex、Cursor、Gemini CLI、OpenCode、Cline、GitHub Copilot 等主流 agent 使用。
+
+发布到 GitHub 后，用户可以直接安装：
+
+```bash
+npx skills add <github-owner>/<github-repo> --skill concept-atlas-dense-explain
+```
+
+安装到所有已检测的 agent：
+
+```bash
+npx skills add <github-owner>/<github-repo> --skill concept-atlas-dense-explain --agent '*' --yes
+```
+
+也可以只生成一次性提示词而不安装：
+
+```bash
+npx skills use <github-owner>/<github-repo> --skill concept-atlas-dense-explain
+```
+
+Skills CLI 会从 `skills/` 自动发现 skill；不需要为每个 agent 维护一份不同的指令文件。将仓库推送到公开 GitHub 仓库后即可被 `skills.sh` 索引。当前工作区未配置 Git remote，因此最后的 GitHub 创建/推送仍需使用你的账号完成。
 
 ---
 
