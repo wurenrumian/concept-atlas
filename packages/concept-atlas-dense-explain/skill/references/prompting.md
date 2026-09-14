@@ -15,6 +15,17 @@ Relation 的 type 只能是：prerequisite, causes, produces, uses, implements, 
 证据要具体：真实命令、指标或命名的产物，不要泛泛而谈。
 ```
 
+## Template availability gate
+
+Use this gate before the contract above:
+
+```text
+先确认当前 skill 目录中的 assets/template 可访问，并读取黄金样例与模板源码。
+如果模板不可访问，立即停止并说明缺少 Concept Atlas 模板；禁止自行用 JSX、HTML、CSS 或普通 Markdown 页面替代。
+模板可访问后，复制完整模板，只修改 content/compile-runtime.mdx，最后运行 npm run validate 和 npm run build。
+交付物必须是模板构建出的 dist/index.html。
+```
+
 ## What "good" looks like (from the exemplar)
 
 `assets/template/content/compile-runtime.mdx` is the reference standard. Extract these patterns:
