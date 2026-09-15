@@ -86,16 +86,31 @@ Skills CLI 会从 `skills/` 自动发现 skill；不需要为每个 agent 维护
 
 ---
 
-## 常用开发命令
+## 常用命令
 
 完整的内容编写、组件参数、Mermaid 和画布布局说明请阅读：[docs/USAGE.md](docs/USAGE.md)
+
+### 生成 AI 改写模板
+```bash
+npx concept-atlas-dense-explain create topic.mdx --mode atlas
+npx concept-atlas-dense-explain create article.mdx --mode scroll
+```
+
+生成的 `.mdx` 可以直接交给 AI 改写，然后编译为 HTML：
+
+```bash
+npx concept-atlas-dense-explain topic.mdx
+npx concept-atlas-dense-explain article.mdx --mode scroll
+```
+
+默认输出到同目录下的同名 `.html` 文件；使用 `-o` 指定输出位置，使用 `--force` 覆盖已有文件。
 
 ### 启动本地开发服务
 ```bash
 npm run dev
 ```
 
-### 构建正式发布文件 (生成单文件 HTML)
+### 构建仓库示例
 ```bash
 npm run build
 ```

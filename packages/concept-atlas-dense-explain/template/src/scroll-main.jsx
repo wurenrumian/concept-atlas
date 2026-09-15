@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { Moon, Sun } from 'lucide-react';
 import * as Components from './components/index.js';
-import ScrollReadingDemo from '../content/scroll-reading-demo.mdx';
+import UserDocument from '@concept-atlas/content';
 import './styles/concept-explain.css';
 
 const rootElement = document.getElementById('root');
@@ -29,7 +29,7 @@ function ScrollApp() {
           {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </button>
       </div>
-      <ScrollReadingDemo components={Components} />
+      <UserDocument components={Components} />
     </main>
   );
 }

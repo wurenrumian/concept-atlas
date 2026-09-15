@@ -2,7 +2,26 @@
 
 Concept Atlas 是一个基于 React + MDX 的知识讲解画布。MDX 负责描述“知识是什么、节点之间有什么关系、笔记应该包含哪些组件”，应用负责把这些内容渲染成可缩放的概念草稿、层级导航和关系图。
 
-## 1. 启动与构建
+## 1. 生成与构建
+
+Concept Atlas 的 CLI 直接编译单个 MDX 文件，不需要初始化项目或复制模板：
+
+```bash
+npx concept-atlas-dense-explain create topic.mdx --mode atlas
+# 用 AI 改写 topic.mdx 后：
+npx concept-atlas-dense-explain topic.mdx
+```
+
+连续阅读载体使用：
+
+```bash
+npx concept-atlas-dense-explain create article.mdx --mode scroll
+npx concept-atlas-dense-explain article.mdx --mode scroll -o dist/article.html
+```
+
+默认输出为输入文件同目录下的同名 `.html`；已有输出需要显式添加 `--force` 才会覆盖。
+
+仓库自身仍可以使用以下命令进行开发：
 
 ```bash
 npm install
@@ -22,12 +41,7 @@ npm run build
 - `dist/index.html`：概念探索与关系图。
 - `dist/scroll.html`：传统连续阅读示例，使用同一套语义组件但不依赖概念图谱框架。
 
-通过 CLI 构建时必须选择写作时已经确定的载体：
-
-```bash
-npx concept-atlas-dense-explain build <target> --mode atlas
-npx concept-atlas-dense-explain build <target> --mode scroll
-```
+`atlas` 和 `scroll` 是渲染载体，不是两种项目模板。CLI 会根据顶层组件自动识别载体；也可以通过 `--mode` 明确指定。
 
 ## 2. 内容入口
 
