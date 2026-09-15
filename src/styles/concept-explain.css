@@ -45,11 +45,20 @@
   --code-text: #34d399;
   --code-border: rgba(255, 255, 255, 0.1);
 
-  /* Shadows & Depth */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 16px -2px rgba(0, 0, 0, 0.5), 0 2px 6px -1px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 30px -4px rgba(0, 0, 0, 0.6), 0 4px 12px -2px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.2);
+  /* Shadows & Depth - restrained, hairline-first. Offset shadows read as
+     printed paper rather than floating SaaS cards. */
+  --shadow-sm: 0 1px 1px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 2px 8px -4px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --shadow-glow: none;
+  --shadow-card: 2px 3px 0 rgba(0, 0, 0, 0.45);
+  --shadow-pop: 3px 4px 0 rgba(0, 0, 0, 0.55);
+
+  /* Radius scale - differentiated by component weight, not one value everywhere */
+  --radius-1: 3px;
+  --radius-2: 4px;
+  --radius-3: 6px;
+  --radius-4: 8px;
 
   /* Knowledge Badge & Callouts */
   --callout-info-bg: rgba(56, 189, 248, 0.08);
@@ -106,10 +115,17 @@
   --code-border: rgba(0, 0, 0, 0.08);
 
   /* Shadows & Depth */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 16px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
-  --shadow-lg: 0 12px 32px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
-  --shadow-glow: 0 0 20px rgba(79, 70, 229, 0.12);
+  --shadow-sm: 0 1px 1px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 2px 8px -4px rgba(15, 23, 42, 0.12);
+  --shadow-lg: 0 8px 24px -12px rgba(15, 23, 42, 0.14);
+  --shadow-glow: none;
+  --shadow-card: 2px 3px 0 rgba(15, 23, 42, 0.08);
+  --shadow-pop: 3px 4px 0 rgba(15, 23, 42, 0.12);
+
+  --radius-1: 3px;
+  --radius-2: 4px;
+  --radius-3: 6px;
+  --radius-4: 8px;
 
   /* Knowledge Badge & Callouts */
   --callout-info-bg: #eff6ff;
@@ -2519,3 +2535,172 @@ button.flow-box {
 }
 .model-pyramid-level strong, .model-funnel-step strong { color: var(--text-primary); font-size: 12px; }
 .model-pyramid-level span, .model-funnel-step span { color: var(--text-secondary); font-size: 11px; line-height: 1.4; }
+
+/* ==========================================================================
+   DESIGN REFINEMENT — remove the generic "SaaS card kit" defaults.
+   Oversized uniform radii, a soft grey shadow on every surface, glass blur,
+   gradient decoration and tracked all-caps labels are the tells this pass
+   removes. Surfaces are separated by hairlines and a single print-like
+   offset shadow; radii follow the 3/4/6/8 scale so weight maps to hierarchy.
+   ========================================================================== */
+
+/* Chrome: solid surfaces instead of glass blur */
+.app-toolbar,
+.graph-legend-ribbon,
+.draft-floating-tools {
+  background: var(--bg-surface);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: var(--shadow-card);
+}
+
+.app-toolbar,
+.graph-legend-ribbon,
+.draft-floating-tools { border-radius: var(--radius-3); }
+
+.draft-floating-tools:hover,
+.draft-floating-tools:focus-within { transform: none; }
+
+.view-tabs { border-radius: var(--radius-2); }
+.view-tab { border-radius: var(--radius-1); }
+.view-tab.active { box-shadow: none; border-color: var(--border-strong); }
+.theme-toggle-btn { border-radius: var(--radius-2); box-shadow: none; }
+
+/* Hover shows state through color and rules, not nudged cards */
+.theme-toggle-btn:hover,
+.view-graph-btn:hover,
+.subnode-card:hover,
+.relation-link-card:hover,
+.panel-rel-card:hover,
+.sibling-btn:hover,
+.flow-box.clickable:hover,
+.jump-explorer-btn:hover { transform: none; }
+.subnode-card:hover .sn-arrow { transform: none; }
+
+.brand-logo-badge {
+  background: var(--primary);
+  border-radius: var(--radius-2);
+  box-shadow: none;
+}
+
+/* Graph controls */
+.graph-mode-switch,
+.search-box,
+.filter-group {
+  border-radius: var(--radius-3);
+  box-shadow: none;
+}
+.graph-mode-switch button { border-radius: var(--radius-1); }
+.graph-legend-ribbon { border-radius: var(--radius-3); }
+.graph-side-panel { box-shadow: none; }
+
+/* Labels: sentence case instead of tracked all-caps eyebrows */
+.side-label,
+.insp-label,
+.legend-title,
+.box-type,
+.chip-label,
+.impl-lang,
+.hierarchy-nav-label,
+.panel-badge,
+.panel-section .section-title,
+.framework-model-type {
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
+.side-label { color: var(--text-secondary); }
+.side-label::before { width: 2px; height: 11px; border-radius: 1px; }
+
+/* Navigation */
+.breadcrumb-node,
+.sibling-btn,
+.tree-node-btn,
+.hierarchy-nav-node,
+.hierarchy-nav-current,
+.hierarchy-nav-children { border-radius: var(--radius-2); }
+.tree-node-btn.active::before { border-radius: 0; }
+
+/* Cards: radius hierarchy + hairline separation */
+.concept-hero-card {
+  border-radius: var(--radius-4);
+  box-shadow: var(--shadow-pop);
+}
+.concept-hero-card::after { display: none; }
+
+.node-block,
+.draft-board .node-block {
+  border-radius: var(--radius-3);
+  box-shadow: var(--shadow-card);
+}
+
+.example-item,
+.counterexample-item,
+.subnode-card,
+.relation-link-card,
+.boundary-card,
+.panel-rel-card,
+.io-capsule,
+.local-flow-ribbon,
+.code-block,
+.inline-inspector,
+.semantic-learning-objectives,
+.semantic-key-question,
+.semantic-evidence,
+.semantic-invariant,
+.semantic-failure-mode,
+.semantic-tradeoff,
+.semantic-framework-model,
+.semantic-model-matrix,
+.semantic-model-formula,
+.semantic-model-pyramid,
+.semantic-model-funnel,
+.semantic-relation-path,
+.relation-path-node,
+.model-matrix-cell,
+.model-formula-expression,
+.semantic-decision-matrix,
+.semantic-compare-table,
+.semantic-callout,
+.hierarchy-navigator { border-radius: var(--radius-3); }
+
+.draft-board .semantic-grid > .semantic-mermaid,
+.draft-board .semantic-grid > .semantic-relation-map { border-radius: var(--radius-3); }
+
+.meta-chip,
+.flow-box,
+.insp-pill,
+.inline-relation,
+.level-pill,
+.view-graph-btn,
+.framework-model-element,
+.model-pyramid-level,
+.model-funnel-step,
+.semantic-note { border-radius: var(--radius-2); }
+
+.rel-type-tag,
+.bc-level-pill { border-radius: var(--radius-1); }
+
+/* Depth: only note-like surfaces keep an offset shadow, nothing floats */
+.code-block { box-shadow: none; }
+.semantic-note { box-shadow: var(--shadow-card); }
+.subnode-card:hover { box-shadow: var(--shadow-card); }
+.flow-box.current-focus,
+.jump-explorer-btn { box-shadow: none; }
+
+.inline-inspector {
+  border-style: solid;
+  border-color: var(--border-medium);
+  box-shadow: var(--shadow-card);
+}
+
+/* Widget chrome: the type tag becomes a quiet rule, not monospace data */
+.semantic-widget-head code {
+  padding: 1px 5px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-1);
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
