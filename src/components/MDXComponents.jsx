@@ -230,6 +230,101 @@ export function Timeline({ events = [], children }) {
 }
 Timeline.displayName = 'Timeline';
 
+export function FrameworkModel({ title = '结构化模型', type = 'elements', elements = [], question, children }) {
+  const labels = { elements: '要素', stages: '阶段', layers: '层级', cycle: '循环' };
+  return (
+    <section className={`semantic-framework-model model-${type}`}>
+      <div className="framework-model-head">
+        <span className="semantic-tag">▦ {title}</span>
+        <span className="framework-model-type">{labels[type] || type}</span>
+      </div>
+      {question && <div className="framework-model-question">{question}</div>}
+      {elements.length > 0 ? (
+        <div className="framework-model-elements">
+          {elements.map((element, index) => (
+            <div className="framework-model-element" key={index}>
+              <span className="framework-model-index">{String(index + 1).padStart(2, '0')}</span>
+              <strong>{element.title || element.label || element.name}</strong>
+              {element.description && <span>{element.description}</span>}
+            </div>
+          ))}
+        </div>
+      ) : children}
+    </section>
+  );
+}
+FrameworkModel.displayName = 'FrameworkModel';
+
+export function MatrixModel({ title = '二维矩阵', xLabel = '横轴', yLabel = '纵轴', cells = [], children }) {
+  return (
+    <section className="semantic-model-matrix">
+      <div className="framework-model-head"><span className="semantic-tag">▦ {title}</span></div>
+      {cells.length > 0 ? (
+        <div className="model-matrix-grid">
+          <div className="model-matrix-axis model-matrix-y">{yLabel}</div>
+          <div className="model-matrix-axis model-matrix-x">{xLabel}</div>
+          {cells.map((cell, index) => (
+            <div className={`model-matrix-cell tone-${cell.tone || 'info'}`} key={index}>
+              <strong>{cell.title || cell.label}</strong>
+              {cell.description && <span>{cell.description}</span>}
+            </div>
+          ))}
+        </div>
+      ) : children}
+    </section>
+  );
+}
+MatrixModel.displayName = 'MatrixModel';
+
+export function FormulaModel({ title = '公式模型', formula, variables = [], children }) {
+  return (
+    <section className="semantic-model-formula">
+      <div className="framework-model-head"><span className="semantic-tag">∑ {title}</span></div>
+      {formula && <div className="model-formula-expression"><code>{formula}</code></div>}
+      {variables.length > 0 ? <dl className="model-formula-variables">{variables.map((variable, index) => <React.Fragment key={index}><dt>{variable.symbol || variable.name}</dt><dd>{variable.description || variable.value}</dd></React.Fragment>)}</dl> : children}
+    </section>
+  );
+}
+FormulaModel.displayName = 'FormulaModel';
+
+export function PyramidModel({ title = '金字塔模型', levels = [], children }) {
+  return (
+    <section className="semantic-model-pyramid">
+      <div className="framework-model-head"><span className="semantic-tag">△ {title}</span></div>
+      {levels.length > 0 ? (
+        <div className="model-pyramid-levels">
+          {levels.map((level, index) => (
+            <div className="model-pyramid-level" key={index} style={{ '--pyramid-width': `${Math.max(38, 100 - index * 12)}%` }}>
+              <strong>{level.title || level.label}</strong>
+              {level.description && <span>{level.description}</span>}
+            </div>
+          ))}
+        </div>
+      ) : children}
+    </section>
+  );
+}
+PyramidModel.displayName = 'PyramidModel';
+
+export function FunnelModel({ title = '漏斗模型', steps = [], children }) {
+  return (
+    <section className="semantic-model-funnel">
+      <div className="framework-model-head"><span className="semantic-tag">▽ {title}</span></div>
+      {steps.length > 0 ? (
+        <div className="model-funnel-steps">
+          {steps.map((step, index) => (
+            <div className="model-funnel-step" key={index} style={{ '--funnel-width': `${Math.max(40, 100 - index * 12)}%` }}>
+              <strong>{step.title || step.label}</strong>
+              {step.description && <span>{step.description}</span>}
+            </div>
+          ))}
+        </div>
+      ) : children}
+    </section>
+  );
+}
+FunnelModel.displayName = 'FunnelModel';
+
 export function Callout({ type = 'info', title, children }) {
   return (
     <div className={`semantic-callout callout-${type}`}>

@@ -33,7 +33,8 @@ concept-atlas/
 │   └── styles/
 │       └── concept-explain.css  # 统一样式系统
 ├── content/
-│   └── compile-runtime.mdx      # 真实知识示例：程序编译与运行
+│   ├── components-demo.mdx      # 完整组件展厅
+│   └── compile-runtime.mdx      # 内容示例：程序编译与运行
 ├── scripts/
 │   ├── build.mjs                # 构建单文件 HTML 或静态产物脚本
 │   └── clean-temp.mjs           # 临时解释任务清理脚本

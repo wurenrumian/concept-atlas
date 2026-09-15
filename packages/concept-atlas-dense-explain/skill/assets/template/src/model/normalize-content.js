@@ -117,6 +117,11 @@ const SEMANTIC_COMPONENTS = new Set([
   'Invariant',
   'FailureMode',
   'Tradeoff',
+  'FrameworkModel',
+  'MatrixModel',
+  'FormulaModel',
+  'PyramidModel',
+  'FunnelModel',
 ]);
 
 function isSemanticComponent(name) {

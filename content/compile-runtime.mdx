@@ -9,6 +9,14 @@
       <Output>可执行映像、进程地址空间、系统调用轨迹、标准输出与退出码。</Output>
       <Callout type="info" title="阅读地图">沿着“意图 → 表示 → 身份 → 地址 → 时间 → 副作用”下钻；每个节点都给出可观测证据，方便把概念变成排障动作。</Callout>
       <Tabs items={[{label:'工程视角',content:'可重复构建、发布产物、启动延迟与回滚。'},{label:'机器视角',content:'指令、页表、缓存一致性与异常入口。'},{label:'运维视角',content:'日志、指标、追踪、信号与资源上限。'}]} />
+      <Mermaid title="从意图到副作用" width="100%" height="240px" chart={`flowchart LR
+  A[意图] --> B[源代码]
+  B --> C[工具链]
+  C --> D[可装载映像]
+  D --> E[进程地址空间]
+  E --> F[系统调用与副作用]
+  style A fill:#172554,stroke:#38bdf8,color:#e0f2fe
+  style F fill:#14532d,stroke:#34d399,color:#ecfdf5`} />
       <Children><ConceptRef id="intent" /><ConceptRef id="toolchain" /><ConceptRef id="identity" /><ConceptRef id="address-space" /><ConceptRef id="effects" /></Children>
     </ConceptNode>
 

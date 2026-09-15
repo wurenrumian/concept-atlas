@@ -21,18 +21,20 @@ npm run build
 
 ## 2. 内容入口
 
-默认内容位于：
+默认展示内容位于：
 
 ```text
-content/compile-runtime.mdx
+content/components-demo.mdx
 ```
 
-`src/main.jsx` 当前会加载这篇 MDX：
+这是一篇专门的组件展厅，集中展示完整组件族。原有的编译与运行示例仍保留在 `content/compile-runtime.mdx`，可作为内容型页面参考。
+
+`src/main.jsx` 当前会加载组件展厅：
 
 ```jsx
-import CompileRuntimeDoc from '../content/compile-runtime.mdx';
+import ComponentsDemoDoc from '../content/components-demo.mdx';
 
-<App mdxContent={<CompileRuntimeDoc components={Components} />} />
+<App mdxContent={<ComponentsDemoDoc components={Components} />} />
 ```
 
 如果要接入另一篇文档，替换这里的 MDX 导入即可。MDX 中使用的组件需要从 `src/components/index.js` 导出。
@@ -218,6 +220,30 @@ exception-of  异常或反例
 ```
 
 项目还提供 `Compare`、`DecisionMatrix`、`Flow`、`Timeline`、`Callout`、`Details` 和 `Columns`，可以按内容需要组合使用。
+
+### 经典结构模型
+
+对于结构化思考内容，优先用模型组件表达“关键元素”和“组织方式”，避免把相似内容重复写成多个普通卡片：
+
+```mdx
+<MatrixModel title="重要/紧急矩阵" xLabel="紧急程度" yLabel="重要程度" cells={[
+  { title: '优先处理', description: '重要且紧急', tone: 'danger' },
+  { title: '计划安排', description: '重要但不紧急', tone: 'success' },
+  { title: '授权处理', description: '不重要但紧急', tone: 'warn' },
+  { title: '减少投入', description: '不重要且不紧急' },
+]} />
+<FormulaModel title="业绩公式" formula="业绩 = 人数 × 人均产出" variables={[
+  { symbol: '人数', description: '有效销售人员数量' },
+  { symbol: '人均产出', description: '单人平均成交贡献' },
+]} />
+<PyramidModel title="从基础到结论" levels={[
+  { title: '事实', description: '可观察证据' },
+  { title: '归纳', description: '共同模式' },
+  { title: '结论', description: '可执行判断' },
+]} />
+```
+
+`FrameworkModel` 适合一分为几、多因素并列、阶段、层级和循环；`FunnelModel` 适合 AIDA、销售转化和筛选收敛。`Flow`、`DecisionMatrix` 等旧组件仍然兼容。
 
 ## 6. 组件尺寸与自由排布
 

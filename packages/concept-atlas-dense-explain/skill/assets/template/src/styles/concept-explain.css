@@ -2423,3 +2423,31 @@ button.flow-box {
 .semantic-decision-matrix tr:last-child td, .semantic-compare-table tr:last-child td {
   border-bottom: none;
 }
+
+.semantic-framework-model, .semantic-model-matrix, .semantic-model-formula, .semantic-model-pyramid, .semantic-model-funnel { margin-top: 14px; padding: 14px; border: 1px solid var(--border-medium); border-radius: 10px; background: var(--bg-canvas); }
+.framework-model-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.framework-model-type { color: var(--text-muted); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+.framework-model-question { margin-bottom: 10px; color: var(--text-secondary); font-size: 12px; }
+.framework-model-elements { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+.framework-model-element { display: grid; grid-template-columns: auto 1fr; gap: 3px 8px; padding: 10px; border: 1px solid var(--border-subtle); border-radius: 8px; background: var(--bg-surface); }
+.framework-model-element strong { color: var(--text-primary); font-size: 13px; }
+.framework-model-element span:last-child { grid-column: 2; color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
+.framework-model-index { color: var(--accent-cyan); font: 700 11px/1.4 ui-monospace, monospace; }
+.model-matrix-grid { display: grid; grid-template-columns: 30px repeat(2, minmax(110px, 1fr)); grid-template-rows: 24px repeat(2, minmax(70px, 1fr)); gap: 5px; }
+.model-matrix-axis { color: var(--text-muted); font-size: 11px; text-align: center; }
+.model-matrix-x { grid-column: 2 / 4; }
+.model-matrix-y { grid-row: 2 / 4; writing-mode: vertical-rl; transform: rotate(180deg); align-self: center; }
+.model-matrix-cell { display: flex; flex-direction: column; gap: 4px; padding: 9px; border: 1px solid var(--border-subtle); border-radius: 7px; background: var(--bg-surface); }
+.model-matrix-cell strong { color: var(--text-primary); font-size: 12px; }
+.model-matrix-cell span { color: var(--text-secondary); font-size: 11px; line-height: 1.4; }
+.tone-success { border-color: rgba(52, 211, 153, .45); }
+.tone-warn { border-color: rgba(251, 191, 36, .45); }
+.tone-danger { border-color: rgba(248, 113, 113, .45); }
+.model-formula-expression { padding: 12px; border-radius: 8px; background: var(--bg-surface); color: var(--accent-cyan); text-align: center; font-size: 16px; }
+.model-formula-variables { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; margin: 10px 0 0; font-size: 12px; }
+.model-formula-variables dt { color: var(--accent-cyan); font-family: ui-monospace, monospace; }
+.model-formula-variables dd { margin: 0; color: var(--text-secondary); }
+.model-pyramid-levels, .model-funnel-steps { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.model-pyramid-level, .model-funnel-step { display: flex; flex-direction: column; gap: 3px; width: var(--pyramid-width, var(--funnel-width)); padding: 9px 12px; border: 1px solid var(--border-subtle); border-radius: 7px; background: var(--bg-surface); text-align: center; }
+.model-pyramid-level strong, .model-funnel-step strong { color: var(--text-primary); font-size: 12px; }
+.model-pyramid-level span, .model-funnel-step span { color: var(--text-secondary); font-size: 11px; line-height: 1.4; }
