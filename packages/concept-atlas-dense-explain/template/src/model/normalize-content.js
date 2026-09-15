@@ -122,6 +122,12 @@ const SEMANTIC_COMPONENTS = new Set([
   'FormulaModel',
   'PyramidModel',
   'FunnelModel',
+  'ScrollDocument',
+  'ScrollHeader',
+  'ScrollSection',
+  'ScrollProse',
+  'ScrollPair',
+  'ScrollGrid',
 ]);
 
 function isSemanticComponent(name) {

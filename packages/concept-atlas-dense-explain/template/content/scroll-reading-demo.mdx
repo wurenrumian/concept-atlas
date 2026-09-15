@@ -1,0 +1,31 @@
+<ScrollDocument>
+  <ScrollHeader title="用概念模型组织一次技术判断">同一套语义组件可以脱离图谱和节点面板，按传统文档流连续阅读。正文保持高信息密度，模型在需要比较、推导或收敛时占满可用宽度。</ScrollHeader>
+
+  <ScrollSection title="先识别推理结构">
+    <ScrollProse>模型不是内容的装饰。它们分别处理并列要素、二维定位、变量关系、论证层级和筛选过程。先确认关系形状，读者才能用最短路径验证结论。</ScrollProse>
+    <ScrollGrid columns="3">
+      <FrameworkModel title="对象" type="elements" elements={[{title:'系统',description:'明确正在判断什么'},{title:'边界',description:'确定讨论范围'}]} />
+      <FrameworkModel title="约束" type="elements" elements={[{title:'时间',description:'决策窗口与反馈周期'},{title:'资源',description:'人力、预算和技术限制'}]} />
+      <FrameworkModel title="证据" type="elements" elements={[{title:'行为',description:'真实使用与任务结果'},{title:'数据',description:'可重复检查的观察'}]} />
+    </ScrollGrid>
+  </ScrollSection>
+
+  <ScrollSection title="在二维关系中定位选择">
+    <ScrollProse>当候选方案同时受两个变量约束时，矩阵比线性列表更容易暴露优先级。</ScrollProse>
+    <ScrollGrid columns="2">
+      <MatrixModel title="影响 / 成本矩阵" xLabel="实施成本" yLabel="预期影响" cells={[{title:'优先投入',description:'高影响 / 低成本',tone:'success'},{title:'审慎评估',description:'高影响 / 高成本',tone:'warn'},{title:'快速验证',description:'低影响 / 低成本'},{title:'暂缓处理',description:'低影响 / 高成本',tone:'danger'}]} />
+      <Stack gap="md"><Insight title="先做什么">优先验证高影响、低成本的选择，再为高成本方案准备证据。</Insight><Callout title="阅读判断">矩阵只帮助定位，不替代成本估算或影响验证。</Callout><NoteGrid notes={[{title:'输入',content:'候选方案与约束'},{title:'输出',content:'下一轮验证顺序'}]} /></Stack>
+    </ScrollGrid>
+  </ScrollSection>
+
+  <ScrollSection title="把假设压缩为可讨论的关系" wide>
+    <ScrollGrid columns="3"><FormulaModel title="用户价值" formula="用户价值 = 新体验 - 旧体验 - 替换成本" variables={[{symbol:'新体验',description:'方案带来的增量收益'},{symbol:'旧体验',description:'现有替代方案的价值'},{symbol:'替换成本',description:'学习、迁移和风险'}]} /><DecisionMatrix title="需要确认" headers={['变量','检查']} rows={[['新体验','是否改善核心任务'],['旧体验','能否满足需求'],['替换成本','迁移是否可接受']]} /><FailureMode symptom="价值无法被感知" cause="只描述新功能，不解释替换路径" evidence="试用后仍回到旧方案" remedy="缩短迁移步骤并验证关键任务" /></ScrollGrid>
+  </ScrollSection>
+
+  <ScrollSection title="组织证据，再收敛到行动"><ScrollGrid columns="3"><PyramidModel title="论证层级" levels={[{title:'结论',description:'读者需要带走的判断'},{title:'理由',description:'支撑判断的关键分组'},{title:'证据',description:'事实、数据与案例'}]} /><FunnelModel title="决策过程" steps={[{title:'收集',description:'汇集候选信息'},{title:'筛选',description:'排除不满足约束的项'},{title:'验证',description:'检查关键假设'},{title:'行动',description:'形成下一步决策'}]} /><Tradeoff title="输出质量" options={[{name:'压缩结论',benefit:'阅读快',cost:'上下文少',when:'总览'},{name:'保留证据',benefit:'可追溯',cost:'阅读长',when:'关键决策'}]} /></ScrollGrid></ScrollSection>
+
+  <ScrollSection title="保留可追溯性">
+    <Evidence command="npm run validate" observes="确认内容结构完整，再把关键结论连接回原始证据。" />
+    <Insight title="核心原则">选择组件是为了让关系更容易被检验，不是为了把阅读页面做成一组不同样式的卡片。</Insight>
+  </ScrollSection>
+</ScrollDocument>

@@ -8,7 +8,7 @@
       <LearningObjectives items={['认识全部组件家族', '理解组件之间的职责边界', '选择合适组件编写自己的 MDX']} />
       <KeyQuestion>我需要表达的是一个事实、一种关系，还是一种组织信息的结构？</KeyQuestion>
       <Callout type="success" title="展厅导航">先看“知识结构”，再看“内容语义”和“经典模型”；最后打开“可视化与布局”，就能覆盖完整能力。</Callout>
-      <Children><ConceptRef id="structure-family" /><ConceptRef id="content-family" /><ConceptRef id="verification-family" /><ConceptRef id="model-family" /><ConceptRef id="presentation-family" /><ConceptRef id="visual-family" /></Children>
+      <Children><ConceptRef id="structure-family" /><ConceptRef id="content-family" /><ConceptRef id="verification-family" /><ConceptRef id="concept-models" /><ConceptRef id="presentation-family" /><ConceptRef id="visual-family" /></Children>
     </ConceptNode>
 
     <ConceptNode id="structure-family" title="知识结构组件：搭出可下钻的概念树" level="L1" parent="showroom" summary="页面、图谱、节点、子节点和跨节点关系共同构成导航骨架。">
@@ -56,24 +56,28 @@
       <LearningObjectives items={['识别证据', '发现边界', '做出取舍']} />
     </ConceptNode>
 
-    <ConceptNode id="model-family" title="经典模型组件：用结构表达关键元素" level="L1" parent="showroom" summary="五种专用组件覆盖并列、矩阵、公式、分层和漏斗，减少重复卡片表达。">
-      <Definition>模型组件把结构化思考中的关键元素和组织关系直接变成可读的视觉结构。</Definition>
-      <FrameworkModel title="模型选择器" type="elements" elements={[{title:'FrameworkModel',description:'并列、阶段、循环'},{title:'MatrixModel',description:'两个维度定位'},{title:'FormulaModel',description:'变量关系'},{title:'PyramidModel',description:'分层归纳'},{title:'FunnelModel',description:'逐步筛选'}]} />
+    <ConceptNode id="concept-models" title="概念模型组件：把推理结构变成可读的形状" level="L1" parent="showroom" summary="五个模型组件分别表达并列、二维定位、变量关系、论证层级与收敛过程。">
+      <Definition>概念模型不是装饰图形。选择模型时先判断信息的组织关系，再选择能够让这层关系一眼可见的组件。</Definition>
+      <FrameworkModel title="FrameworkModel：并列要素" type="elements" elements={[{title:'问题',description:'明确要解释的对象'},{title:'机制',description:'说明变化如何发生'},{title:'证据',description:'给出可验证依据'}]} />
+      <MatrixModel title="MatrixModel：影响 / 成本" xLabel="实施成本" yLabel="预期影响" cells={[{title:'优先投入',description:'高影响 / 低成本',tone:'success'},{title:'审慎评估',description:'高影响 / 高成本',tone:'warn'},{title:'快速验证',description:'低影响 / 低成本'},{title:'暂缓处理',description:'低影响 / 高成本',tone:'danger'}]} />
+      <FormulaModel title="FormulaModel：用户价值" formula="用户价值 = 新体验 - 旧体验 - 替换成本" variables={[{symbol:'新体验',description:'方案带来的增量收益'},{symbol:'旧体验',description:'现有替代方案的价值'},{symbol:'替换成本',description:'学习、迁移与风险'}]} />
+      <PyramidModel title="PyramidModel：论证层级" levels={[{title:'结论',description:'需要读者带走的判断'},{title:'理由',description:'支撑判断的关键分组'},{title:'证据',description:'事实、数据与案例'}]} />
+      <FunnelModel title="FunnelModel：从输入到行动" steps={[{title:'收集',description:'汇集候选信息'},{title:'筛选',description:'排除不满足约束的项'},{title:'验证',description:'检查关键假设'},{title:'行动',description:'形成下一步决策'}]} />
       <Children><ConceptRef id="framework-demo" /><ConceptRef id="matrix-demo" /><ConceptRef id="formula-demo" /><ConceptRef id="pyramid-funnel-demo" /></Children>
     </ConceptNode>
-    <ConceptNode id="framework-demo" title="FrameworkModel：承载并列、阶段、层级与循环" level="L2" parent="model-family" summary="一个组件通过 type 区分要素、阶段、层级和循环。">
+    <ConceptNode id="framework-demo" title="FrameworkModel：承载并列、阶段、层级与循环" level="L2" parent="concept-models" summary="一个组件通过 type 区分要素、阶段、层级和循环。">
       <FrameworkModel title="PDCA 循环" type="cycle" elements={[{title:'Plan',description:'计划'},{title:'Do',description:'执行'},{title:'Check',description:'检查'},{title:'Act',description:'改进'}]} />
       <Details summary="何时使用">当结构重点是元素数量和组织方式，而不是具体节点之间的关系时使用。</Details>
     </ConceptNode>
-    <ConceptNode id="matrix-demo" title="MatrixModel：二维象限让优先级一眼可见" level="L2" parent="model-family" summary="用 xLabel、yLabel 和 cells 描述两个维度及其组合。">
+    <ConceptNode id="matrix-demo" title="MatrixModel：二维象限让优先级一眼可见" level="L2" parent="concept-models" summary="用 xLabel、yLabel 和 cells 描述两个维度及其组合。">
       <MatrixModel title="影响 / 成本矩阵" xLabel="实施成本" yLabel="预期影响" cells={[{title:'优先投资',description:'高影响 / 低成本',tone:'success'},{title:'谨慎评估',description:'高影响 / 高成本',tone:'warn'},{title:'快速试验',description:'低影响 / 低成本'},{title:'暂缓',description:'低影响 / 高成本',tone:'danger'}]} />
       <DecisionMatrix title="参数契约" headers={['参数','用途','形态']} rows={[['title','模型标题','string'],['cells','象限内容','array'],['tone','视觉提示','info / warn / danger']]} />
     </ConceptNode>
-    <ConceptNode id="formula-demo" title="FormulaModel：把多变量关系压缩成一个判断" level="L2" parent="model-family" summary="公式适合表达变量之间明确的加减乘除关系。">
+    <ConceptNode id="formula-demo" title="FormulaModel：把多变量关系压缩成一个判断" level="L2" parent="concept-models" summary="公式适合表达变量之间明确的加减乘除关系。">
       <FormulaModel title="用户价值" formula="用户价值 = 新体验 − 旧体验 − 替换成本" variables={[{symbol:'新体验',description:'新方案带来的增量收益'},{symbol:'旧体验',description:'用户现有替代方案'},{symbol:'替换成本',description:'迁移与学习付出'}]} />
       <NoteGrid notes={[{title:'优点',content:'关系直接'}, {title:'边界',content:'不替代真实测量'}]} />
     </ConceptNode>
-    <ConceptNode id="pyramid-funnel-demo" title="PyramidModel 与 FunnelModel：分层和收敛是两种不同逻辑" level="L2" parent="model-family" summary="金字塔从基础归纳到结论，漏斗从大量输入逐步筛选到行动。">
+    <ConceptNode id="pyramid-funnel-demo" title="PyramidModel 与 FunnelModel：分层和收敛是两种不同逻辑" level="L2" parent="concept-models" summary="金字塔从基础归纳到结论，漏斗从大量输入逐步筛选到行动。">
       <PyramidModel title="金字塔论证" levels={[{title:'结论',description:'核心判断'},{title:'理由',description:'关键分组'},{title:'证据',description:'事实与案例'}]} />
       <FunnelModel title="AIDA 漏斗" steps={[{title:'Attention',description:'注意'},{title:'Interest',description:'兴趣'},{title:'Desire',description:'欲望'},{title:'Action',description:'行动'}]} />
     </ConceptNode>
@@ -110,7 +114,7 @@
 
     <Relation from="structure-family" to="content-family" type="precedes" label="先搭骨架" />
     <Relation from="content-family" to="verification-family" type="uses" label="补充证据" />
-    <Relation from="model-family" to="presentation-family" type="implements" label="结构落地" />
+    <Relation from="concept-models" to="presentation-family" type="implements" label="结构落地" />
     <Relation from="verification-family" to="visual-family" type="produces" label="形成可见结论" />
     <Relation from="visual-family" to="structure-family" type="depends-on" label="依赖图谱数据" />
     <Relation from="matrix-demo" to="formula-demo" type="contrasts" label="维度 vs 公式" />

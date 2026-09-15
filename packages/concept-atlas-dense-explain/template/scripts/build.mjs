@@ -17,17 +17,23 @@ async function runBuild() {
       fs.mkdirSync(distDir, { recursive: true });
     }
 
-    // 执行 Vite 构建
-    await build({
-      root: rootDir,
-      build: {
-        outDir: 'dist',
-        // Always remove stale assets so dist is a self-contained release.
-        emptyOutDir: true,
-      }
-    });
+    const mode = process.env.CONCEPT_ATLAS_MODE;
+    const carriers = mode === 'atlas' ? ['index.html'] : mode === 'scroll' ? ['scroll.html'] : ['index.html', 'scroll.html'];
 
-    console.log('✅ 构建成功！产物已生成到 dist/ 目录。');
+    // vite-plugin-singlefile supports one HTML input per build. Build each
+    // requested carrier separately so every output remains a standalone file.
+    for (const [index, entry] of carriers.entries()) {
+      await build({
+        root: rootDir,
+        build: {
+          outDir: 'dist',
+          emptyOutDir: index === 0,
+          rollupOptions: { input: path.resolve(rootDir, entry) },
+        }
+      });
+    }
+
+    console.log(`✅ 构建成功！产物已生成到 ${carriers.map(entry => `dist/${entry}`).join(' 和 ')}。`);
   } catch (err) {
     console.error('❌ 构建失败：', err);
     process.exit(1);

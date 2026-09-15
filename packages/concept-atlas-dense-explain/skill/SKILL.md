@@ -9,11 +9,13 @@ Use the `concept-atlas-dense-explain` npm CLI. This skill is intentionally light
 
 ## Workflow
 
-1. Ask whether the user wants A (scrollable component page) or B (interactive Concept Atlas) unless already specified. Recommend B when they have no preference.
+1. Choose the carrier before writing any MDX. A (continuous reading) uses a document-flow MDX structure; B (interactive Concept Atlas) uses a concept-graph MDX structure. Recommend B when the reader needs concept navigation or a relation graph; recommend A for a conventional HTML reading flow with denser horizontal component grids.
 2. Initialize a project with `npx concept-atlas-dense-explain init <target>`. Use `--force` only when replacing existing template files is explicitly acceptable.
-3. Write semantic MDX to `<target>/content/compile-runtime.mdx`. For B, include one `L0`, multiple `L1` branches, useful depth, `Children`/`ConceptRef`, and labeled `Relation`s.
-4. Build with `npx concept-atlas-dense-explain build <target>`. The CLI installs template dependencies when needed, validates content, and writes `<target>/dist/index.html`.
-5. Report the selected mode, output path, and limitations. Do not claim interactions that were not verified.
+3. For B, write semantic MDX to `<target>/content/compile-runtime.mdx`. Include one `L0`, multiple `L1` branches, useful depth, `Children`/`ConceptRef`, and labeled `Relation`s. This content renders through the interactive atlas entry.
+4. For A, write semantic MDX to `<target>/content/scroll-reading-demo.mdx` with `ScrollDocument`, `ScrollHeader`, `ScrollSection`, `ScrollProse`, and `ScrollGrid`. Do not wrap it in `ExplainPage`, `ConceptGraph`, or `ConceptNode`. This content renders through the continuous-reader entry.
+5. Do not try to make one MDX file serve both carriers. The template ships both sample entries for reference, but they represent distinct authoring formats.
+6. Build with `npx concept-atlas-dense-explain build <target> --mode atlas` or `--mode scroll` to create only the selected carrier. Without `--mode`, the CLI builds both template examples. The outputs are `<target>/dist/index.html` (interactive atlas) and `<target>/dist/scroll.html` (standalone continuous reader).
+7. Report the selected mode, output path, and limitations. Do not claim interactions that were not verified.
 
 ## Content rules
 

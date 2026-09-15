@@ -13,7 +13,7 @@ const target = targetArg ? path.resolve(targetArg) : null;
 function usage() {
   console.log('Usage:');
   console.log('  npx concept-atlas-dense-explain init <target> [--force]');
-  console.log('  npx concept-atlas-dense-explain build <target>');
+  console.log('  npx concept-atlas-dense-explain build <target> [--mode atlas|scroll]');
 }
 
 async function exists(filePath) {
@@ -47,12 +47,20 @@ if (!(await exists(path.join(target, 'package.json')))) {
   process.exit(1);
 }
 
+const modeFlag = flags.indexOf('--mode');
+const mode = modeFlag >= 0 ? flags[modeFlag + 1] : null;
+if (modeFlag >= 0 && !['atlas', 'scroll'].includes(mode)) {
+  console.error('The --mode value must be atlas or scroll.');
+  process.exit(1);
+}
+
 const npmCommand = 'npm';
 for (const args of [['install'], ['run', 'build']]) {
   const result = spawnSync(npmCommand, args, {
     cwd: target,
     stdio: 'inherit',
     shell: process.platform === 'win32',
+    env: { ...process.env, ...(mode ? { CONCEPT_ATLAS_MODE: mode } : {}) },
   });
   if (result.error) {
     console.error(`Failed to run npm: ${result.error.message}`);

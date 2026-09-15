@@ -326,11 +326,12 @@ export function FunnelModel({ title = '漏斗模型', steps = [], children }) {
 FunnelModel.displayName = 'FunnelModel';
 
 export function Callout({ type = 'info', title, children }) {
+  const tone = ['info', 'success', 'warn', 'danger'].includes(type) ? type : 'info';
   return (
-    <div className={`semantic-callout callout-${type}`}>
+    <aside className={`semantic-callout callout-${tone}${title ? ' has-callout-title' : ''}`} data-tone={tone}>
       {title && <div className="callout-title">{title}</div>}
       <div className="callout-content">{children}</div>
-    </div>
+    </aside>
   );
 }
 Callout.displayName = 'Callout';
@@ -424,6 +425,42 @@ export function Columns({ children }) {
   return <div className="semantic-columns">{children}</div>;
 }
 Columns.displayName = 'Columns';
+
+export function ScrollDocument({ children }) {
+  return <article className="continuous-document">{children}</article>;
+}
+ScrollDocument.displayName = 'ScrollDocument';
+
+export function ScrollHeader({ label = '连续阅读', title, children }) {
+  return <header className="continuous-header"><p>{label}</p>{title && <h1>{title}</h1>}<div>{children}</div></header>;
+}
+ScrollHeader.displayName = 'ScrollHeader';
+
+export function ScrollSection({ title, wide = false, children }) {
+  return (
+    <section className={`continuous-section${wide ? ' continuous-section-wide' : ''}`}>
+      {title && <h2>{title}</h2>}
+      {children}
+    </section>
+  );
+}
+ScrollSection.displayName = 'ScrollSection';
+
+export function ScrollProse({ children }) {
+  return <div className="continuous-prose">{children}</div>;
+}
+ScrollProse.displayName = 'ScrollProse';
+
+export function ScrollPair({ children }) {
+  return <section className="continuous-model-pair">{children}</section>;
+}
+ScrollPair.displayName = 'ScrollPair';
+
+export function ScrollGrid({ columns = 3, children }) {
+  const count = [2, 3, 4].includes(Number(columns)) ? Number(columns) : 3;
+  return <div className={`continuous-grid continuous-grid-${count}`}>{children}</div>;
+}
+ScrollGrid.displayName = 'ScrollGrid';
 
 /** Optional layout primitives. They express intent while the template owns the CSS. */
 export function Stack({ gap = 'md', children }) {
@@ -532,9 +569,10 @@ export function RelationPath({ title = '关系链', steps = [], children }) {
 RelationPath.displayName = 'RelationPath';
 
 export function Insight({ title = '关键判断', tone = 'info', children, width = 'auto', height = 'auto', x = 0, y = 0, position = 'flow' }) {
+  const safeTone = ['info', 'success', 'warn', 'danger'].includes(tone) ? tone : 'info';
   return (
-    <aside className={`semantic-insight insight-${tone} ${widgetClass(position)}`} style={widgetStyle({ width, height, x, y, position })}>
-      <div className="insight-kicker">{tone === 'warn' ? '⚠' : tone === 'success' ? '✓' : '◆'} {title}</div>
+    <aside className={`semantic-insight insight-${safeTone} ${widgetClass(position)}`} data-tone={safeTone} style={widgetStyle({ width, height, x, y, position })}>
+      <div className="insight-kicker">{title}</div>
       <div className="insight-body">{children}</div>
     </aside>
   );
