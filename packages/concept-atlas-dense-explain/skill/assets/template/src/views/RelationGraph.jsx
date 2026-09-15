@@ -165,13 +165,27 @@ export function RelationGraph({
       .filter((event) => event.type !== 'wheel' || event.ctrlKey || event.metaKey)
       .wheelDelta((event) => {
         const delta = event.deltaMode === 1 ? event.deltaY * 16 : event.deltaY;
-        return -delta * 0.0015;
+        return -delta * 0.003;
       })
       .on('zoom', (event) => {
         g.attr('transform', event.transform);
       });
 
     svg.call(zoomBehavior);
+
+    // Plain wheel scrolls the canvas vertically; Ctrl/Cmd + wheel zooms.
+    const handleWheelPan = (event) => {
+      if (event.ctrlKey || event.metaKey) return;
+      event.preventDefault();
+      const current = d3.zoomTransform(svgRef.current);
+      const stepX = event.shiftKey ? event.deltaY : event.deltaX;
+      const stepY = event.shiftKey ? 0 : event.deltaY;
+      const nextTransform = d3.zoomIdentity
+        .translate(current.x - stepX, current.y - stepY)
+        .scale(current.k);
+      svg.call(zoomBehavior.transform, nextTransform);
+    };
+    svg.on('wheel.pan', handleWheelPan);
 
     const isConceptMode = graphMode === 'concept';
     const visibleGraphLinks = isConceptMode
@@ -334,6 +348,7 @@ export function RelationGraph({
 
     return () => {
       simulation?.stop();
+      svg.on('wheel.pan', null);
       svg.on('.zoom', null);
     };
   }, [graphNodes, graphLinks, selectedNodeId, theme, graphMode]);

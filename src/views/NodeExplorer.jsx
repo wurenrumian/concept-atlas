@@ -17,23 +17,65 @@ export function NodeExplorer({
   const [isDragging, setIsDragging] = React.useState(false);
   const dragRef = React.useRef(null);
   const suppressClickRef = React.useRef(false);
+  const viewportRef = React.useRef(null);
+  const boardRef = React.useRef(null);
+  const canvasScaleRef = React.useRef(canvasScale);
+  const canvasPanRef = React.useRef(canvasPan);
+  canvasScaleRef.current = canvasScale;
+  canvasPanRef.current = canvasPan;
 
   const updateScale = (nextScale) => {
     const scale = Math.max(0.65, Math.min(1.6, +nextScale.toFixed(2)));
     setCanvasScale(scale);
   };
 
-  const updateScaleAtPoint = (event) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const factor = Math.exp(-event.deltaY * 0.002);
-    const nextScale = Math.max(0.65, Math.min(1.6, +(canvasScale * factor).toFixed(3)));
-    const focusX = event.clientX - rect.left;
-    const focusY = event.clientY - rect.top;
-    const contentX = (focusX - canvasPan.x) / canvasScale;
-    const contentY = (focusY - canvasPan.y) / canvasScale;
-    setCanvasScale(nextScale);
-    setCanvasPan({ x: focusX - contentX * nextScale, y: focusY - contentY * nextScale });
+  // Keep the board from being scrolled entirely out of view.
+  const clampCanvasPan = (x, y, scale = canvasScale) => {
+    const viewport = viewportRef.current;
+    const board = boardRef.current;
+    if (!viewport || !board) return { x, y };
+    const margin = 64;
+    const clampAxis = (value, content, view) =>
+      Math.max(Math.min(view - content, 0) - margin, Math.min(margin, value));
+    return {
+      x: clampAxis(x, board.offsetWidth * scale, viewport.clientWidth),
+      y: clampAxis(y, board.offsetHeight * scale, viewport.clientHeight),
+    };
   };
+
+  // Wheel scrolls the canvas vertically; Ctrl/Cmd + wheel zooms around the
+  // pointer. React's onWheel is passive, so bind a native listener instead.
+  React.useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return undefined;
+
+    const handleWheel = (event) => {
+      if (event.ctrlKey || event.metaKey) {
+        event.preventDefault();
+        const scale = canvasScaleRef.current;
+        const pan = canvasPanRef.current;
+        const rect = viewport.getBoundingClientRect();
+        const factor = Math.exp(-event.deltaY * 0.002);
+        const nextScale = Math.max(0.65, Math.min(1.6, +(scale * factor).toFixed(3)));
+        const focusX = event.clientX - rect.left;
+        const focusY = event.clientY - rect.top;
+        const contentX = (focusX - pan.x) / scale;
+        const contentY = (focusY - pan.y) / scale;
+        setCanvasScale(nextScale);
+        setCanvasPan(clampCanvasPan(focusX - contentX * nextScale, focusY - contentY * nextScale, nextScale));
+        return;
+      }
+
+      event.preventDefault();
+      const stepX = event.shiftKey ? event.deltaY : event.deltaX;
+      const stepY = event.shiftKey ? 0 : event.deltaY;
+      const pan = canvasPanRef.current;
+      setCanvasPan(clampCanvasPan(pan.x - stepX, pan.y - stepY, canvasScaleRef.current));
+    };
+
+    viewport.addEventListener('wheel', handleWheel, { passive: false });
+    return () => viewport.removeEventListener('wheel', handleWheel);
+  }, []);
 
   const handleCanvasPointerDown = (event) => {
     if (event.target.closest('button, a, input, select, textarea')) return;
@@ -55,10 +97,11 @@ export function NodeExplorer({
     const distance = Math.hypot(event.clientX - dragRef.current.startX, event.clientY - dragRef.current.startY);
     if (distance < 6) return;
     dragRef.current.moved = true;
-    setCanvasPan({
-      x: dragRef.current.panX + event.clientX - dragRef.current.startX,
-      y: dragRef.current.panY + event.clientY - dragRef.current.startY,
-    });
+    setCanvasPan(clampCanvasPan(
+      dragRef.current.panX + event.clientX - dragRef.current.startX,
+      dragRef.current.panY + event.clientY - dragRef.current.startY,
+      canvasScale
+    ));
   };
 
   const handleCanvasPointerUp = (event) => {
@@ -174,6 +217,7 @@ export function NodeExplorer({
           </div>
 
           <div
+            ref={viewportRef}
             className={`draft-viewport ${isDragging ? 'is-dragging' : ''}`}
             onPointerDown={handleCanvasPointerDown}
             onPointerMove={handleCanvasPointerMove}
@@ -184,12 +228,6 @@ export function NodeExplorer({
               event.preventDefault();
               event.stopPropagation();
               suppressClickRef.current = false;
-            }}
-            onWheel={(event) => {
-              // Two-finger trackpad scrolling remains document scrolling. Hold Ctrl/Cmd to zoom.
-              if (!event.ctrlKey && !event.metaKey) return;
-              event.preventDefault();
-              updateScaleAtPoint(event);
             }}
           >
             <div className="draft-floating-tools">
@@ -215,6 +253,7 @@ export function NodeExplorer({
               </div>
             </div>
             <div
+              ref={boardRef}
               className="draft-board"
               style={{
                 transform: `translate(${canvasPan.x}px, ${canvasPan.y}px) scale(${canvasScale})`,
