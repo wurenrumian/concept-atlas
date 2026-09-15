@@ -20,7 +20,17 @@ Supported semantic content includes `Overview`, `Definition`, `Mechanism`, `Impl
 
 High-value verification components: `LearningObjectives`, `KeyQuestion`, `Evidence(command, observes)`, `Invariant(title)`, `FailureMode(symptom, cause, evidence, remedy)`, and `Tradeoff(options)`.
 
-Presentation components: `Stack`, `Grid`, `Split`, `Tabs`, `Flow`, `Compare`, `DecisionMatrix`, `Timeline`, `Callout`, `Details`, `RelationMap`, `RelationPath`, `Insight`, and `NoteGrid`.
+Presentation components: `Stack`, `Grid`, `Split`, `Tabs`, `Flow`, `Compare`, `DecisionMatrix`, `Timeline`, `FrameworkModel`, `MatrixModel`, `FormulaModel`, `PyramidModel`, `FunnelModel`, `Callout`, `Details`, `RelationMap`, `RelationPath`, `Insight`, and `NoteGrid`.
+
+经典结构模型建议按问题选择，避免重复堆叠：
+
+- `FrameworkModel`：一分为几、多因素并列、阶段、分层或循环；用 `type="elements|stages|layers|cycle"` 区分结构。
+- `MatrixModel`：两个关键元素组成的二维象限，例如重要/紧急、增长率/市场份额。
+- `FormulaModel`：用公式表达变量之间的乘加减关系，例如业绩、价值或行为模型。
+- `PyramidModel`：从基础到顶层的分层归纳，例如学习目标、需求层次或论证结构。
+- `FunnelModel`：从输入到筛选、转化、结果的逐步收敛，例如 AIDA 或销售漏斗。
+
+原有 `Flow`、`DecisionMatrix`、`Compare`、`Timeline` 继续保留，用于兼容已有内容；新内容优先使用上面的模型组件表达“关键元素与结构”的关系。
 
 ## Relation types (whitelist — only these render)
 

@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "scripts": { "dev": "vite", "build": "node scripts/build.mjs", "clean:temp": "node scripts/clean-temp.mjs" },
+  "scripts": { "dev": "vite", "validate": "node scripts/validate-content.mjs", "build": "npm run validate && node scripts/build.mjs", "clean:temp": "node scripts/clean-temp.mjs" },
   "dependencies": {
     "@mdx-js/rollup": "^3.0.1",
     "clsx": "^2.1.1",

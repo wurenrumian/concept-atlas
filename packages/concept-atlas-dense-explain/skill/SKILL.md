@@ -61,7 +61,13 @@ For Mode B, read [assets/template/content/compile-runtime.mdx](assets/template/c
 
 ## Delivery summary
 
-After generation, briefly explain which mode the user selected, what the skill contributed, where the output is, and how to inspect or continue editing it. Keep this concise; do not merely list files or claim interactions that were not built.
+After generation, briefly explain:
+
+- which mode the user selected (`A` scrollable component page or `B` interactive Concept Atlas);
+- what the skill contributed (semantic components, concept tree, relations, or template interactions);
+- the output path and the main ways to inspect or continue editing it.
+
+Keep this summary concise. Do not merely list files or claim interactive features that were not built.
 
 ## Content rules
 
@@ -70,7 +76,7 @@ After generation, briefly explain which mode the user selected, what the skill c
 - Every dense block should contain a conclusion, evidence, or limitation.
 - Prefer 2–4 columns on wide screens and natural stacking on narrow screens.
 - Do not invent unsupported components or relation types. Read [references/components.md](references/components.md) for the supported semantic API.
-- Mode B should aim for the exemplar's scale: roughly 1 root, 4–5 `L1` branches, ~15–25 nodes total. A thin graph is a failure in Mode B, but is not required for Mode A.
+- Mode B should aim for the exemplar's scale: roughly 1 root, 4–5 `L1` branches, ~15–25 nodes total. A thin graph is a failure in Mode B, but is not a requirement for Mode A.
 
 ## Self-check before finishing
 

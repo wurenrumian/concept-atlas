@@ -2433,6 +2433,7 @@ button.flow-box {
 .framework-model-element strong { color: var(--text-primary); font-size: 13px; }
 .framework-model-element span:last-child { grid-column: 2; color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
 .framework-model-index { color: var(--accent-cyan); font: 700 11px/1.4 ui-monospace, monospace; }
+.model-stages .framework-model-elements, .model-cycle .framework-model-elements { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
 .model-matrix-grid { display: grid; grid-template-columns: 30px repeat(2, minmax(110px, 1fr)); grid-template-rows: 24px repeat(2, minmax(70px, 1fr)); gap: 5px; }
 .model-matrix-axis { color: var(--text-muted); font-size: 11px; text-align: center; }
 .model-matrix-x { grid-column: 2 / 4; }
