@@ -1,13 +1,14 @@
 {
   "name": "concept-atlas-dense-explain",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Portable dense-explanation skill and MDX concept atlas template",
   "type": "module",
   "bin": {
-    "concept-atlas-dense-explain": "bin/install.mjs"
+    "concept-atlas-dense-explain": "bin/cli.mjs"
   },
   "files": [
     "bin",
+    "template",
     "skill"
   ],
   "keywords": [
