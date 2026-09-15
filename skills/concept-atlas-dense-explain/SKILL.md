@@ -14,7 +14,7 @@ Use the `concept-atlas-dense-explain` npm CLI. This skill is intentionally light
 3. For B, write semantic MDX to `<target>/content/compile-runtime.mdx`. Include one `L0`, multiple `L1` branches, useful depth, `Children`/`ConceptRef`, and labeled `Relation`s. This content renders through the interactive atlas entry.
 4. For A, write semantic MDX to `<target>/content/scroll-reading-demo.mdx` with `ScrollDocument`, `ScrollHeader`, `ScrollSection`, `ScrollProse`, and `ScrollGrid`. Do not wrap it in `ExplainPage`, `ConceptGraph`, or `ConceptNode`. This content renders through the continuous-reader entry.
 5. Do not try to make one MDX file serve both carriers. The template ships both sample entries for reference, but they represent distinct authoring formats.
-6. Build with `npx concept-atlas-dense-explain build <target> --mode atlas` or `--mode scroll` to create only the selected carrier. Without `--mode`, the CLI builds both template examples. The outputs are `<target>/dist/index.html` (interactive atlas) and `<target>/dist/scroll.html` (standalone continuous reader).
+6. Build with `npx concept-atlas-dense-explain build <target> --mode atlas` or `--mode scroll`. The mode is required and must match the MDX carrier chosen before writing. The outputs are `<target>/dist/index.html` (interactive atlas) and `<target>/dist/scroll.html` (standalone continuous reader).
 7. Report the selected mode, output path, and limitations. Do not claim interactions that were not verified.
 
 ## Content rules

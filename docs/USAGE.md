@@ -22,7 +22,7 @@ npm run build
 - `dist/index.html`：概念探索与关系图。
 - `dist/scroll.html`：传统连续阅读示例，使用同一套语义组件但不依赖概念图谱框架。
 
-如果项目只维护一种载体，可以通过 CLI 选择构建目标：
+通过 CLI 构建时必须选择写作时已经确定的载体：
 
 ```bash
 npx concept-atlas-dense-explain build <target> --mode atlas
@@ -39,7 +39,7 @@ content/components-demo.mdx
 
 这是一篇专门的组件展厅，集中展示完整组件族。原有的编译与运行示例仍保留在 `content/compile-runtime.mdx`，可作为内容型页面参考。
 
-连续阅读是另一种内容载体，示例位于 `content/scroll-reading-demo.mdx`。它使用 `ScrollDocument`、`ScrollHeader`、`ScrollSection`、`ScrollProse` 和 `ScrollGrid`，不使用 `ExplainPage`、`ConceptGraph`、`ConceptNode` 或 `Relation`。两种格式应在写作前选择其一，不要尝试由同一份 MDX 同时生成图谱和连续阅读页。
+连续阅读是另一种内容载体，示例位于 `content/scroll-reading-demo.mdx`。它使用 `ScrollDocument`、`ScrollHeader`、`ScrollSection`、`ScrollProse` 和 `ScrollGrid`，不使用 `ExplainPage`、`ConceptGraph`、`ConceptNode` 或 `Relation`。两种格式必须在写作前选择其一，不要尝试由同一份 MDX 同时生成图谱和连续阅读页。模板同时附带两篇示例仅供参考；实际项目只维护所选载体对应的 MDX。
 
 `src/main.jsx` 当前会加载组件展厅：
 
