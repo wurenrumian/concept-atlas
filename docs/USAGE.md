@@ -53,7 +53,7 @@ content/components-demo.mdx
 
 这是一篇专门的组件展厅，集中展示完整组件族。原有的编译与运行示例仍保留在 `content/compile-runtime.mdx`，可作为内容型页面参考。
 
-连续阅读是另一种内容载体，示例位于 `content/scroll-reading-demo.mdx`。它使用 `ScrollDocument`、`ScrollHeader`、`ScrollSection`、`ScrollProse` 和 `ScrollGrid`，不使用 `ExplainPage`、`ConceptGraph`、`ConceptNode` 或 `Relation`。两种格式必须在写作前选择其一，不要尝试由同一份 MDX 同时生成图谱和连续阅读页。模板同时附带两篇示例仅供参考；实际项目只维护所选载体对应的 MDX。
+连续阅读是另一种内容载体，示例位于 `content/scroll-reading-demo.mdx`。它使用 `ScrollDocument`、`ScrollHeader`、`ScrollSection`、`ScrollProse` 和 `ScrollGrid` 作为文档外壳；`Flow`、`Insight`、`MatrixModel`、`Mermaid`、`Callout` 等信息组件与 Atlas 共用。两种外壳应在写作前选择其一，不要把同一份 MDX 同时写成两套顶层结构。模板同时附带两篇示例仅供参考；实际使用时直接维护自己的 MDX 文件。
 
 `src/main.jsx` 当前会加载组件展厅：
 

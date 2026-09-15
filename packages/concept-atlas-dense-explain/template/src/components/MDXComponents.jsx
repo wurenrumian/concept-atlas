@@ -201,7 +201,7 @@ export function Flow({ steps = [], children }) {
         {steps.map((step, idx) => (
           <div key={idx} className="flow-step">
             <span className="step-num">{idx + 1}</span>
-            <span className="step-text">{step}</span>
+            <span className="step-text">{typeof step === 'object' ? <><strong>{step.title || step.label || `步骤 ${idx + 1}`}</strong>{step.description && <small>{step.description}</small>}</> : step}</span>
             {idx < steps.length - 1 && <span className="step-arrow">→</span>}
           </div>
         ))}
@@ -357,8 +357,9 @@ export function Columns({ children }) {
 }
 Columns.displayName = 'Columns';
 
-export function ScrollDocument({ children }) {
-  return <article className="continuous-document">{children}</article>;
+export function ScrollDocument({ spacing = 'comfortable', children }) {
+  const safeSpacing = ['compact', 'comfortable', 'airy'].includes(spacing) ? spacing : 'comfortable';
+  return <article className={`continuous-document continuous-spacing-${safeSpacing}`}>{children}</article>;
 }
 ScrollDocument.displayName = 'ScrollDocument';
 
@@ -367,9 +368,10 @@ export function ScrollHeader({ label = '连续阅读', title, children }) {
 }
 ScrollHeader.displayName = 'ScrollHeader';
 
-export function ScrollSection({ title, wide = false, children }) {
+export function ScrollSection({ title, wide = false, spacing = 'inherit', children }) {
+  const safeSpacing = ['compact', 'comfortable', 'airy'].includes(spacing) ? ` continuous-spacing-${spacing}` : '';
   return (
-    <section className={`continuous-section${wide ? ' continuous-section-wide' : ''}`}>
+    <section className={`continuous-section${wide ? ' continuous-section-wide' : ''}${safeSpacing}`}>
       {title && <h2>{title}</h2>}
       {children}
     </section>

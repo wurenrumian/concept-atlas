@@ -2890,10 +2890,10 @@ button.flow-box {
   --annotation-accent: var(--text-accent);
   margin: 14px 0;
   padding: 10px 0 10px 14px;
-  border: 0;
+  border: 1px solid var(--border-subtle);
   border-inline-start: 2px solid var(--annotation-accent);
-  border-radius: 0;
-  background: transparent;
+  border-radius: var(--radius-2);
+  background: var(--bg-surface);
   box-shadow: none;
 }
 
@@ -2986,7 +2986,13 @@ html[data-carrier='scroll'] #root {
 .continuous-document {
   width: min(1120px, 100%);
   margin: 0 auto;
+  --scroll-block-gap: 18px;
+  --scroll-grid-gap: 16px;
 }
+
+.continuous-spacing-compact { --scroll-block-gap: 10px; --scroll-grid-gap: 10px; }
+.continuous-spacing-comfortable { --scroll-block-gap: 18px; --scroll-grid-gap: 16px; }
+.continuous-spacing-airy { --scroll-block-gap: 28px; --scroll-grid-gap: 24px; }
 
 .continuous-header {
   max-width: 820px;
@@ -3019,10 +3025,18 @@ html[data-carrier='scroll'] #root {
 }
 
 .continuous-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--scroll-block-gap);
   margin: 0 0 48px;
   padding: 0 0 48px;
   border-bottom: 1px solid var(--border-medium);
 }
+
+.continuous-section.continuous-spacing-compact { --scroll-block-gap: 10px; --scroll-grid-gap: 10px; }
+.continuous-section.continuous-spacing-comfortable { --scroll-block-gap: 18px; --scroll-grid-gap: 16px; }
+.continuous-section.continuous-spacing-airy { --scroll-block-gap: 28px; --scroll-grid-gap: 24px; }
+.continuous-section > * { margin-top: 0; margin-bottom: 0; }
 
 .continuous-section > h2,
 .continuous-model-pair h2 {
@@ -3044,13 +3058,105 @@ html[data-carrier='scroll'] #root {
 
 .continuous-grid {
   display: grid;
-  gap: 16px;
+  gap: var(--scroll-grid-gap, 16px);
   align-items: stretch;
 }
 
 .continuous-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .continuous-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .continuous-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+.semantic-flow-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  margin: 14px 0;
+  padding: 10px;
+  border: 1px solid var(--border-medium);
+  border-top: 2px solid var(--primary);
+  border-radius: var(--radius-3);
+  background: var(--bg-surface);
+}
+
+.flow-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
+  align-items: start;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-card);
+}
+
+.step-num {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--bg-highlight);
+  color: var(--text-accent);
+  font: 700 11px/1 ui-monospace, monospace;
+}
+
+.step-text { color: var(--text-secondary); font-size: 12px; line-height: 1.45; }
+.step-text strong, .step-text small { display: block; }
+.step-text strong { color: var(--text-primary); font-size: 12px; }
+.step-text small { margin-top: 3px; color: var(--text-secondary); }
+.step-arrow { display: none; }
+
+.semantic-overview,
+.semantic-definition,
+.semantic-mechanism,
+.semantic-prerequisite,
+.semantic-input,
+.semantic-output,
+.semantic-glossary-item,
+.semantic-example,
+.semantic-boundary,
+.semantic-counterexample {
+  margin: 10px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-2);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+}
+
+.semantic-definition { border-top: 2px solid var(--border-strong); }
+.semantic-mechanism { background: color-mix(in srgb, var(--bg-surface) 82%, var(--bg-card)); }
+.semantic-example { background: var(--bg-card); box-shadow: inset 0 0 0 1px var(--border-subtle); }
+.semantic-boundary { border-style: dashed; }
+.semantic-counterexample { border-style: dotted; }
+.semantic-glossary-item { border-bottom-color: var(--border-strong); }
+
+.semantic-stack:has(> .semantic-definition, > .semantic-mechanism, > .semantic-boundary) {
+  margin: 14px 0;
+  padding: 10px 16px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-3);
+  background: var(--bg-card);
+  box-shadow: 2px 3px 0 rgba(15, 23, 42, 0.12);
+}
+
+.semantic-stack:has(> .semantic-definition, > .semantic-mechanism, > .semantic-boundary) > .semantic-definition,
+.semantic-stack:has(> .semantic-definition, > .semantic-mechanism, > .semantic-boundary) > .semantic-mechanism,
+.semantic-stack:has(> .semantic-definition, > .semantic-mechanism, > .semantic-boundary) > .semantic-boundary {
+  margin: 0;
+  padding: 12px 0;
+  border: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.semantic-stack:has(> .semantic-definition, > .semantic-mechanism, > .semantic-boundary) > :last-child {
+  border-bottom: 0;
+}
 
 .continuous-grid > .semantic-framework-model,
 .continuous-grid > .semantic-model-matrix,

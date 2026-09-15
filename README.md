@@ -88,7 +88,7 @@ Skills CLI 会从 `skills/` 自动发现 skill；不需要为每个 agent 维护
 
 ## 常用命令
 
-完整的内容编写、组件参数、Mermaid 和画布布局说明请阅读：[docs/USAGE.md](docs/USAGE.md)
+完整的框架使用、内容编写、组件参数和信息密度说明请阅读：[docs/FRAMEWORK.md](docs/FRAMEWORK.md)。API 细节和组件参数参考见：[docs/USAGE.md](docs/USAGE.md)
 
 ### 生成 AI 改写模板
 ```bash
