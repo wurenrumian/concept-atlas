@@ -1,148 +1,89 @@
-# Concept Atlas · 基于 MDX 的概念缩放式知识讲解模板
+# Concept Atlas Dense Explain
 
-本项目是一套基于 **MDX 语义化知识描述** 与 **现代响应式前端渲染** 的完整知识解释系统。
+`concept-atlas-dense-explain` 是一个面向 AI agent 的知识讲解 skill：它把主题组织成语义化 MDX，再编译为可独立打开的交互式 HTML。
 
-核心理念：**让 AI / 创作者只负责用语义组件描述知识内容与概念关系，由模板引擎全权负责页面三栏结构、视觉样式、多级概念缩放（L0–L4）以及全局关系图谱的交互呈现。**
+它适合生成：
 
----
+- 技术原理与系统架构讲解
+- 概念地图、知识树和分层教程
+- 带流程、矩阵、时间线或关系图的交互式说明页
+- 需要从总览逐层下钻的复杂主题
 
-## 目录结构
+## 核心能力
 
-```text
-concept-atlas/
-├── skills/
-│   └── concept-atlas-dense-explain/ # Agent Skills 标准发布目录（跨主流 agent）
-├── package.json                 # 项目依赖与运行脚本
-├── README.md                    # 项目说明文档
-├── vite.config.js               # Vite + MDX 构建配置
-├── index.html                   # 网页挂载入口
-├── src/
-│   ├── main.jsx                 # 引导挂载脚本
-│   ├── app/
-│   │   └── App.jsx              # 统一状态管理与视图切换器
-│   ├── components/              # MDX 语义组件层
-│   │   ├── MDXComponents.jsx    # 数据层/内容层/呈现语义层组件定义
-│   │   └── index.js
-│   ├── views/                   # 核心渲染视图
-│   │   ├── NodeExplorer.jsx     # 页面一：三栏式概念探索页 (概念缩放/上下文/下钻)
-│   │   └── RelationGraph.jsx    # 页面二：全局关系图谱页 (D3力导向/过滤/交互跳转)
-│   ├── model/                   # 数据模型与语义关系定义
-│   │   ├── relation-types.js    # 树关系与图关系字典定义及视觉元数据
-│   │   ├── concept-schema.js    # 概念树/图谱校验、索引与上下文提取逻辑
-│   │   └── normalize-content.js # MDX JSX AST 节点与语义提取器
-│   └── styles/
-│       └── concept-explain.css  # 统一样式系统
-├── content/
-│   ├── components-demo.mdx      # 完整组件展厅
-│   └── compile-runtime.mdx      # 内容示例：程序编译与运行
-├── scripts/
-│   ├── build.mjs                # 构建单文件 HTML 或静态产物脚本
-│   └── clean-temp.mjs           # 临时解释任务清理脚本
-├── tmp/                         # 临时生成文件目录
-└── dist/                        # 正式构建输出目录
-```
+- **语义优先**：内容只描述概念、层级、证据和关系，不直接编写 CSS、布局、坐标或 SVG。
+- **概念缩放**：通过 `L0`–`L4` 组织从全局概览、主要阶段、局部机制到实现细节和边界反例的认知路径。
+- **两种页面模式**：`atlas` 适合概念导航与关系图谱；`scroll` 适合连续阅读的长文档。
+- **共享信息组件**：支持 `Insight`、`Flow`、`FrameworkModel`、`MatrixModel`、`Mermaid`、`RelationMap`、`NoteGrid`、`Callout`、`Details`、`Columns`、`Grid`、`Stack` 和 `Tabs` 等组件。
+- **单文件输出**：MDX 可直接编译为无需额外运行时的独立 `.html` 文件。
 
-## 作为通用 Agent Skill 安装
+## 安装与使用
 
-仓库内的 `skills/concept-atlas-dense-explain/SKILL.md` 遵循 Agent Skills 开放格式，可由 Claude Code、Codex、Cursor、Gemini CLI、OpenCode、Cline、GitHub Copilot 等主流 agent 使用。
-
-发布到 GitHub 后，用户可以直接安装：
+发布到 GitHub 后，可以使用 Skills CLI 安装：
 
 ```bash
 npx skills add <github-owner>/<github-repo> --skill concept-atlas-dense-explain
 ```
 
-安装到所有已检测的 agent：
-
-```bash
-npx skills add <github-owner>/<github-repo> --skill concept-atlas-dense-explain --agent '*' --yes
-```
-
-也可以只生成一次性提示词而不安装：
+也可以只生成一次性提示词：
 
 ```bash
 npx skills use <github-owner>/<github-repo> --skill concept-atlas-dense-explain
 ```
 
-Skills CLI 会从 `skills/` 自动发现 skill；不需要为每个 agent 维护一份不同的指令文件。将仓库推送到公开 GitHub 仓库后即可被 `skills.sh` 索引。当前工作区未配置 Git remote，因此最后的 GitHub 创建/推送仍需使用你的账号完成。
+skill 使用本项目提供的 CLI：
 
----
-
-## 特性亮点
-
-1. **严格的职责边界**：
-   - MDX 中禁止编写任何 CSS、页面布局、HTML 卡片标签或手动 SVG。
-   - MDX 仅声明 `<ConceptNode>`, `<Relation>`, `<Overview>`, `<Mechanism>`, `<Boundary>` 等语义标签。
-2. **真正的概念缩放 (L0–L4)**：
-   - 支持从宏观全局概览 (L0) ➔ 主要阶段 (L1) ➔ 局部机制 (L2) ➔ 实现细节 (L3) ➔ 边界反例 (L4) 进行逐层认知。
-   - 点击子节点顺畅下钻，左侧保留完整祖先溯源路径与同层节点切换，避免信息过载。
-3. **两套一体化视图**：
-   - **节点探索页**：桌面端三栏布局（左侧宏观上下文、中央当前概念卡片与流水线、右侧细节约束与跨分支关联）。
-   - **全局关系图谱页**：力导向图可视化，区分父子关系与语义图关系（如 `produces`、`prerequisite`、`uses`、`precedes`、`implements`），支持节点搜索、层级筛选、关系过滤，且可双向一键跳转并保持聚焦状态。
-4. **快捷键盘操作**：
-   - 按 `1` 或 `e` 切换至节点探索页。
-   - 按 `2` 或 `g` 切换至全局关系图谱页。
-   - 按 `Esc` 返回上一级父节点。
-
----
-
-## 常用命令
-
-完整的框架使用、内容编写、组件参数和信息密度说明请阅读：[docs/FRAMEWORK.md](docs/FRAMEWORK.md)。API 细节和组件参数参考见：[docs/USAGE.md](docs/USAGE.md)
-
-### 生成 AI 改写模板
 ```bash
+# 生成可交给 AI 改写的 MDX 起始模板
 npx concept-atlas-dense-explain create topic.mdx --mode atlas
 npx concept-atlas-dense-explain create article.mdx --mode scroll
-```
 
-生成的 `.mdx` 可以直接交给 AI 改写，然后编译为 HTML：
-
-```bash
-npx concept-atlas-dense-explain topic.mdx
+# 编译为同目录下的独立 HTML
+npx concept-atlas-dense-explain topic.mdx --mode atlas
 npx concept-atlas-dense-explain article.mdx --mode scroll
 ```
 
-默认输出到同目录下的同名 `.html` 文件；使用 `-o` 指定输出位置，使用 `--force` 覆盖已有文件。
+使用 `-o` 指定输出路径，使用 `--force` 覆盖已有文件。
 
-### 启动本地开发服务
-```bash
-npm run dev
-```
+## 两种页面模式
 
-### 构建仓库示例
-```bash
-npm run build
-```
-产物将输出到 `dist/index.html`，可在任何现代浏览器中离线打开预览。
+### `atlas`
 
-### 清理临时解释任务产物
-```bash
-npm run clean:temp
-```
+以 `ExplainPage`、`ConceptGraph`、`ConceptNode`、`Children`、`ConceptRef` 和 `Relation` 构成概念图谱。适合读者需要在概念之间跳转、查看上下文和理解跨分支关系的主题。
 
----
+### `scroll`
 
-## 如何编写新的知识 MDX
+以 `ScrollDocument`、`ScrollHeader`、`ScrollSection`、`ScrollProse` 和 `ScrollGrid` 构成连续文档。适合教程、文章、研究笔记和需要顺序阅读的内容。
 
-只需在 `content/` 或 `tmp/dense-explain/` 目录下创建 `.mdx` 文件，例如：
+两种模式共享信息组件，但外层页面结构不同；切换模式时只需要转换页面外壳，不要把一个 MDX 文件同时写成两种外壳。
+
+## 最小示例
 
 ```mdx
-<ExplainPage id="my-topic" title="我的知识主题" summary="一句话概括">
-  <ConceptGraph root="root-node">
-    <ConceptNode id="root-node" title="系统根概念" level="L0">
-      <Overview>系统的全局认知阐述...</Overview>
+<ExplainPage id="my-topic" title="我的主题" summary="一句话说明主题">
+  <ConceptGraph root="root">
+    <ConceptNode id="root" title="系统根概念" level="L0">
+      <Overview>这里描述主题的全局认知。</Overview>
       <Children>
-        <ConceptRef id="sub-node-1" />
+        <ConceptRef id="mechanism" />
       </Children>
     </ConceptNode>
 
-    <ConceptNode id="sub-node-1" title="子模块" level="L1" parent="root-node">
-      <Mechanism>输入 -> 处理 -> 输出</Mechanism>
+    <ConceptNode id="mechanism" title="核心机制" level="L1" parent="root">
+      <Mechanism>输入 → 处理 → 输出</Mechanism>
     </ConceptNode>
 
-    <Relation from="root-node" to="sub-node-1" type="causes" label="触发" />
+    <Relation from="root" to="mechanism" type="precedes" label="先于" />
   </ConceptGraph>
 </ExplainPage>
 ```
-无需修改任何 CSS 或核心渲染引擎，系统会自动编译为完整的知识交互网页。
+
+## 编写原则
+
+- 保持 MDX 语义化，让 agent 或作者专注于知识内容。
+- 每个重要概念提供清晰的主张式标题、一句话摘要、证据或机制说明。
+- 为 `atlas` 提供一个 `L0` 根节点、多个 `L1` 分支、`Children`/`ConceptRef` 和带标签的 `Relation`。
+- 为 `scroll` 使用对应的文档外壳，并通过 `spacing="compact|comfortable|airy"` 调整整体节奏。
+- 使用组件文档规定的数据结构，例如 `Flow.steps`、`Timeline.events`、表格行和模型数据。
+
+更多组件参数和内容规范见 [docs/FRAMEWORK.md](docs/FRAMEWORK.md) 与 [docs/USAGE.md](docs/USAGE.md)。
