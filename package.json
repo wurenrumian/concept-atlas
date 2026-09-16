@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "validate": "node scripts/validate-content.mjs",
+    "test": "node --test \"test/**/*.test.mjs\"",
     "sync": "node scripts/sync-template.mjs",
     "check:sync": "node scripts/sync-template.mjs --check",
     "build": "npm run validate && node scripts/build.mjs",
