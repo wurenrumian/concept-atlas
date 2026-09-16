@@ -12,9 +12,19 @@ Concept Atlas 的工作方式很简单：内容作者用 MDX 描述知识，渲�
 npx concept-atlas-dense-explain create topic.mdx --mode atlas
 ```
 
-让 AI 改写 `topic.mdx` 后，直接编译：
+让 AI 活得轻松一点：先取一份可编译的组件参考并阅读，再动手写。
 
 ```bash
+npx concept-atlas-dense-explain guide --mode atlas -o atlas-guide.mdx
+npx concept-atlas-dense-explain guide --mode scroll -o scroll-guide.mdx
+```
+
+guide 是一份真实的 MDX，覆盖全部组件和 prop 写法，可以直接编译预览，也可以当模板改写。
+
+改完内容后先校验，再编译：
+
+```bash
+npx concept-atlas-dense-explain validate topic.mdx --mode atlas
 npx concept-atlas-dense-explain topic.mdx
 ```
 
@@ -220,6 +230,11 @@ MDX 属性使用 JavaScript 表达式。字符串要加引号，数组和对象�
 | `NoteGrid` | `notes` | `{ title?: string, label?: string, content?: string, text?: string, description?: string }[]` |
 | `Mermaid` | `chart` | `string`，使用模板字符串表达多行图表 |
 | `Tabs` | `items` | `{ label?: string, title?: string, content?: string }[]` |
+| `Math` | `formula` | `string`（LaTeX；含 `{` 或反斜杠时用这个 prop，不要写子内容） |
+| `MathBlock` | `formula` / `variables` | `string` / `{ symbol?: string, name?: string, description?: string }[]` |
+| `Chart` | `type` / `data` / `series` / `labels` | `'bar' \| 'line' \| 'pie'` / `{ label?: string, value: number }[]` / `{ name?: string, values: number[] }[]` / `string[]` |
+| `Figure` | `src` / `alt` / `caption` / `label` | `string`（相对路径构建时内联）/ `string` / `string` / `string` |
+| `References` | `items` | `{ id: string, authors?: string, year?: string, title?: string, url?: string, source?: string, note?: string }[]` |
 
 组件也支持 JSX 子内容作为备用写法，例如 `<Flow>...</Flow>`、`<DecisionMatrix>...</DecisionMatrix>`。但带数据属性的写法更适合让 AI 稳定生成和检查。
 
@@ -243,6 +258,96 @@ MDX 属性使用 JavaScript 表达式。字符串要加引号，数组和对象�
 信息模型：Flow、Timeline、Compare、DecisionMatrix、FrameworkModel、MatrixModel
 阅读组件：Insight、Callout、Details、NoteGrid、Tabs、Columns、Stack、Grid、Split
 图形组件：Mermaid、RelationMap、RelationPath
+扩展能力：Math、MathBlock、Chart、Figure、Cite、References
 ```
 
 组件的选择应服从内容关系，不应服从视觉装饰。页面的价值来自结构化表达，而不是组件数量。
+
+## 10. 扩展组件
+
+### 数学公式
+
+`Math` 用于行内符号，`MathBlock` 用于独立公式。因为 MDX 会把子内容里的 `{}` 当作表达式，凡公式含 `{` 或反斜杠，一律用 `formula` prop：
+
+```mdx
+<Overview>信息量约为 <Math formula="\log_2 N" /> 比特。</Overview>
+
+<MathBlock
+  title="香农信息量"
+  formula="I(x) = -\log_2 p(x)"
+  variables={[{symbol:'p(x)',description:'事件发生的概率'}]}
+/>
+```
+
+只有不含大括号的简单 LaTeX 才能写子内容，例如 `<Math>\log_2 N</Math>`。
+
+### 数据图表
+
+`Chart` 支持 `bar`、`line`、`pie`，颜色跟随主题：
+
+```mdx
+<Chart title="各阶段耗时" type="bar" unit="小时" data={[{label:'收集',value:6},{label:'分析',value:14}]} />
+<Chart title="留存趋势" type="line" labels={['第1周','第2周']} series={[{name:'留存率',values:[100,72]}]} />
+```
+
+### 图片与题注
+
+`Figure` 把图片和题注绑定。相对路径的图片会在构建时转成 base64 内联，保证单文件离线可用；远程 URL 保持外链：
+
+```mdx
+<Figure src="./assets/diagram.png" alt="架构示意" label="图 1" caption="数据从输入流经处理到输出。" />
+```
+
+找不到本地图片只会产生 warning 并显示占位符，不会中断构建。
+
+### 引用与文献
+
+`Cite` 的 `id` 对应 `References` 中条目的 `id`，编号自动取该条目在列表中的序号：
+
+```mdx
+<Overview>该结论依赖可追溯的证据<Cite id="tufte1983" />。</Overview>
+<References items={[{id:'tufte1983',authors:'Tufte, E. R.',year:'1983',title:'The Visual Display of Quantitative Information',source:'Graphics Press'}]} />
+```
+
+在 `atlas` 中，节点内容只在打开该节点时渲染，因此请把 `Cite` 和对应的 `References` 放在同一个节点内。
+
+## 11. 可配置排版与阅读体验
+
+`ScrollDocument` 会自动根据章节标题生成目录、阅读进度和上一节/下一节导航，并用 `fontSize` 控制正文大小：
+
+```mdx
+<ScrollDocument spacing="comfortable" fontSize="large" toc progress>
+  ...
+</ScrollDocument>
+```
+
+- `fontSize`：`compact | normal | large | xlarge`。
+- 也可以传数值 `scale`（字号倍率）和 `lineHeight` 覆盖预设。
+- `toc` / `progress`：分别控制目录与阅读进度条，默认开启。
+- `ScrollSection` 可以用 `id` 指定锚点，否则由标题自动生成。
+
+不要为了调整字号在内容里写 CSS，统一通过这两个 prop 控制。
+
+## 12. 内容校验
+
+CLI 在构建前会静态校验内容结构。错误会阻止构建，警告只提示：
+
+```bash
+npx concept-atlas-dense-explain validate topic.mdx           # 人类可读
+npx concept-atlas-dense-explain validate topic.mdx --json    # 机器可读
+npx concept-atlas-dense-explain validate topic.mdx --strict  # 把结构警告升级为错误
+```
+
+常见错误码：
+
+| 错误码 | 含义 |
+| --- | --- |
+| `UNKNOWN_COMPONENT` | 组件名拼错或未导出 |
+| `CARRIER_MISSING` / `CARRIER_CONFLICT` / `CARRIER_MODE_MISMATCH` | 外壳缺失、同时存在两种外壳，或与 `--mode` 不一致 |
+| `NODE_MISSING_ID` / `NODE_MISSING_TITLE` / `DUPLICATE_NODE_ID` | 节点缺少 id/title 或 id 重复 |
+| `MISSING_PARENT` / `GRAPH_ROOT_UNRESOLVED` | parent 或 ConceptGraph root 指向不存在的节点 |
+| `REF_UNRESOLVED` / `RELATION_FROM_UNRESOLVED` / `RELATION_TO_UNRESOLVED` | ConceptRef 或 Relation 端点断链 |
+
+常见警告：`NODE_MISSING_SUMMARY`、`NODE_NO_CORE_CONTENT`、`UNKNOWN_LEVEL`、`UNKNOWN_RELATION_TYPE`、`RELATION_MISSING_LABEL`、`PROP_EXPECTS_ARRAY`、`MATH_CHILDREN_BRACES`、`GRAPH_MISSING_ROOT`、`ASSET_MISSING`。
+
+确实需要跳过校验时使用 `--no-validate`，但应视为例外。

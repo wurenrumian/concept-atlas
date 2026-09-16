@@ -8,7 +8,10 @@ Concept Atlas 的 CLI 直接编译单个 MDX 文件，不需要初始化项目�
 
 ```bash
 npx concept-atlas-dense-explain create topic.mdx --mode atlas
-# 用 AI 改写 topic.mdx 后：
+# 先取一份可编译的组件参考，学习全部组件与 prop
+npx concept-atlas-dense-explain guide --mode atlas -o atlas-guide.mdx
+# 用 AI 改写 topic.mdx 后，先校验再编译：
+npx concept-atlas-dense-explain validate topic.mdx
 npx concept-atlas-dense-explain topic.mdx
 ```
 
@@ -16,16 +19,20 @@ npx concept-atlas-dense-explain topic.mdx
 
 ```bash
 npx concept-atlas-dense-explain create article.mdx --mode scroll
+npx concept-atlas-dense-explain guide --mode scroll -o scroll-guide.mdx
 npx concept-atlas-dense-explain article.mdx --mode scroll -o dist/article.html
 ```
 
-默认输出为输入文件同目录下的同名 `.html`；已有输出需要显式添加 `--force` 才会覆盖。
+默认输出为输入文件同目录下的同名 `.html`；已有输出需要显式添加 `--force` 才会覆盖。`validate` 支持 `--json` 和 `--strict`，校验未通过时会阻止构建，可用 `--no-validate` 跳过。
 
 仓库自身仍可以使用以下命令进行开发：
 
 ```bash
 npm install
 npm run dev
+npm test          # 校验器单元测试
+npm run validate  # 校验 content/*.mdx
+npm run sync      # 把 src/ 同步到 npm 包模板（check:sync 只检查）
 ```
 
 开发服务启动后，用浏览器打开终端显示的地址。
@@ -271,6 +278,28 @@ exception-of  异常或反例
 
 `FrameworkModel` 适合一分为几、多因素并列、阶段、层级和循环；`FunnelModel` 适合 AIDA、销售转化和筛选收敛。`Flow`、`DecisionMatrix` 等旧组件仍然兼容。
 
+### 公式、图表、配图与引用
+
+扩展组件让正文可以带上推导、数据和出处：
+
+```mdx
+{/* 行内公式；含大括号或反斜杠时用 formula prop */}
+<Overview>信息量为 <Math formula="\log_2 N" /> 比特。</Overview>
+<MathBlock title="复利" formula="V_t = V_0 \cdot (1 + r)^t" variables={[{symbol:'r',description:'增长率'}]} />
+
+{/* 图表：bar / line / pie */}
+<Chart title="各阶段耗时" type="bar" data={[{label:'收集',value:6},{label:'分析',value:14}]} />
+
+{/* 配图：相对路径在构建时内联为 base64 */}
+<Figure src="./assets/diagram.svg" alt="示意" label="图 1" caption="从输入到输出。" />
+
+{/* 引用与文献：Cite 的 id 对应 References 条目的 id */}
+<ScrollProse>结论依赖可追溯证据<Cite id="tufte1983" />。</ScrollProse>
+<References items={[{id:'tufte1983',authors:'Tufte, E. R.',year:'1983',title:'The Visual Display of Quantitative Information'}]} />
+```
+
+`Math` 的子内容里出现 `{}` 会被 MDX 当成表达式，因此含花括号的 LaTeX 必须走 `formula` prop。找不到的本地图片只会产生 warning 并显示占位符。
+
 ## 6. 组件尺寸与自由排布
 
 高密度组件默认按实际内容收缩，不会自动撑满整列。需要控制布局时，可以传入尺寸和位置：
@@ -332,11 +361,17 @@ exception-of  异常或反例
 ```text
 src/components/MDXComponents.jsx   # MDX 组件实现
 src/model/normalize-content.js     # MDX 语义提取
+src/model/validate-content.js      # 内容校验器（浏览器与 CLI 共用）
+src/model/citations.js             # Cite/References 引用编号
 src/model/concept-schema.js        # 概念树与关系图模型
 src/views/NodeExplorer.jsx         # 概念探索画布
 src/views/RelationGraph.jsx        # 层级图 / 概念关系图
 src/styles/concept-explain.css     # 全局和组件样式
 content/*.mdx                      # 知识内容
+test/*.test.mjs                    # 校验器测试
+scripts/sync-template.mjs          # src/ 同步到 npm 包模板
 ```
 
-新增组件时，记得在 `src/components/index.js` 中导出，使 MDX 可以使用。
+`src/` 是唯一真相源，npm 包内的 `template/` 由 `npm run sync` 生成；提交前可用 `npm run check:sync` 确认没有漂移。
+
+新增组件时，记得在 `src/components/index.js` 中导出，并把组件名加入 `src/model/validate-content.js` 的 `KNOWN_COMPONENTS`，使 MDX 可以使用且通过校验。
