@@ -25,6 +25,38 @@ npx concept-atlas-dense-explain article.mdx --mode scroll -o dist/article.html
 
 默认输出为输入文件同目录下的同名 `.html`；已有输出需要显式添加 `--force` 才会覆盖。`validate` 支持 `--json` 和 `--strict`，校验未通过时会阻止构建，可用 `--no-validate` 跳过。
 
+### 批量编译
+
+一次传入多个 MDX 可以在同一进程内并行构建，省去每个目标重复启动 CLI 与 Vite 的开销。此时 `-o` 是输出目录：
+
+```bash
+npx concept-atlas-dense-explain papers/a.mdx papers/b.mdx papers/c.mdx -o dist --force
+# 默认并发 2；单次构建峰值内存约 1–2GB，建议不超过 3
+npx concept-atlas-dense-explain papers/*.mdx -o dist --concurrency 3
+```
+
+批量语义：**先整体校验，再整体构建**。任意一个文件存在 `error` 时不会开始构建（`--no-validate` 可跳过）；`--json` 在批量模式下输出数组，每项带 `file` 字段。
+
+### 按需裁剪渲染器
+
+构建会扫描内容，只把真正用到的重型渲染器打进产物：
+
+- 没有 `<Math>` / `<MathBlock>` 时，KaTeX 及其样式（约 1.4MB 内联字体）不会进入产物。
+- 没有 `<Mermaid>` 时，Mermaid 不会进入产物。
+
+构建结束会打印汇总，例如 `(KaTeX dropped on 3/3)`。一篇不使用公式和图表的 `scroll` 文章通常是约 250KB 而不是约 5MB。如果确实需要某个渲染器，正常写组件即可，无需任何开关。
+
+### 图片内联与 `--link-assets`
+
+默认（不传开关）会把 `Figure` 的相对路径图片读成 base64 内联进 HTML，产物单文件、离线可开，代价是每张截图都会让 HTML 变大。传入 `--link-assets` 后图片保持相对链接：
+
+```bash
+# 输出与 assets/ 同目录时，相对路径可直接解析
+npx concept-atlas-dense-explain paper.mdx --link-assets
+```
+
+实测同一个目标：内联 1.51MB → 链接 270KB。代价是页面不再自包含，`<html>` 必须和 MDX 的 `assets/` 保持相对位置；如果 `-o` 指到别处，CLI 会打印警告，此时需要自行拷贝 `assets/`。
+
 仓库自身仍可以使用以下命令进行开发：
 
 ```bash
@@ -298,7 +330,7 @@ exception-of  异常或反例
 <References items={[{id:'tufte1983',authors:'Tufte, E. R.',year:'1983',title:'The Visual Display of Quantitative Information'}]} />
 ```
 
-`Math` 的子内容里出现 `{}` 会被 MDX 当成表达式，因此含花括号的 LaTeX 必须走 `formula` prop。找不到的本地图片只会产生 warning 并显示占位符。
+`Math` 的子内容里出现 `{}` 会被 MDX 当成表达式，因此含花括号的 LaTeX 必须走 `formula` prop。找不到的本地图片只会产生 warning 并显示占位符。`Figure` / `Image` 的图片可以点击放大：滚轮或 `+` / `−` 缩放，拖拽平移，双击切换 1x / 2x，`0` 重置，`Esc` 或点击背景关闭。
 
 ## 6. 组件尺寸与自由排布
 

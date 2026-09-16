@@ -25,8 +25,8 @@
   /* Typography Colors */
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
+  --text-muted: #a7b5c7;
+  --text-dim: #8494a9;
   --text-accent: #38bdf8;
 
   /* Accent & Category Semantic Tones */
@@ -93,9 +93,9 @@
 
   /* Typography Colors */
   --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-muted: #64748b;
-  --text-dim: #94a3b8;
+  --text-secondary: #2b3a4f;
+  --text-muted: #4a5a70;
+  --text-dim: #5f6f83;
   --text-accent: #2563eb;
 
   /* Accent & Category Semantic Tones */
@@ -187,14 +187,14 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
   outline-offset: 3px;
 }
 
-.global-search { position: relative; display: flex; align-items: center; gap: 7px; min-width: 220px; margin-left: auto; color: var(--text-muted, #94a3b8); }
-.global-search input { width: 100%; border: 1px solid var(--line-subtle, rgba(148,163,184,.24)); border-radius: 8px; background: var(--surface-soft, rgba(15,23,42,.3)); color: inherit; padding: 7px 28px 7px 28px; }
+.global-search { position: relative; display: flex; align-items: center; gap: 7px; min-width: 220px; margin-left: auto; color: var(--text-muted); }
+.global-search input { width: 100%; border: 1px solid var(--border-medium); border-radius: 8px; background: var(--bg-canvas); color: inherit; padding: 7px 28px 7px 28px; }
 .global-search > svg { position: absolute; left: 9px; pointer-events: none; }
 .global-search > button { position: absolute; right: 5px; border: 0; background: transparent; color: inherit; padding: 3px; }
-.global-search-results { position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; right: 0; padding: 5px; border: 1px solid var(--line-subtle, rgba(148,163,184,.24)); border-radius: 10px; background: var(--surface-strong, #111827); box-shadow: 0 12px 30px rgba(0,0,0,.24); }
-.global-search-results button { display: grid; gap: 2px; width: 100%; border: 0; border-radius: 7px; background: transparent; color: var(--text-primary, #e2e8f0); text-align: left; padding: 8px; }
-.global-search-results button:hover { background: rgba(148,163,184,.12); }
-.global-search-results small { color: var(--text-muted, #94a3b8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.global-search-results { position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; right: 0; padding: 5px; border: 1px solid var(--border-medium); border-radius: 10px; background: var(--bg-surface); box-shadow: var(--shadow-lg); }
+.global-search-results button { display: grid; gap: 2px; width: 100%; border: 0; border-radius: 7px; background: transparent; color: var(--text-primary); text-align: left; padding: 8px; }
+.global-search-results button:hover { background: var(--bg-subtle); }
+.global-search-results small { color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Optional semantic layout primitives */
 .semantic-stack { display: flex; flex-direction: column; }
@@ -1884,7 +1884,7 @@ button.flow-box {
 
 .inline-inspector-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 14px;
 }
 
@@ -2339,31 +2339,31 @@ button.flow-box {
 .semantic-evidence,
 .semantic-invariant,
 .semantic-failure-mode {
-  border: 1px solid var(--line-subtle, rgba(148, 163, 184, .24));
+  border: 1px solid var(--border-subtle);
   border-radius: 12px;
   padding: 12px 14px;
-  background: var(--surface-soft, rgba(15, 23, 42, .28));
+  background: var(--bg-surface);
 }
 
 .semantic-learning-objectives ul { margin: 8px 0 0; padding-left: 20px; }
 .semantic-learning-objectives li { margin: 4px 0; }
 .semantic-key-question { display: flex; align-items: baseline; gap: 10px; border-color: rgba(56, 189, 248, .35); }
-.semantic-key-question strong { color: var(--text-primary, #e2e8f0); }
+.semantic-key-question strong { color: var(--text-primary); }
 .semantic-evidence { display: grid; gap: 7px; border-color: rgba(52, 211, 153, .3); }
-.evidence-command { overflow-x: auto; color: #a7f3d0; }
-.evidence-observes { color: var(--text-secondary, #cbd5e1); }
+.evidence-command { overflow-x: auto; color: var(--text-primary); }
+.evidence-observes { color: var(--text-secondary); }
 .semantic-invariant { border-color: rgba(129, 140, 248, .35); }
 .semantic-invariant > div:last-child { margin-top: 6px; }
 .semantic-failure-mode { border-color: rgba(251, 146, 60, .38); }
 .semantic-failure-mode dl { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; margin: 8px 0 0; }
-.semantic-failure-mode dt { color: var(--text-muted, #94a3b8); font-size: .8rem; }
-.semantic-failure-mode dd { margin: 0; }
+.semantic-failure-mode dt { color: var(--text-primary); font-size: .82rem; font-weight: 700; }
+.semantic-failure-mode dd { margin: 0; color: var(--text-secondary); }
 .failure-details { margin-top: 10px; }
-.semantic-tradeoff { border: 1px solid rgba(250, 204, 21, .3); border-radius: 12px; padding: 12px 14px; background: var(--surface-soft, rgba(15,23,42,.24)); }
+.semantic-tradeoff { border: 1px solid rgba(250, 204, 21, .3); border-radius: 12px; padding: 12px 14px; background: var(--bg-surface); }
 .tradeoff-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-top: 8px; }
-.tradeoff-option { display: grid; gap: 4px; padding: 9px; border-radius: 8px; background: rgba(148,163,184,.08); }
-.tradeoff-option span { color: var(--text-secondary, #cbd5e1); font-size: .86rem; }
-.tradeoff-option b { color: var(--text-muted, #94a3b8); font-size: .72rem; margin-right: 5px; }
+.tradeoff-option { display: grid; gap: 4px; padding: 9px; border-radius: 8px; background: var(--bg-subtle); }
+.tradeoff-option span { color: var(--text-secondary); font-size: .86rem; }
+.tradeoff-option b { color: var(--text-primary); font-size: .72rem; margin-right: 5px; }
 
 .semantic-callout {
   padding: 16px 20px;
@@ -2906,7 +2906,7 @@ button.flow-box {
 
 .semantic-callout.has-callout-title {
   display: grid;
-  grid-template-columns: minmax(8rem, 11rem) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
   gap: 16px;
   align-items: start;
 }
@@ -3237,6 +3237,13 @@ html[data-carrier='scroll'] #root {
   width: 100%;
 }
 
+/* The drill-down entrance is the primary navigation affordance; give it the
+   full board width so its child cards can form a proper grid instead of being
+   stacked inside one third of a row. */
+.draft-board .drill-down-section {
+  grid-column: 1 / -1;
+}
+
 @media (max-width: 1120px) {
   .continuous-model-pair { grid-template-columns: 1fr; }
   .continuous-model-pair .semantic-model-pyramid,
@@ -3550,6 +3557,156 @@ html[data-carrier='scroll'] #root {
   height: auto;
   border-radius: var(--radius-2);
   background: var(--bg-subtle);
+}
+
+/* Click-to-zoom trigger. The wrapper is a button so the affordance is reachable
+   by keyboard, but it must read as the image itself rather than as chrome. */
+.figure-zoom-trigger {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-2);
+  background: none;
+  line-height: 0;
+  cursor: zoom-in;
+}
+
+.figure-zoom-trigger:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.figure-zoom-hint {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-2);
+  background: color-mix(in srgb, var(--bg-surface) 88%, transparent);
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.5;
+  opacity: 0.7;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.figure-zoom-trigger:hover .figure-zoom-hint,
+.figure-zoom-trigger:focus-visible .figure-zoom-hint {
+  color: var(--text-primary);
+  opacity: 1;
+}
+
+/* ---- Image zoom overlay ---- */
+
+.image-zoom-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background: color-mix(in srgb, #05080f 84%, transparent);
+}
+
+.image-zoom-stage {
+  display: grid;
+  place-items: center;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+}
+
+.image-zoom-stage.is-dragging { cursor: grabbing; }
+
+.image-zoom-stage img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(94vw, 1800px);
+  max-height: 84vh;
+  border-radius: var(--radius-2);
+  background: var(--bg-surface);
+  box-shadow: 0 24px 60px -22px rgba(0, 0, 0, 0.75);
+  transition: transform 0.12s ease-out;
+  will-change: transform;
+  user-select: none;
+}
+
+.image-zoom-stage.is-dragging img { transition: none; }
+
+.image-zoom-caption {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  max-width: min(90vw, 900px);
+  transform: translateX(-50%);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.image-zoom-caption b {
+  margin-right: 8px;
+  color: var(--text-accent);
+}
+
+.image-zoom-toolbar {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  transform: translateX(-50%);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-3);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-pop);
+  color: var(--text-secondary);
+}
+
+.image-zoom-toolbar button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-1);
+  color: inherit;
+  font-size: 14px;
+}
+
+.image-zoom-toolbar button:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+}
+
+.image-zoom-toolbar span {
+  min-width: 46px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image-zoom-stage img { transition: none; }
+}
+
+@media (max-width: 760px) {
+  .image-zoom-overlay { padding: 12px; }
+  .image-zoom-stage img { max-height: 74vh; }
+  .image-zoom-caption { top: 10px; font-size: 12px; }
+  .image-zoom-hint { opacity: 0.9; }
 }
 
 .semantic-figure figcaption {

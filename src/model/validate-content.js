@@ -576,3 +576,25 @@ export function countBySeverity(diagnostics) {
     return acc;
   }, { error: 0, warning: 0 });
 }
+
+/**
+ * Optional renderers a document actually instantiates.
+ *
+ * Mermaid and KaTeX (plus the ~1.4 MB of woff2 fonts its stylesheet inlines) are
+ * heavy enough that bundling them into a page which never renders a diagram or a
+ * formula dominates both build time and output size. The build reads these flags
+ * and swaps unused renderers for stubs.
+ *
+ * Detection runs on the masked source, so `<Math>` inside a fenced block or an
+ * inline code span does not count as usage.
+ */
+export function detectFeatures(source) {
+  const used = new Set();
+  for (const tag of tokenize(maskIgnored(source))) {
+    if (tag.kind !== 'close') used.add(tag.name);
+  }
+  return {
+    math: used.has('Math') || used.has('MathBlock'),
+    mermaid: used.has('Mermaid'),
+  };
+}

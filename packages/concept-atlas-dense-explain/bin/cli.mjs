@@ -4,19 +4,23 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { build } from 'vite';
 import { fileURLToPath } from 'node:url';
-import { validateMdxSource, countBySeverity } from '../template/src/model/validate-content.js';
+import { validateMdxSource, countBySeverity, detectFeatures } from '../template/src/model/validate-content.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const templateRoot = path.join(packageRoot, 'template');
 const args = process.argv.slice(2);
+let buildCounter = 0;
 
 function usage() {
   console.log('Usage:');
-  console.log('  npx concept-atlas-dense-explain <input.mdx> [--mode atlas|scroll] [-o output.html] [--force] [--json] [--no-validate]');
-  console.log('  npx concept-atlas-dense-explain render <input.mdx> [--mode atlas|scroll] [-o output.html] [--force]');
+  console.log('  npx concept-atlas-dense-explain <input.mdx>... [--mode atlas|scroll] [-o output.html|dir] [--force] [--concurrency N] [--link-assets] [--json] [--no-validate]');
+  console.log('  npx concept-atlas-dense-explain render <input.mdx>... [-o output.html|dir]');
   console.log('  npx concept-atlas-dense-explain validate <input.mdx> [--mode atlas|scroll] [--strict] [--json]');
   console.log('  npx concept-atlas-dense-explain create <output.mdx> [--mode atlas|scroll] [--force]');
   console.log('  npx concept-atlas-dense-explain guide [--mode atlas|scroll] [-o output.mdx] [--force]');
+  console.log('');
+  console.log('  Multiple inputs build in parallel (default 2 at a time, cap 4); -o is then a directory.');
+  console.log('  --link-assets keeps figures as relative links instead of inlining them as base64.');
 }
 
 async function exists(filePath) {
@@ -37,17 +41,55 @@ function fail(message) {
   process.exit(1);
 }
 
-function printDiagnostics(source, options, { json }) {
+const VALUE_FLAGS = new Set(['--mode', '-o', '--output', '--concurrency']);
+
+/** Splits argv into flags, flag values and positional arguments. */
+function parseFlags(argv) {
+  const flags = new Set();
+  const values = new Map();
+  const positional = [];
+  for (let i = 0; i < argv.length; i += 1) {
+    const arg = argv[i];
+    if (VALUE_FLAGS.has(arg)) {
+      values.set(arg, argv[i + 1]);
+      i += 1;
+    } else if (arg.startsWith('-') && arg.length > 1) {
+      flags.add(arg);
+    } else {
+      positional.push(arg);
+    }
+  }
+  return { flags, values, positional };
+}
+
+/**
+ * A single input may name an output file; a batch needs a directory, because the
+ * per-target file names come from the inputs.
+ */
+function resolveOutputs(inputs, explicit) {
+  const defaults = inputs.map(input => input.replace(/\.mdx$/i, '.html'));
+  if (!explicit) return defaults;
+  const target = path.resolve(explicit);
+  if (inputs.length === 1) return [target];
+  if (path.extname(target).toLowerCase() === '.html') {
+    fail('`-o` must be a directory when building more than one input.');
+  }
+  return inputs.map(input => path.join(target, `${path.basename(input, path.extname(input))}.html`));
+}
+
+function printDiagnostics(source, options, { json, label = null, quiet = false }) {
   const result = validateMdxSource(source, options);
+  if (quiet) return result;
   if (json) {
     process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
     return result;
   }
+  if (label) console.error(`\n${label}`);
   const { diagnostics, carrier, stats } = result;
   for (const item of diagnostics) {
-    const label = item.severity === 'error' ? 'error' : 'warn ';
+    const severity = item.severity === 'error' ? 'error' : 'warn ';
     const where = `${item.line}:${item.column}`;
-    console.error(`${label} ${where}  ${item.code}  ${item.message}`);
+    console.error(`${severity} ${where}  ${item.code}  ${item.message}`);
   }
   const { error, warning } = countBySeverity(diagnostics);
   const scope = carrier ? `${carrier} · ${stats.nodes} 节点 / ${stats.relations} 关系` : '未识别载体';
@@ -151,83 +193,179 @@ if (command === 'create' || command === 'new') {
   process.exit(0);
 }
 
-const json = args.includes('--json');
-const strict = args.includes('--strict');
-const skipValidate = args.includes('--no-validate');
+const parsed = parseFlags(args);
+const json = parsed.flags.has('--json');
+const strict = parsed.flags.has('--strict');
+const skipValidate = parsed.flags.has('--no-validate');
+const force = parsed.flags.has('--force');
+const linkAssets = parsed.flags.has('--link-assets');
+const modeFlag = parsed.values.get('--mode') || null;
 
 if (command === 'validate') {
-  const target = args[0] ? path.resolve(args[0]) : null;
+  const target = parsed.positional[0] ? path.resolve(parsed.positional[0]) : null;
   if (!target || path.extname(target).toLowerCase() !== '.mdx' || !(await exists(target))) {
     fail('Provide an existing .mdx file to validate.');
   }
   const source = await readFile(target, 'utf8');
-  const modeFlag = flagValue(args, ['--mode']);
   const result = printDiagnostics(source, {
     filePath: target,
-    mode: modeFlag || null,
+    mode: modeFlag,
     strict,
     assetExists: spec => existsSync(path.resolve(path.dirname(target), spec)),
   }, { json });
   process.exit(countBySeverity(result.diagnostics).error ? 1 : 0);
 }
 
-if (args[0] && args[0].toLowerCase() === 'render') args.shift();
-const input = args[0] ? path.resolve(args[0]) : null;
-const modeFlag = flagValue(args, ['--mode']);
-const output = path.resolve(flagValue(args, ['-o', '--output']) || (input ? input.replace(/\.mdx$/i, '.html') : ''));
-const force = args.includes('--force');
+// `render` is the default command, so it may still appear as a leading token.
+const positional = parsed.positional[0] && parsed.positional[0].toLowerCase() === 'render'
+  ? parsed.positional.slice(1)
+  : parsed.positional;
+const inputs = positional.map(entry => path.resolve(entry));
 
-if (!input || path.extname(input).toLowerCase() !== '.mdx' || !(await exists(input))) {
-  console.error('Provide an existing .mdx input file.');
+if (!inputs.length) {
+  console.error('Provide at least one existing .mdx input file.');
   usage();
   process.exit(1);
 }
+for (const input of inputs) {
+  if (path.extname(input).toLowerCase() !== '.mdx' || !(await exists(input))) {
+    console.error(`Not an existing .mdx input: ${input}`);
+    process.exit(1);
+  }
+}
 
-const source = await readFile(input, 'utf8');
-const validation = printDiagnostics(source, {
-  filePath: input,
-  mode: modeFlag || null,
+const outputs = resolveOutputs(inputs, parsed.values.get('-o') || parsed.values.get('--output'));
+
+for (const output of outputs) {
+  if (await exists(output) && !force) {
+    console.error(`Refusing to overwrite ${output}; pass --force to replace it.`);
+    process.exit(1);
+  }
+}
+
+const multi = inputs.length > 1;
+const sources = await Promise.all(inputs.map(input => readFile(input, 'utf8')));
+
+// Validate every document before building any of them: a batch should fail as a
+// batch rather than leaving half the targets rendered.
+const validations = sources.map((source, index) => printDiagnostics(source, {
+  filePath: inputs[index],
+  mode: modeFlag,
   strict,
-  assetExists: spec => existsSync(path.resolve(path.dirname(input), spec)),
-}, { json });
-const { error: errorCount } = countBySeverity(validation.diagnostics);
+  assetExists: spec => existsSync(path.resolve(path.dirname(inputs[index]), spec)),
+}, json
+  ? { json: false, quiet: true }
+  : { json: false, label: multi ? inputs[index] : null }));
 
+if (json) {
+  const payload = multi
+    ? validations.map((result, index) => ({ file: inputs[index], ...result }))
+    : validations[0];
+  process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+}
+
+const errorCount = validations.reduce((sum, result) => sum + countBySeverity(result.diagnostics).error, 0);
 if (errorCount && !skipValidate) {
   console.error('内容校验未通过，已停止构建。修复后重试，或用 --no-validate 强制构建。');
   process.exit(1);
 }
 
-const mode = modeFlag || validation.carrier;
-if (!mode || !['atlas', 'scroll'].includes(mode)) {
-  console.error('Could not detect the MDX carrier; choose --mode atlas or --mode scroll.');
-  process.exit(1);
-}
-if (await exists(output) && !force) {
-  console.error(`Refusing to overwrite ${output}; pass --force to replace it.`);
-  process.exit(1);
-}
-await mkdir(path.dirname(output), { recursive: true });
-
-const templateEntry = mode === 'atlas' ? 'index.html' : 'scroll.html';
-const generatedEntry = path.join(path.dirname(output), templateEntry);
-
-try {
-  await build({
-    root: templateRoot,
-    configFile: path.join(templateRoot, 'vite.config.js'),
-    resolve: { alias: { '@concept-atlas/content': input } },
-    build: {
-      outDir: path.dirname(output),
-      emptyOutDir: false,
-      rollupOptions: { input: path.join(templateRoot, templateEntry) },
-    },
-  });
-  if (generatedEntry !== output) {
-    await rm(output, { force: true });
-    await rename(generatedEntry, output);
+const jobs = inputs.map((input, index) => {
+  const mode = modeFlag || validations[index].carrier;
+  if (!mode || !['atlas', 'scroll'].includes(mode)) {
+    console.error(`Could not detect the MDX carrier for ${input}; choose --mode atlas or --mode scroll.`);
+    process.exit(1);
   }
-  console.log(`Built ${mode} HTML: ${output}`);
-} catch (error) {
-  console.error('Build failed:', error);
+  if (linkAssets && path.resolve(path.dirname(outputs[index])) !== path.resolve(path.dirname(input))) {
+    console.error(`警告：--link-assets 下 ${outputs[index]} 不在 ${path.dirname(input)} 内，相对图片路径会失效。`);
+  }
+  return { input, output: outputs[index], mode, features: detectFeatures(sources[index]), linkAssets };
+});
+
+const limit = clampConcurrency(parsed.values.get('--concurrency'), jobs.length);
+const started = Date.now();
+const results = await runPool(jobs.map(job => () => buildOne(job)), limit);
+
+const failures = results.filter(result => !result.ok);
+const saved = summarizeFeatures(jobs, results);
+console.log(`Built ${results.length - failures.length}/${results.length} page(s) with concurrency ${limit} in ${((Date.now() - started) / 1000).toFixed(1)}s${saved ? ` (${saved})` : ''}.`);
+if (failures.length) {
+  for (const failure of failures) console.error(`Build failed for ${failure.input}:`, failure.error);
   process.exit(1);
+}
+
+async function buildOne(job) {
+  const { input, output, mode, features, linkAssets: link } = job;
+  const templateEntry = mode === 'atlas' ? 'index.html' : 'scroll.html';
+  // Each build gets its own scratch outDir: the template always writes
+  // `index.html`/`scroll.html`, so concurrent builds sharing a directory would
+  // overwrite each other before the rename.
+  const scratch = path.join(path.dirname(output), `.concept-atlas-${process.pid}-${(buildCounter += 1)}`);
+  await mkdir(path.dirname(output), { recursive: true });
+  await mkdir(scratch, { recursive: true });
+  const define = { __ATLAS_FEATURES__: JSON.stringify(features) };
+  if (link) define.__ATLAS_INLINE_ASSETS__ = 'false';
+  try {
+    await build({
+      root: templateRoot,
+      configFile: path.join(templateRoot, 'vite.config.js'),
+      resolve: { alias: { '@concept-atlas/content': input } },
+      define,
+      build: {
+        outDir: scratch,
+        emptyOutDir: false,
+        rollupOptions: { input: path.join(templateRoot, templateEntry) },
+      },
+    });
+    await rm(output, { force: true });
+    await rename(path.join(scratch, templateEntry), output);
+    console.log(`Built ${mode} HTML: ${output}${describeFeatures(features)}${link ? '  [figures linked]' : ''}`);
+    return { ok: true, input, output };
+  } catch (error) {
+    return { ok: false, input, output, error };
+  } finally {
+    await rm(scratch, { recursive: true, force: true });
+  }
+}
+
+/** Saves the mermaid/KaTeX payload when a document never renders them. */
+function describeFeatures(features) {
+  if (features.math && features.mermaid) return '';
+  const dropped = [features.math ? null : 'KaTeX', features.mermaid ? null : 'Mermaid'].filter(Boolean);
+  return `  [no ${dropped.join('/')}]`;
+}
+
+function summarizeFeatures(jobs, results) {
+  const built = new Set(results.filter(result => result.ok).map(result => result.input));
+  const pages = jobs.filter(job => built.has(job.input));
+  if (!pages.length) return '';
+  const droppedMath = pages.filter(job => !job.features.math).length;
+  const droppedMermaid = pages.filter(job => !job.features.mermaid).length;
+  const parts = [];
+  if (droppedMath) parts.push(`KaTeX dropped on ${droppedMath}/${pages.length}`);
+  if (droppedMermaid) parts.push(`Mermaid dropped on ${droppedMermaid}/${pages.length}`);
+  return parts.join(', ');
+}
+
+function clampConcurrency(raw, count) {
+  const parsedValue = Number.parseInt(raw ?? '', 10);
+  const fallback = Math.min(2, count);
+  if (!Number.isFinite(parsedValue)) return Math.max(1, fallback);
+  return Math.max(1, Math.min(4, parsedValue));
+}
+
+/** Runs `tasks` with at most `limit` in flight, preserving result order. */
+async function runPool(tasks, limit) {
+  const results = new Array(tasks.length);
+  let cursor = 0;
+  const workers = Array.from({ length: Math.min(limit, tasks.length) }, async () => {
+    for (;;) {
+      const index = cursor;
+      cursor += 1;
+      if (index >= tasks.length) return;
+      results[index] = await tasks[index]();
+    }
+  });
+  await Promise.all(workers);
+  return results;
 }

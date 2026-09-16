@@ -34,6 +34,11 @@ test('atlas example renders its concept tree, charts and math', async () => {
   assert.match(html, /chart-canvas/);
   assert.match(html, /katex/);
   assert.match(html, /semantic-figure/);
+  // Figures expose a keyboard-reachable zoom trigger instead of a bare <img>.
+  assert.match(html, /class="figure-zoom-trigger"/);
+  assert.match(html, /figure-zoom-hint/);
+  // The overlay is mounted only on demand, so it must not be in the initial tree.
+  assert.doesNotMatch(html, /image-zoom-overlay/);
 });
 
 test('scroll example renders prose, charts, math and citations', async () => {

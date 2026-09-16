@@ -27,7 +27,8 @@ If the user only wants the prompt/methodology and not files, still choose a shel
    ```
    Every diagnostic is `CODE line:column message`. Fix all `error`s and re-run; warnings are quality signals you should also address when cheap.
 6. Compile: `npx concept-atlas-dense-explain <file>.mdx --mode atlas|scroll [-o out.html]`. Output is a standalone HTML beside the MDX unless `-o` is given. Validation errors abort the build; use `--no-validate` only to force a knowingly broken build.
-7. Report the shell, output path, validation result (errors/warnings), and limitations. Do not claim interactions you did not verify.
+7. For several documents, pass them all in one call: `npx concept-atlas-dense-explain a.mdx b.mdx c.mdx -o dist --force [--concurrency 3]`. `-o` is then a directory. The batch validates everything first and builds in parallel. Builds only bundle the heavy renderers the content uses: a page with no `<Math>`/`<Mermaid>` skips KaTeX (its ~1.4MB inlined fonts) and Mermaid, shrinking a typical scroll article from ~5MB to ~250KB. Do not add dummy `<Math>`/`<Mermaid>` nodes to "enable" them — write the components only when the content needs them. Add `--link-assets` when the page carries many screenshots and size matters.
+8. Report the shell, output path, validation result (errors/warnings), and limitations. Do not claim interactions you did not verify.
 
 ## Carriers
 
@@ -51,10 +52,11 @@ If the user only wants the prompt/methodology and not files, still choose a shel
 - `Relation type` must be one of `prerequisite`, `causes`, `produces`, `uses`, `implements`, `contrasts`, `depends-on`, `exception-of`, `precedes`, and each `Relation` needs a `label`. Parent/child hierarchy is implicit (via `parent` and `Children`/`ConceptRef`) — do not express it with a `Relation`.
 - **Math**: MDX parses `{ ... }` in children as expressions, so pass LaTeX with braces or backslashes through `formula`: `<Math formula="r_{\text{ann}} = (1 + r)^{12} - 1" />`, `<MathBlock formula="I(x) = -\log_2 p(x)" variables={[{symbol, description}]} />`. Brace-free children such as `<Math>\log_2 N</Math>` are fine. The validator warns (`MATH_CHILDREN_BRACES`).
 - **Chart**: `type` is `bar` | `line` | `pie`; use `data` for bar/pie and `labels` + `series={[{name, values}]}` for line. Charts follow theme colors.
-- **Figure**: a relative `src` (`./assets/diagram.png`) is inlined as base64 at build time so the HTML stays standalone; `http(s)` URLs stay links. Always set `alt`; add `label` and `caption` for a numbered caption. A missing relative file produces an `ASSET_MISSING` warning and a placeholder.
+- **Figure**: a relative `src` (`./assets/diagram.png`) is inlined as base64 at build time so the HTML stays standalone; `http(s)` URLs stay links. Always set `alt`; add `label` and `caption` for a numbered caption. A missing relative file produces an `ASSET_MISSING` warning and a placeholder. Readers can click any figure to open it full-screen (wheel/`+`/`−` zoom, drag to pan, double-click for 1x/2x, `Esc` to close) — mention this when a page carries dense diagrams.
+- **Figure size**: inlining is what makes a screenshot-heavy page large. When a document carries many images and the user cares about size, compile with `--link-assets` to keep them as relative links (measured: 1.51MB → 270KB on one page). The output then has to live beside the MDX's `assets/` directory, and the CLI warns if `-o` points elsewhere — tell the user that trade-off instead of choosing silently.
 - **Cite/References**: `<Cite id="..." />` renders `[n]` from the matching item's position in `<References items={...} />`. In `scroll`, `References` can sit anywhere. In `atlas`, keep the cites and the `References` block in the same node, because node content only renders when that node is open.
 - Continuous reading is configured on the shell, not with manual CSS: `spacing="compact|comfortable|airy"` for rhythm, `fontSize="compact|normal|large|xlarge"` (or numeric `scale`/`lineHeight`) for text size.
-- Be brief about cost: KaTeX fonts and Mermaid roughly double the single-file output (~5 MB), which is normal for an offline explainer. Mention it if the user cares about file size.
+- Be brief about cost: the build only bundles the heavy optional renderers the document actually uses, so a page with no `<Math>`/`<Mermaid>` comes out around 250KB. Inlined figures are usually the largest remaining cost — a page with a dozen screenshots lands near 1–2MB, which is normal for an offline explainer. Mention it if the user cares about file size.
 
 ## Validation diagnostics
 

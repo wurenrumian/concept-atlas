@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateMdxSource, countBySeverity, KNOWN_COMPONENT_SET } from '../src/model/validate-content.js';
+import { validateMdxSource, countBySeverity, detectFeatures, KNOWN_COMPONENT_SET } from '../src/model/validate-content.js';
 
 const codes = result => result.diagnostics.map(item => item.code);
 const errorsOf = result => result.diagnostics.filter(item => item.severity === 'error').map(item => item.code);
@@ -146,4 +146,26 @@ test('leading frontmatter is flagged because MDX renders it as text', () => {
 
   const without = validateMdxSource(atlas(rootNode));
   assert.ok(!warningsOf(without).includes('FRONTMATTER_UNSUPPORTED'));
+});
+
+test('detectFeatures reports which optional renderers a document needs', () => {
+  const proseOnly = detectFeatures(`<ScrollDocument><ScrollProse>一段话</ScrollProse></ScrollDocument>`);
+  assert.deepEqual(proseOnly, { math: false, mermaid: false });
+
+  const mathOnly = detectFeatures(`${atlas(rootNode)}\n  <MathBlock formula="E = mc^2" />`);
+  assert.deepEqual(mathOnly, { math: true, mermaid: false });
+
+  const both = detectFeatures(`${atlas(rootNode)}\n  <Mermaid chart="flowchart LR; A-->B" />`);
+  assert.deepEqual(both, { math: false, mermaid: true });
+
+  const inlineMath = detectFeatures(`${atlas(rootNode)}\n  <Overview>符号 <Math>x</Math> 表示变量。</Overview>`);
+  assert.equal(inlineMath.math, true);
+});
+
+test('detectFeatures ignores samples inside code fences and inline code', () => {
+  const fenced = detectFeatures(`${atlas(rootNode)}\n\n\`\`\`mdx\n<Mermaid chart="flowchart LR; A-->B" />\n<MathBlock formula="E = mc^2" />\n\`\`\``);
+  assert.deepEqual(fenced, { math: false, mermaid: false });
+
+  const inline = detectFeatures(`${atlas(rootNode)}\n  <Definition>写作 \`<Mermaid>\` 表示图表节点。</Definition>`);
+  assert.equal(inline.mermaid, false);
 });

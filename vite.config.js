@@ -22,13 +22,21 @@ const MIME_TYPES = {
  * into base64 data URIs at build time. Keeps the single-file HTML self-contained
  * and offline-openable without a runtime asset loader. Remote (http/data) and
  * absolute paths are left untouched.
+ *
+ * `--link-assets` (the `__ATLAS_INLINE_ASSETS__` define) turns this off so figures
+ * stay relative links. That keeps the output small at the cost of the page no
+ * longer being self-contained: the HTML must sit beside the MDX's `assets/` dir.
  */
 function inlineMdxAssets() {
+  const state = { enabled: true };
   return {
     name: 'concept-atlas-inline-assets',
     enforce: 'pre',
+    configResolved(config) {
+      state.enabled = (config.define || {}).__ATLAS_INLINE_ASSETS__ !== 'false';
+    },
     transform(code, id) {
-      if (!id.endsWith('.mdx')) return null;
+      if (!state.enabled || !id.endsWith('.mdx')) return null;
       const dir = path.dirname(id.split('?')[0]);
       let changed = false;
       const output = code.replace(/(<[A-Za-z][\w.]*\b[^>]*?\bsrc=)(["'])([^"']+)\2/g, (match, prefix, quote, src) => {
@@ -44,6 +52,73 @@ function inlineMdxAssets() {
   };
 }
 
+/**
+ * Swaps optional renderers for stubs when the document never uses them.
+ *
+ * Mermaid and KaTeX are the two dependencies whose transform cost and payload
+ * dominate a build: KaTeX alone contributes ~60 woff2 files that
+ * vite-plugin-singlefile base64-inlines into every page (~1.4 MB), and Mermaid
+ * is a large share of the JS bundle. A page with no <Mermaid> or <Math> should
+ * not pay for either.
+ *
+ * The CLI computes `detectFeatures(source)` and passes the result as the
+ * `__ATLAS_FEATURES__` define; without it (e.g. the repository's own build) every
+ * feature stays enabled and behaviour is unchanged.
+ */
+const OPTIONAL_FEATURES = {
+  mermaid: { feature: 'mermaid', stub: 'mermaid' },
+  katex: { feature: 'math', stub: 'katex' },
+  'katex/dist/katex.min.css': { feature: 'math', stub: 'katex-css' },
+};
+
+const FEATURE_STUBS = {
+  mermaid: `const mermaid = {
+  initialize() {},
+  render() {
+    throw new Error('Mermaid is not bundled in this build: the document has no <Mermaid>.');
+  },
+};
+export default mermaid;
+`,
+  katex: `const katex = {
+  renderToString() {
+    throw new Error('KaTeX is not bundled in this build: the document has no <Math>.');
+  },
+};
+export default katex;
+`,
+  // The stylesheet stub is intentionally empty: dropping it is what removes the
+  // base64-inlined KaTeX woff2 payload from the page.
+  'katex-css': '',
+};
+
+function optionalFeatures() {
+  let enabled = { math: true, mermaid: true };
+  return {
+    name: 'concept-atlas-optional-features',
+    enforce: 'pre',
+    configResolved(config) {
+      const raw = config.define && config.define.__ATLAS_FEATURES__;
+      if (typeof raw !== 'string') return;
+      try {
+        enabled = { math: true, mermaid: true, ...JSON.parse(raw) };
+      } catch {
+        enabled = { math: true, mermaid: true };
+      }
+    },
+    resolveId(source) {
+      const entry = OPTIONAL_FEATURES[source];
+      if (!entry || enabled[entry.feature] !== false) return null;
+      return `\0atlas-stub:${entry.stub}`;
+    },
+    load(id) {
+      if (!id.startsWith('\0atlas-stub:')) return null;
+      const stub = id.slice('\0atlas-stub:'.length);
+      return Object.hasOwn(FEATURE_STUBS, stub) ? FEATURE_STUBS[stub] : null;
+    },
+  };
+}
+
 export default defineConfig({
   plugins: [
     inlineMdxAssets(),
@@ -54,6 +129,7 @@ export default defineConfig({
       }),
     },
     react(),
+    optionalFeatures(),
     viteSingleFile(),
   ],
   build: {

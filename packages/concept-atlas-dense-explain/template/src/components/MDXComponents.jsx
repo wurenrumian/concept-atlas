@@ -1,6 +1,8 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import mermaid from 'mermaid';
 import katex from 'katex';
+import { ZoomIn } from 'lucide-react';
 import 'katex/dist/katex.min.css';
 import { registerReferences, subscribeReferences, getReferenceIndex } from '../model/citations.js';
 
@@ -954,18 +956,153 @@ Chart.displayName = 'Chart';
 
 // Figures -------------------------------------------------------------------
 
+const ZOOM_MIN = 0.5;
+const ZOOM_MAX = 6;
+
+/**
+ * Full-viewport image viewer. Rendered through a portal so it escapes the
+ * transformed/rotated ancestor surfaces (`position: fixed` would otherwise be
+ * contained by them). Supports wheel zoom, drag to pan, double-click to toggle
+ * 1x/2x, and Escape to close.
+ */
+function ImageZoom({ src, alt, caption, label, onClose }) {
+  const [scale, setScale] = React.useState(1);
+  const [offset, setOffset] = React.useState({ x: 0, y: 0 });
+  const [dragging, setDragging] = React.useState(false);
+  const stageRef = React.useRef(null);
+  const closeRef = React.useRef(null);
+  const dragRef = React.useRef(null);
+  const movedRef = React.useRef(false);
+  const scaleRef = React.useRef(scale);
+  scaleRef.current = scale;
+
+  const clampScale = value => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, +value.toFixed(3)));
+  const zoomBy = delta => setScale(value => clampScale(value + delta));
+  const reset = () => { setScale(1); setOffset({ x: 0, y: 0 }); };
+  // Cursor-anchored zoom feels wrong at 1x; recentre whenever we return to it.
+  const settle = value => { if (value <= 1) setOffset({ x: 0, y: 0 }); };
+
+  React.useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return undefined;
+    // React binds `wheel` passively, so preventDefault needs a native listener.
+    const onWheel = event => {
+      event.preventDefault();
+      const next = clampScale(scaleRef.current * Math.exp(-event.deltaY * 0.0015));
+      setScale(next);
+      settle(next);
+    };
+    stage.addEventListener('wheel', onWheel, { passive: false });
+    return () => stage.removeEventListener('wheel', onWheel);
+  }, []);
+
+  React.useEffect(() => {
+    const onKeyDown = event => {
+      if (event.key === 'Escape') { event.stopPropagation(); onClose(); }
+      else if (event.key === '+' || event.key === '=') zoomBy(0.25);
+      else if (event.key === '-' || event.key === '_') zoomBy(-0.25);
+      else if (event.key === '0') reset();
+    };
+    window.addEventListener('keydown', onKeyDown, true);
+    const { overflow } = document.body.style;
+    document.body.style.overflow = 'hidden';
+    closeRef.current?.focus();
+    return () => {
+      window.removeEventListener('keydown', onKeyDown, true);
+      document.body.style.overflow = overflow;
+    };
+  }, [onClose]);
+
+  const onPointerDown = event => {
+    if (event.target.closest('button')) return;
+    dragRef.current = { id: event.pointerId, x: event.clientX, y: event.clientY, ox: offset.x, oy: offset.y };
+    movedRef.current = false;
+    setDragging(true);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const onPointerMove = event => {
+    const drag = dragRef.current;
+    if (!drag || drag.id !== event.pointerId) return;
+    const dx = event.clientX - drag.x;
+    const dy = event.clientY - drag.y;
+    if (!movedRef.current && Math.hypot(dx, dy) < 6) return;
+    movedRef.current = true;
+    setOffset({ x: drag.ox + dx, y: drag.oy + dy });
+  };
+
+  const onPointerUp = event => {
+    if (dragRef.current?.id === event.pointerId) {
+      dragRef.current = null;
+      setDragging(false);
+      event.currentTarget.releasePointerCapture?.(event.pointerId);
+    }
+  };
+
+  const title = alt || caption || '图片';
+
+  return createPortal(
+    <div
+      className="image-zoom-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`放大查看：${title}`}
+      onClick={event => { if (event.target === event.currentTarget && !movedRef.current) onClose(); }}
+    >
+      <div
+        ref={stageRef}
+        className={`image-zoom-stage${dragging ? ' is-dragging' : ''}`}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        onDoubleClick={() => { const next = scaleRef.current > 1 ? 1 : 2; setScale(next); settle(next); }}
+        onClick={event => { if (movedRef.current) { event.stopPropagation(); movedRef.current = false; } }}
+      >
+        <img
+          src={src}
+          alt={alt || ''}
+          draggable="false"
+          style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})` }}
+        />
+      </div>
+      {title && <p className="image-zoom-caption">{label && <b>{label}</b>}{caption || alt}</p>}
+      <div className="image-zoom-toolbar">
+        <button type="button" onClick={() => zoomBy(-0.25)} aria-label="缩小" title="缩小（−）">−</button>
+        <span aria-live="polite">{Math.round(scale * 100)}%</span>
+        <button type="button" onClick={() => zoomBy(0.25)} aria-label="放大" title="放大（＋）">＋</button>
+        <button type="button" onClick={reset} aria-label="重置缩放" title="重置（0）">↺</button>
+        <button type="button" ref={closeRef} onClick={onClose} aria-label="关闭" title="关闭（Esc）">✕</button>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
 export function Figure({ src, alt = '', caption, label, width = 'auto', height = 'auto', x = 0, y = 0, position = 'flow' }) {
+  const [zoomed, setZoomed] = React.useState(false);
+  const title = alt || caption || '图片';
+
   return (
     <figure className={`semantic-figure ${widgetClass(position)}`} style={widgetStyle({ width, height, x, y, position })}>
-      {src
-        ? <img src={src} alt={alt} loading="lazy" />
-        : <div className="figure-placeholder">缺少图片 src</div>}
+      {src ? (
+        <button
+          type="button"
+          className="figure-zoom-trigger"
+          onClick={() => setZoomed(true)}
+          aria-label={`放大查看：${title}`}
+        >
+          <img src={src} alt={alt} loading="lazy" />
+          <span className="figure-zoom-hint" aria-hidden="true"><ZoomIn size={12} />点击放大</span>
+        </button>
+      ) : <div className="figure-placeholder">缺少图片 src</div>}
       {(caption || label) && (
         <figcaption>
           {label && <span className="figure-label">{label}</span>}
           {caption}
         </figcaption>
       )}
+      {zoomed && <ImageZoom src={src} alt={alt} caption={caption} label={label} onClose={() => setZoomed(false)} />}
     </figure>
   );
 }
