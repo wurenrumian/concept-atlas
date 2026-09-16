@@ -563,32 +563,16 @@ export function ScrollDocument({ spacing = 'comfortable', fontSize = 'normal', s
     '--reading-line-height': String(lineHeight ?? preset.lineHeight),
   };
 
-  const activeIndex = items.findIndex(item => item.id === activeId);
-  const previous = activeIndex > 0 ? items[activeIndex - 1] : null;
-  const next = activeIndex >= 0 && activeIndex < items.length - 1 ? items[activeIndex + 1] : null;
+  const showToc = toc && items.length >= 2;
 
   return (
-    <article className={`continuous-document continuous-spacing-${safeSpacing}`} data-font-size={fontSize} style={style}>
+    <article className={`continuous-document continuous-spacing-${safeSpacing}${showToc ? ' has-toc' : ''}`} data-font-size={fontSize} style={style}>
       {progress && <ReadingProgress />}
       <ScrollOutlineContext.Provider value={outline}>
-        {toc && <ScrollToc items={items} activeId={activeId} />}
-        {children}
-        {activeIndex >= 0 && (previous || next) && (
-          <nav className="scroll-pager" aria-label="章节导航">
-            {previous ? (
-              <a className="pager-prev" href={`#${previous.id}`}>
-                <span>上一节</span>
-                <strong>{previous.title}</strong>
-              </a>
-            ) : <span className="pager-spacer" />}
-            {next ? (
-              <a className="pager-next" href={`#${next.id}`}>
-                <span>下一节</span>
-                <strong>{next.title}</strong>
-              </a>
-            ) : <span className="pager-spacer" />}
-          </nav>
-        )}
+        {showToc && <ScrollToc items={items} activeId={activeId} />}
+        <div className="continuous-content">
+          {children}
+        </div>
       </ScrollOutlineContext.Provider>
     </article>
   );
@@ -768,12 +752,16 @@ NoteGrid.displayName = 'NoteGrid';
 
 // Math ----------------------------------------------------------------------
 
-export function Math({ formula, children }) {
+// Named MathInline internally: exporting a function literally called `Math`
+// would shadow the global Math object for the whole module and break Math.max
+// and friends. It is exported as `Math` so MDX can use <Math>.
+function MathInline({ formula, children }) {
   const tex = (formula || childrenToText(children)).trim();
   if (!tex) return null;
   return <span className="semantic-math" dangerouslySetInnerHTML={{ __html: renderTex(tex, false) }} />;
 }
-Math.displayName = 'Math';
+MathInline.displayName = 'Math';
+export { MathInline as Math };
 
 export function MathBlock({ title = '公式', formula, variables = [], children }) {
   const tex = (formula || childrenToText(children)).trim();

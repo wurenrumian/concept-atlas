@@ -313,7 +313,7 @@ MDX 属性使用 JavaScript 表达式。字符串要加引号，数组和对象�
 
 ## 11. 可配置排版与阅读体验
 
-`ScrollDocument` 会自动根据章节标题生成目录、阅读进度和上一节/下一节导航，并用 `fontSize` 控制正文大小：
+`ScrollDocument` 会自动根据章节标题生成侧栏目录和阅读进度，并用 `fontSize` 控制正文大小：
 
 ```mdx
 <ScrollDocument spacing="comfortable" fontSize="large" toc progress>

@@ -32,7 +32,7 @@ If the user only wants the prompt/methodology and not files, still choose a shel
 ## Carriers
 
 - `atlas`: `ExplainPage` → `ConceptGraph` → `ConceptNode`, plus `Children`/`ConceptRef` and cross-branch `Relation`s. Exactly one `L0` root, several `L1` branches, depth to `L3`/`L4`. Shared components live inside nodes.
-- `scroll`: `ScrollDocument` → `ScrollHeader` + `ScrollSection` (+ `ScrollProse`, `ScrollGrid`). Shared components live inside sections. The shell auto-builds a table of contents, reading progress, and prev/next from section titles — do not hand-build navigation.
+- `scroll`: `ScrollDocument` → `ScrollHeader` + `ScrollSection` (+ `ScrollProse`, `ScrollGrid`). Shared components live inside sections. The shell auto-builds a a table of contents and reading progress from section titles — do not hand-build navigation.
 - Never make one MDX file both shells. When switching shells, convert only the outer structure.
 
 ## Component families

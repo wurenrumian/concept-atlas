@@ -125,7 +125,7 @@
     </ConceptNode>
 
     <ConceptNode id="chart-demo" title="Chart：用同一数据切换三种图形" level="L2" parent="extension-family" summary="bar、line、pie 三种类型共享数据形状，按比较、趋势或占比选择。">
-      <Definition>Chart 接收 data（{label, value} 数组）或 series + labels，在 SVG 中绘制并跟随主题色。</Definition>
+      <Definition>Chart 接收 data（`{label, value}` 数组）或 series + labels，在 SVG 中绘制并跟随主题色。</Definition>
       <Chart title="各阶段耗时" type="bar" unit="小时" data={[{label:'收集',value:6},{label:'分析',value:14},{label:'验证',value:9},{label:'落地',value:4}]} />
       <Chart title="留存趋势" type="line" labels={['第1周','第2周','第3周','第4周']} series={[{name:'留存率',values:[100,72,58,49]}]} />
     </ConceptNode>

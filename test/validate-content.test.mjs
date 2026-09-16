@@ -128,3 +128,22 @@ test('relation type and label are checked', () => {
   assert.ok(warnings.includes('UNKNOWN_RELATION_TYPE'));
   assert.ok(warnings.includes('RELATION_MISSING_LABEL'));
 });
+
+test('data shapes written as prose braces are flagged as MDX expressions', () => {
+  const result = validateMdxSource(atlas(`${rootNode}\n    <Definition>data（{label, value} 数组）</Definition>`));
+  assert.ok(warningsOf(result).includes('PROSE_EXPRESSION'));
+
+  const safe = validateMdxSource(atlas(`${rootNode}\n    <Definition>data（\`{label, value}\` 数组）</Definition>`));
+  assert.ok(!warningsOf(safe).includes('PROSE_EXPRESSION'));
+
+  const literals = validateMdxSource(atlas(`${rootNode}\n    <Flow steps={[{title: 'a'}]} />`));
+  assert.ok(!warningsOf(literals).includes('PROSE_EXPRESSION'));
+});
+
+test('leading frontmatter is flagged because MDX renders it as text', () => {
+  const withFm = validateMdxSource(`---\ntitle: doc\n---\n\n${atlas(rootNode)}`);
+  assert.ok(warningsOf(withFm).includes('FRONTMATTER_UNSUPPORTED'));
+
+  const without = validateMdxSource(atlas(rootNode));
+  assert.ok(!warningsOf(without).includes('FRONTMATTER_UNSUPPORTED'));
+});

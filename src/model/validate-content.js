@@ -286,6 +286,23 @@ function tokenize(source) {
   return tags;
 }
 
+/** Blank out tag ranges, preserving offsets and newlines, so only text remains. */
+function textRegions(source, tags) {
+  const ranges = tags
+    .map(tag => [tag.start, tag.end])
+    .sort((a, b) => a[0] - b[0]);
+  const pieces = [];
+  let cursor = 0;
+  for (const [start, end] of ranges) {
+    if (start < cursor) continue;
+    pieces.push(source.slice(cursor, start));
+    pieces.push(source.slice(start, end).replace(/[^\n]/g, ' '));
+    cursor = end;
+  }
+  pieces.push(source.slice(cursor));
+  return pieces.join('');
+}
+
 function attrsToMap(attrs) {
   const map = {};
   for (const attr of attrs) map[attr.name] = attr;
@@ -419,6 +436,24 @@ export function validateMdxSource(source, options = {}) {
     if (match[1].includes('{')) {
       add('warning', 'MATH_CHILDREN_BRACES', 'Math 子内容包含 {，MDX 会当作表达式；请改用 formula="..."', match.index, 'Math');
     }
+  }
+
+  // MDX evaluates `{ ... }` in prose as a JavaScript expression. Authors often
+  // write data shapes like `{label, value}` in a sentence, which crashes the
+  // page with "label is not defined".
+  const text = textRegions(masked, tags);
+  for (const match of text.matchAll(/\{([^{}]*)\}/g)) {
+    const expression = match[1].trim();
+    if (!expression || expression.startsWith('/*')) continue;
+    if (/^[A-Za-z_$][\w$]*\s*(,[\s\S]*)?$/.test(expression)) {
+      add('warning', 'PROSE_EXPRESSION', `正文中的 {${expression}} 会被 MDX 当作表达式并导致运行时报错；请改成行内代码 \`{${expression}}\``, match.index, expression);
+    }
+  }
+
+  // MDX has no frontmatter support by default: a leading `---` block renders as
+  // a stray rule and text at the top of the page.
+  if (/^---\r?\n[\s\S]*?\r?\n---(\r?\n|$)/.test(source)) {
+    add('warning', 'FRONTMATTER_UNSUPPORTED', '文件以 --- 开头，但 MDX 不解析 frontmatter，它会被渲染成正文；请删除', 0, null);
   }
 
   const carrier = usedComponents.has('ScrollDocument') ? 'scroll'

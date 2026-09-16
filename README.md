@@ -16,7 +16,7 @@
 - **两种页面模式**：`atlas` 适合概念导航与关系图谱；`scroll` 适合连续阅读的长文档。
 - **共享信息组件**：支持 `Insight`、`Flow`、`FrameworkModel`、`MatrixModel`、`Mermaid`、`RelationMap`、`NoteGrid`、`Callout`、`Details`、`Columns`、`Grid`、`Stack` 和 `Tabs` 等组件。
 - **扩展能力**：`Math`/`MathBlock`（KaTeX 公式）、`Chart`（bar/line/pie 图表）、`Figure`（构建时内联图片）、`Cite`/`References`（引用与文献）。
-- **阅读体验可配置**：`scroll` 自动生成目录、阅读进度和上下节导航，并支持 `fontSize`/`scale`/`lineHeight` 调整正文大小。
+- **阅读体验可配置**：`scroll` 自动生成侧栏目录和阅读进度，并支持 `fontSize`/`scale`/`lineHeight` 调整正文大小。
 - **内容校验**：CLI 在构建前校验结构，断链、重复 id、缺失字段和错误 prop 会直接报错。
 - **单文件输出**：MDX 可直接编译为无需额外运行时的独立 `.html` 文件。
 

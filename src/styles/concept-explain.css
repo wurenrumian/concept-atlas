@@ -3176,11 +3176,11 @@ html[data-carrier='scroll'] #root {
   justify-content: space-between;
 }
 
-.continuous-document > .semantic-framework-model,
-.continuous-document > .semantic-model-matrix,
-.continuous-document > .semantic-model-formula,
-.continuous-document > .semantic-model-pyramid,
-.continuous-document > .semantic-model-funnel,
+.continuous-content > .semantic-framework-model,
+.continuous-content > .semantic-model-matrix,
+.continuous-content > .semantic-model-formula,
+.continuous-content > .semantic-model-pyramid,
+.continuous-content > .semantic-model-funnel,
 .continuous-section > .semantic-framework-model,
 .continuous-section > .semantic-model-matrix,
 .continuous-section > .semantic-model-formula,
@@ -3339,29 +3339,44 @@ html[data-carrier='scroll'] #root {
   transition: transform 80ms linear;
 }
 
-/* ---- Table of contents ---- */
+/* ---- Table of contents (sticky sidebar) ---- */
+
+.continuous-content {
+  min-width: 0;
+}
 
 .scroll-toc {
   display: none;
 }
 
-@media (min-width: 1400px) {
-  .scroll-toc {
-    position: fixed;
-    top: 104px;
-    left: max(16px, calc(50% - 560px - 220px));
-    z-index: 30;
+@media (min-width: 1080px) {
+  .continuous-document.has-toc {
+    display: grid;
+    grid-template-columns: 208px minmax(0, 1fr);
+    column-gap: 44px;
+    align-items: start;
+  }
+
+  .continuous-document.has-toc > .scroll-toc {
+    position: sticky;
+    top: 24px;
     display: block;
-    width: 190px;
-    max-height: calc(100vh - 160px);
-    overflow: auto;
-    padding-right: 10px;
-    border-right: 1px solid var(--border-subtle);
+    grid-column: 1;
+    align-self: start;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    padding-right: 6px;
+  }
+
+  .continuous-document.has-toc > .continuous-content {
+    grid-column: 2;
   }
 }
 
 .scroll-toc-title {
-  margin-bottom: 10px;
+  margin: 0 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
   color: var(--text-dim);
   font-size: 11px;
   font-weight: 700;
@@ -3373,39 +3388,44 @@ html[data-carrier='scroll'] #root {
   margin: 0;
   padding: 0;
   list-style: none;
+  border-left: 1px solid var(--border-subtle);
   counter-reset: toc;
 }
 
 .scroll-toc-list li {
-  margin: 0 0 2px;
   counter-increment: toc;
 }
 
 .scroll-toc-list a {
-  display: block;
-  padding: 5px 8px 5px 22px;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 6px;
+  align-items: baseline;
+  margin-left: -1px;
+  padding: 6px 8px 6px 0;
   border-left: 2px solid transparent;
-  border-radius: var(--radius-1);
   color: var(--text-muted);
   font-size: 12.5px;
-  line-height: 1.4;
+  line-height: 1.45;
   text-decoration: none;
-  position: relative;
-  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  transition: color 0.15s ease, border-color 0.15s ease;
 }
 
 .scroll-toc-list a::before {
   content: counter(toc, decimal-leading-zero);
-  position: absolute;
-  left: 4px;
   color: var(--text-dim);
   font-size: 10px;
   font-variant-numeric: tabular-nums;
+  text-align: center;
+  transition: color 0.15s ease;
 }
 
 .scroll-toc-list a:hover {
   color: var(--text-primary);
-  background: var(--bg-highlight);
+}
+
+.scroll-toc-list a:hover::before {
+  color: var(--text-secondary);
 }
 
 .scroll-toc-list li.active a {
@@ -3414,49 +3434,8 @@ html[data-carrier='scroll'] #root {
   font-weight: 600;
 }
 
-/* ---- Section pager ---- */
-
-.scroll-pager {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-top: 8px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border-subtle);
-}
-
-.scroll-pager a {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 10px 12px;
-  border: 1px solid var(--border-medium);
-  border-radius: var(--radius-2);
-  background: var(--bg-surface);
-  text-decoration: none;
-  transition: border-color 0.15s ease, background 0.15s ease;
-}
-
-.scroll-pager a:hover {
-  border-color: var(--border-strong);
-  background: var(--bg-card-hover);
-}
-
-.scroll-pager a span {
-  color: var(--text-dim);
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.scroll-pager a strong {
-  color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.4;
-}
-
-.scroll-pager .pager-next {
-  text-align: right;
+.scroll-toc-list li.active a::before {
+  color: var(--primary-light);
 }
 
 /* ===========================================================================
