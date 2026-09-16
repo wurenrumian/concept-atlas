@@ -18,7 +18,7 @@
 - **扩展能力**：`Math`/`MathBlock`（KaTeX 公式）、`Chart`（bar/line/pie 图表）、`Figure`（构建时内联图片）、`Cite`/`References`（引用与文献）。
 - **阅读体验可配置**：`scroll` 自动生成侧栏目录和阅读进度，并支持 `fontSize`/`scale`/`lineHeight` 调整正文大小。
 - **内容校验**：CLI 在构建前校验结构，断链、重复 id、缺失字段和错误 prop 会直接报错。
-- **单文件输出**：MDX 可直接编译为无需额外运行时的独立 `.html` 文件。
+- **单文件输出**：MDX 可直接编译为无需额外运行时的独立 `.html` 文件。无图片时基础产物通常较小；实际体积主要取决于文档是否使用 Mermaid、KaTeX，以及是否将本地图片内联进 HTML。
 
 ## 安装与使用
 

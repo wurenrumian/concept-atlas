@@ -101,9 +101,11 @@
       <Children><ConceptRef id="fault-storm" /></Children>
     </ConceptNode>
     <ConceptNode id="fault-storm" title="缺页风暴与抖动" level="L4" parent="page-tables" input="工作集超过内存、随机访问或映射失配" output="大量 fault、低吞吐与尾延迟" summary="地址翻译正确并不代表性能健康；工作集与内存层级失配会让程序在换页上耗尽时间。">
+      <Boundary>当工作集稳定落在内存层级内时，缺页风暴通常不是主要瓶颈；需要结合 fault、I/O 等待和工作集观测判断。</Boundary>
       <Details summary="如何确认是内存层问题">同时观察 major/minor fault、TLB miss、I/O 等待和工作集大小；逐步缩小数据集或改变访问局部性，验证因果关系。</Details>
     </ConceptNode>
     <ConceptNode id="dynamic-loader" title="共享库与符号可见性" level="L3" parent="loader-protocol" input="依赖清单、搜索路径与版本符号" output="进程内可调用的共享对象" summary="动态装载器同时解决加载版本、符号选择和绑定时机。">
+      <Definition>动态装载器按搜索路径和符号版本解析共享对象，并在装载或首次调用时完成地址绑定。</Definition>
       <Callout type="warn" title="环境变量是隐形输入">LD_LIBRARY_PATH、PATH 或容器挂载差异会让同一二进制连接到不同实现；发布时记录解析后的依赖树。</Callout>
     </ConceptNode>
     <ConceptNode id="startup-runtime" title="语言运行时初始化" level="L2" parent="identity" input="入口栈、TLS、静态对象与运行库" output="可进入 main/async runtime 的状态" summary="main 之前已发生 TLS 建立、静态初始化、参数解析和线程池准备。">
@@ -125,6 +127,7 @@
       <Children><ConceptRef id="race-window" /></Children>
     </ConceptNode>
     <ConceptNode id="race-window" title="竞态窗口与不可复现" level="L4" parent="memory-order" input="缺失同步、不同核心速度与调度抖动" output="偶发错误、错误日志或状态回滚" summary="低概率并发错误会被优化、日志和重试机制放大或掩盖。">
+      <Boundary>增加日志或 sleep 可能改变调度时序，只能帮助观察而不能证明竞态已消失。</Boundary>
       <Callout type="warn" title="复现策略">固定线程数和调度扰动，给共享状态加版本号，采集每次读写的因果链；不要用 sleep 当作同步原语。</Callout>
     </ConceptNode>
 

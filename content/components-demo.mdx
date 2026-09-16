@@ -89,10 +89,12 @@
       <Children><ConceptRef id="layout-demo" /><ConceptRef id="compact-demo" /></Children>
     </ConceptNode>
     <ConceptNode id="layout-demo" title="布局原语：Stack、Grid、Split、Columns 让信息有秩序" level="L2" parent="presentation-family" summary="布局组件只表达空间意图，具体样式由模板统一接管。">
+      <Definition>布局原语表达信息之间的空间关系；它们负责组织内容，不负责改变内容本身的语义。</Definition>
       <Columns><Split ratio="1fr 1fr"><Callout title="左列">结论与定义。</Callout><Callout title="右列">证据与边界。</Callout></Split></Columns>
       <Grid columns="auto" gap="sm"><Insight title="局部判断">Grid 中的短信息。</Insight><Insight title="另一判断" tone="warn">不要混用职责。</Insight></Grid>
     </ConceptNode>
     <ConceptNode id="compact-demo" title="压缩阅读：Tabs、Details、Callout、Insight、NoteGrid" level="L2" parent="presentation-family" summary="这些组件适合把结论、提示、细节和短信息压缩在首屏。">
+      <Definition>压缩组件通过折叠、分组和短提示降低首屏负担，同时保留继续阅读所需的上下文。</Definition>
       <Tabs items={[{label:'结论',content:'先展示最重要的判断。'},{label:'证据',content:'再展开可验证依据。'}]} />
       <Details summary="展开更多">Details 将次要信息收起，避免首屏过载。</Details>
       <Insight title="关键判断" tone="success">一个组件只承担一种信息组织方式。</Insight>
