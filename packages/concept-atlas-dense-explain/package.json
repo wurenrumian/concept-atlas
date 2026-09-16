@@ -1,10 +1,13 @@
 {
   "name": "concept-atlas-dense-explain",
-  "version": "0.3.1",
+  "version": "0.4.1",
   "description": "Portable dense-explanation skill and MDX concept atlas template",
   "type": "module",
   "bin": {
     "concept-atlas-dense-explain": "bin/cli.mjs"
+  },
+  "scripts": {
+    "prepack": "node ../../scripts/sync-template.mjs"
   },
   "files": [
     "bin",
@@ -16,6 +19,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "clsx": "^2.1.1",
     "d3": "^7.9.0",
+    "katex": "^0.16.47",
     "lucide-react": "^0.475.0",
     "mermaid": "^11.17.2",
     "react": "^18.3.1",
@@ -30,5 +34,8 @@
     "dense-explain",
     "concept-map"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "MIT"
 }

@@ -1,45 +1,44 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { validateMdxSource, countBySeverity } from '../src/model/validate-content.js';
 
-const rootDir = path.dirname(fileURLToPath(import.meta.url));
-const contentPath = path.join(rootDir, '..', 'content', 'compile-runtime.mdx');
-const source = fs.readFileSync(contentPath, 'utf8');
-const failures = [];
-const nodePattern = /<ConceptNode\b([^>]*)>([\s\S]*?)<\/ConceptNode>/g;
-const relationPattern = /<Relation\b([^>]*)\/>/g;
-const attributes = text => Object.fromEntries([...text.matchAll(/([\w-]+)=(?:"([^"]*)"|'([^']*)')/g)].map(match => [match[1], match[2] ?? match[3] ?? '']));
-const nodes = [...source.matchAll(nodePattern)].map(match => ({ ...attributes(match[1]), body: match[2] }));
-const relations = [...source.matchAll(relationPattern)].map(match => attributes(match[1]));
-const ids = new Set(nodes.map(node => node.id));
-const allowedRelations = new Set(['prerequisite', 'causes', 'produces', 'uses', 'implements', 'contrasts', 'depends-on', 'exception-of', 'precedes']);
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const rootDir = path.resolve(scriptDir, '..');
+const args = process.argv.slice(2);
+const strict = args.includes('--strict');
+const explicit = args.filter(arg => !arg.startsWith('--'));
 
-if (!source.includes('<ExplainPage')) failures.push('missing ExplainPage');
-if (!source.includes('<ConceptGraph')) failures.push('missing ConceptGraph');
-if (nodes.filter(node => node.level === 'L0').length !== 1) failures.push('expected exactly one L0 root');
-if (nodes.filter(node => node.level === 'L1').length < 4) failures.push('expected at least four L1 branches');
-if (nodes.length < 15) failures.push(`expected at least 15 nodes, found ${nodes.length}`);
-if (!nodes.some(node => ['L3', 'L4'].includes(node.level))) failures.push('expected L3 or L4 depth');
-if (relations.length < 8) failures.push(`expected at least 8 relations, found ${relations.length}`);
+const files = explicit.length
+  ? explicit.map(file => path.resolve(file))
+  : ['content/components-demo.mdx', 'content/compile-runtime.mdx', 'content/scroll-reading-demo.mdx']
+    .map(file => path.join(rootDir, file));
 
-for (const node of nodes) {
-  if (!node.id) failures.push('node is missing id');
-  if (!node.title) failures.push(`${node.id || '<unknown>'} is missing title`);
-  if (!node.summary) failures.push(`${node.id || '<unknown>'} is missing summary`);
-  if (node.parent && !ids.has(node.parent)) failures.push(`${node.id} references missing parent ${node.parent}`);
-  if (!/(<(Definition|Mechanism|Example|Evidence|Boundary|Details|Callout|Counterexample|Glossary|Input|Output)\b)/.test(node.body)) failures.push(`${node.id} lacks a core semantic component`);
+let errors = 0;
+
+for (const file of files) {
+  if (!fs.existsSync(file)) {
+    console.error(`missing file: ${file}`);
+    errors += 1;
+    continue;
+  }
+  const source = fs.readFileSync(file, 'utf8');
+  const result = validateMdxSource(source, {
+    filePath: file,
+    strict,
+    assetExists: spec => fs.existsSync(path.resolve(path.dirname(file), spec)),
+  });
+  const { error, warning } = countBySeverity(result.diagnostics);
+  errors += error;
+  console.log(`${path.relative(rootDir, file)}  ${result.carrier || 'unknown'}  errors=${error} warnings=${warning}`);
+  for (const item of result.diagnostics) {
+    const label = item.severity === 'error' ? 'error' : 'warn ';
+    console.log(`  ${label} ${item.line}:${item.column}  ${item.code}  ${item.message}`);
+  }
 }
 
-for (const relation of relations) {
-  if (!ids.has(relation.from) || !ids.has(relation.to)) failures.push(`relation references missing node: ${relation.from} -> ${relation.to}`);
-  if (!allowedRelations.has(relation.type)) failures.push(`unsupported relation type: ${relation.type}`);
-  if (!relation.label) failures.push(`relation ${relation.from} -> ${relation.to} is missing label`);
-}
-
-if (failures.length) {
-  console.error('Concept Atlas content validation failed:');
-  for (const failure of failures) console.error(`- ${failure}`);
+if (errors) {
+  console.error(`\nConcept Atlas content validation failed: ${errors} error(s).`);
   process.exit(1);
 }
-
-console.log(`Concept Atlas content validation passed (${nodes.length} nodes, ${relations.length} relations).`);
+console.log('\nConcept Atlas content validation passed.');

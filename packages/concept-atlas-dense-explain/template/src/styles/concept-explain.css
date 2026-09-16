@@ -9,40 +9,40 @@
   --theme-mode: "dark";
   
   /* Background layers - deep indigo slate for high-tech monograph feel */
-  --bg-canvas: #0b1112;
-  --bg-surface: #111a1b;
-  --bg-card: #172324;
-  --bg-card-hover: #1e3030;
-  --bg-subtle: #1a2929;
-  --bg-highlight: rgba(125, 211, 199, 0.09);
+  --bg-canvas: #090d16;
+  --bg-surface: #0f172a;
+  --bg-card: #151f32;
+  --bg-card-hover: #1c2a44;
+  --bg-subtle: #1e293b;
+  --bg-highlight: rgba(56, 189, 248, 0.08);
 
   /* Borders & Dividers */
   --border-subtle: rgba(255, 255, 255, 0.08);
   --border-medium: rgba(255, 255, 255, 0.14);
   --border-strong: rgba(255, 255, 255, 0.24);
-  --border-accent: rgba(125, 211, 199, 0.42);
+  --border-accent: rgba(99, 102, 241, 0.4);
 
   /* Typography Colors */
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
   --text-muted: #94a3b8;
   --text-dim: #64748b;
-  --text-accent: #7dd3c7;
+  --text-accent: #38bdf8;
 
   /* Accent & Category Semantic Tones */
-  --primary: #7dd3c7;
-  --primary-light: #a7f3d0;
-  --primary-glow: rgba(125, 211, 199, 0.2);
+  --primary: #6366f1;
+  --primary-light: #818cf8;
+  --primary-glow: rgba(99, 102, 241, 0.25);
   
-  --accent-cyan: #67e8f9;
-  --accent-emerald: #86efac;
-  --accent-amber: #f2bd72;
-  --accent-rose: #fb7185;
-  --accent-purple: #c4b5fd;
+  --accent-cyan: #06b6d4;
+  --accent-emerald: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-rose: #f43f5e;
+  --accent-purple: #a855f7;
 
   /* Code & Syntax */
-  --code-bg: #071011;
-  --code-text: #a7f3d0;
+  --code-bg: #060911;
+  --code-text: #34d399;
   --code-border: rgba(255, 255, 255, 0.1);
 
   /* Shadows & Depth - restrained, hairline-first. Offset shadows read as
@@ -51,8 +51,8 @@
   --shadow-md: 0 2px 8px -4px rgba(0, 0, 0, 0.55);
   --shadow-lg: 0 8px 24px -12px rgba(0, 0, 0, 0.6);
   --shadow-glow: none;
-  --shadow-card: 2px 3px 0 rgba(0, 0, 0, 0.38);
-  --shadow-pop: 3px 4px 0 rgba(0, 0, 0, 0.44);
+  --shadow-card: 2px 3px 0 rgba(0, 0, 0, 0.45);
+  --shadow-pop: 3px 4px 0 rgba(0, 0, 0, 0.55);
 
   /* Radius scale - differentiated by component weight, not one value everywhere */
   --radius-1: 3px;
@@ -78,36 +78,36 @@
   --theme-mode: "light";
   
   /* Background layers - warm parchment & crisp editorial paper */
-  --bg-canvas: #f1f3ef;
-  --bg-surface: #fbfcf8;
+  --bg-canvas: #f6f7f9;
+  --bg-surface: #ffffff;
   --bg-card: #ffffff;
-  --bg-card-hover: #edf3ef;
-  --bg-subtle: #e8eeea;
-  --bg-highlight: rgba(15, 118, 110, 0.08);
+  --bg-card-hover: #f1f5f9;
+  --bg-subtle: #f8fafc;
+  --bg-highlight: rgba(37, 99, 235, 0.06);
 
   /* Borders & Dividers */
   --border-subtle: rgba(0, 0, 0, 0.06);
   --border-medium: rgba(0, 0, 0, 0.12);
   --border-strong: rgba(0, 0, 0, 0.2);
-  --border-accent: rgba(15, 118, 110, 0.36);
+  --border-accent: rgba(79, 70, 229, 0.35);
 
   /* Typography Colors */
   --text-primary: #0f172a;
   --text-secondary: #334155;
   --text-muted: #64748b;
   --text-dim: #94a3b8;
-  --text-accent: #0f766e;
+  --text-accent: #2563eb;
 
   /* Accent & Category Semantic Tones */
-  --primary: #0f766e;
-  --primary-light: #115e59;
-  --primary-glow: rgba(15, 118, 110, 0.16);
+  --primary: #4f46e5;
+  --primary-light: #6366f1;
+  --primary-glow: rgba(79, 70, 229, 0.18);
 
-  --accent-cyan: #0e7490;
-  --accent-emerald: #15803d;
-  --accent-amber: #b45309;
-  --accent-rose: #be123c;
-  --accent-purple: #6d28d9;
+  --accent-cyan: #0891b2;
+  --accent-emerald: #059669;
+  --accent-amber: #d97706;
+  --accent-rose: #e11d48;
+  --accent-purple: #9333ea;
 
   /* Code & Syntax */
   --code-bg: #1e293b;
@@ -3254,4 +3254,424 @@ html[data-carrier='scroll'] #root {
   .continuous-grid-3,
   .continuous-grid-4 { grid-template-columns: 1fr; }
   .draft-board .content-blocks { grid-template-columns: 1fr; }
+}
+
+/* ===========================================================================
+   READING TYPOGRAPHY
+
+   A single configurable scale drives the continuous-reading carrier. The shell
+   sets --reading-scale / --reading-line-height from its `fontSize`, `scale` and
+   `lineHeight` props; everything below reads those tokens. Defaults live on
+   :root so atlas content and standalone components can opt in too.
+   =========================================================================== */
+
+:root {
+  --reading-base: 17px;
+  --reading-scale: 1;
+  --reading-line-height: 1.8;
+  --reading-ui-scale: calc(1 + (var(--reading-scale) - 1) * 0.55);
+}
+
+.continuous-document {
+  font-size: calc(var(--reading-base) * var(--reading-scale));
+  line-height: var(--reading-line-height);
+}
+
+/* Later rules intentionally override the fixed sizes above. */
+.continuous-prose {
+  max-width: 72ch;
+  font-size: calc(var(--reading-base) * var(--reading-scale));
+  line-height: var(--reading-line-height);
+}
+
+.continuous-header > div {
+  font-size: calc(var(--reading-base) * var(--reading-scale));
+  line-height: var(--reading-line-height);
+}
+
+.continuous-header h1 {
+  font-size: clamp(calc(30px * var(--reading-scale)), 4vw, calc(48px * var(--reading-scale)));
+}
+
+.continuous-section > h2 {
+  font-size: calc(21px * var(--reading-scale));
+}
+
+/* Inner component text scales gently so compact models do not overflow. */
+.continuous-document .semantic-overview,
+.continuous-document .semantic-definition,
+.continuous-document .semantic-mechanism,
+.continuous-document .semantic-prerequisite,
+.continuous-document .semantic-input,
+.continuous-document .semantic-output,
+.continuous-document .semantic-glossary-item,
+.continuous-document .semantic-example,
+.continuous-document .semantic-boundary,
+.continuous-document .semantic-counterexample,
+.continuous-document .framework-model-element span,
+.continuous-document .model-matrix-cell span,
+.continuous-document .model-pyramid-level span,
+.continuous-document .model-funnel-step span,
+.continuous-document .tradeoff-option span {
+  font-size: calc(14px * var(--reading-ui-scale));
+}
+
+/* ---- Reading progress ---- */
+
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 40;
+  width: 100%;
+  height: 3px;
+  background: var(--border-subtle);
+  pointer-events: none;
+}
+
+.reading-progress-bar {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--text-accent));
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 80ms linear;
+}
+
+/* ---- Table of contents ---- */
+
+.scroll-toc {
+  display: none;
+}
+
+@media (min-width: 1400px) {
+  .scroll-toc {
+    position: fixed;
+    top: 104px;
+    left: max(16px, calc(50% - 560px - 220px));
+    z-index: 30;
+    display: block;
+    width: 190px;
+    max-height: calc(100vh - 160px);
+    overflow: auto;
+    padding-right: 10px;
+    border-right: 1px solid var(--border-subtle);
+  }
+}
+
+.scroll-toc-title {
+  margin-bottom: 10px;
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.scroll-toc-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: toc;
+}
+
+.scroll-toc-list li {
+  margin: 0 0 2px;
+  counter-increment: toc;
+}
+
+.scroll-toc-list a {
+  display: block;
+  padding: 5px 8px 5px 22px;
+  border-left: 2px solid transparent;
+  border-radius: var(--radius-1);
+  color: var(--text-muted);
+  font-size: 12.5px;
+  line-height: 1.4;
+  text-decoration: none;
+  position: relative;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.scroll-toc-list a::before {
+  content: counter(toc, decimal-leading-zero);
+  position: absolute;
+  left: 4px;
+  color: var(--text-dim);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.scroll-toc-list a:hover {
+  color: var(--text-primary);
+  background: var(--bg-highlight);
+}
+
+.scroll-toc-list li.active a {
+  border-left-color: var(--primary);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* ---- Section pager ---- */
+
+.scroll-pager {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.scroll-pager a {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-2);
+  background: var(--bg-surface);
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.scroll-pager a:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-card-hover);
+}
+
+.scroll-pager a span {
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.scroll-pager a strong {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.scroll-pager .pager-next {
+  text-align: right;
+}
+
+/* ===========================================================================
+   EXTENSION COMPONENTS: math, charts, figures, citations
+   =========================================================================== */
+
+/* ---- Math ---- */
+
+.semantic-math {
+  display: inline-block;
+  vertical-align: baseline;
+}
+
+.semantic-math .katex {
+  font-size: 1.02em;
+}
+
+.semantic-math-block {
+  overflow-x: auto;
+}
+
+.math-block-expression {
+  margin: 6px 0;
+  padding: 14px 16px;
+  overflow-x: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-card);
+  text-align: center;
+}
+
+.math-block-expression .katex-display {
+  margin: 0;
+}
+
+.math-error {
+  color: var(--accent-rose);
+}
+
+/* ---- Charts ---- */
+
+.semantic-chart {
+  --component-accent: var(--primary);
+  margin: 14px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--border-medium);
+  border-top: 2px solid var(--component-accent);
+  border-radius: var(--radius-3);
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+
+.chart-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.chart-bar { fill: var(--chart-color, var(--primary)); }
+.chart-slice { fill: var(--chart-color, var(--primary)); }
+.chart-line {
+  fill: none;
+  stroke: var(--chart-color, var(--primary));
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.chart-point { fill: var(--chart-color, var(--primary)); }
+
+.chart-grid line {
+  stroke: var(--border-subtle);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+}
+
+.chart-axis-value,
+.chart-axis-label {
+  fill: var(--text-dim);
+  font-size: 10px;
+  font-family: inherit;
+}
+
+.chart-axis-value { text-anchor: end; }
+.chart-bar-value { fill: var(--text-secondary); font-size: 10px; font-weight: 600; font-family: inherit; }
+
+.chart-legend-swatch { fill: var(--chart-color, var(--primary)); }
+.chart-legend-label { fill: var(--text-secondary); font-size: 11px; font-family: inherit; }
+.chart-empty { padding: 24px; color: var(--text-dim); font-size: 13px; text-align: center; }
+
+.semantic-chart {
+  --chart-1: var(--primary);
+  --chart-2: var(--accent-cyan);
+  --chart-3: var(--accent-emerald);
+  --chart-4: var(--accent-amber);
+  --chart-5: var(--accent-rose);
+  --chart-6: var(--accent-purple);
+}
+
+/* ---- Figures ---- */
+
+.semantic-figure {
+  margin: 14px 0;
+  padding: 10px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-3);
+  background: var(--bg-surface);
+}
+
+.semantic-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-2);
+  background: var(--bg-subtle);
+}
+
+.semantic-figure figcaption {
+  margin-top: 10px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.figure-label {
+  margin-right: 8px;
+  color: var(--text-accent);
+  font-weight: 700;
+}
+
+.figure-placeholder {
+  padding: 32px;
+  border: 1px dashed var(--border-medium);
+  border-radius: var(--radius-2);
+  color: var(--text-dim);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* ---- Citations ---- */
+
+.semantic-cite {
+  margin: 0 1px;
+  font-size: 0.72em;
+  line-height: 0;
+}
+
+.semantic-cite a {
+  display: inline-block;
+  padding: 0 3px;
+  border-radius: var(--radius-1);
+  color: var(--text-accent);
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+}
+
+.semantic-cite a:hover { background: var(--bg-highlight); }
+.semantic-cite[data-missing='true'] a { color: var(--accent-rose); }
+
+.semantic-references {
+  --component-accent: var(--primary);
+  margin: 18px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--border-medium);
+  border-top: 2px solid var(--component-accent);
+  border-radius: var(--radius-3);
+  background: var(--bg-surface);
+}
+
+.reference-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: reference;
+}
+
+.reference-item {
+  position: relative;
+  padding: 8px 0 8px 30px;
+  border-top: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.65;
+  counter-increment: reference;
+}
+
+.reference-item:first-child { border-top: 0; }
+
+.reference-item::before {
+  content: '[' counter(reference) ']';
+  position: absolute;
+  left: 0;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.reference-authors { color: var(--text-secondary); }
+.reference-year { margin-left: 6px; color: var(--text-dim); }
+
+.reference-title {
+  margin-left: 6px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+a.reference-title:hover { color: var(--text-accent); }
+
+.reference-source,
+.reference-note {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.reference-item:target {
+  background: var(--bg-highlight);
+  border-radius: var(--radius-2);
 }

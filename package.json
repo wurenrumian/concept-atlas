@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "validate": "node scripts/validate-content.mjs",
+    "sync": "node scripts/sync-template.mjs",
+    "check:sync": "node scripts/sync-template.mjs --check",
     "build": "npm run validate && node scripts/build.mjs",
     "clean:temp": "node scripts/clean-temp.mjs",
     "preview": "vite preview"
@@ -14,6 +16,7 @@
     "@mdx-js/rollup": "^3.0.1",
     "clsx": "^2.1.1",
     "d3": "^7.9.0",
+    "katex": "^0.16.47",
     "lucide-react": "^0.475.0",
     "mermaid": "^11.17.2",
     "react": "^18.3.1",
@@ -25,5 +28,20 @@
     "@vitejs/plugin-react": "^4.3.4",
     "vite": "^5.4.14",
     "vite-plugin-singlefile": "^2.1.0"
-  }
+  },
+  "main": "vite.config.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wurenrumian/concept-atlas.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wurenrumian/concept-atlas/issues"
+  },
+  "homepage": "https://github.com/wurenrumian/concept-atlas#readme"
 }

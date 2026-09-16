@@ -1,5 +1,8 @@
 import React from 'react';
 import mermaid from 'mermaid';
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
+import { registerReferences, subscribeReferences, getReferenceIndex } from '../model/citations.js';
 
 let mermaidReady = false;
 
@@ -22,6 +25,54 @@ function ensureMermaid() {
   });
   mermaidReady = true;
 }
+
+// Shared helpers ------------------------------------------------------------
+
+function childrenToText(children) {
+  if (children === null || children === undefined || typeof children === 'boolean') return '';
+  if (typeof children === 'string' || typeof children === 'number') return String(children);
+  if (Array.isArray(children)) return children.map(childrenToText).join('');
+  if (React.isValidElement(children) && children.props) return childrenToText(children.props.children);
+  return '';
+}
+
+function slugify(text) {
+  return String(text)
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\u4e00-\u9fa5-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || 'section';
+}
+
+const katexCache = new Map();
+
+function renderTex(tex, displayMode) {
+  const key = `${displayMode ? 'D' : 'I'}:${tex}`;
+  if (katexCache.has(key)) return katexCache.get(key);
+  let html;
+  try {
+    html = katex.renderToString(tex, {
+      displayMode,
+      throwOnError: false,
+      errorColor: 'var(--accent-rose)',
+      strict: 'ignore',
+      trust: false,
+    });
+  } catch {
+    html = `<code class="math-error">${tex.replace(/[<>&]/g, '')}</code>`;
+  }
+  katexCache.set(key, html);
+  return html;
+}
+
+const FONT_PRESETS = {
+  compact: { scale: 0.95, lineHeight: 1.7 },
+  normal: { scale: 1, lineHeight: 1.8 },
+  large: { scale: 1.15, lineHeight: 1.85 },
+  xlarge: { scale: 1.3, lineHeight: 1.9 },
+};
 
 // Data Layer Components
 export function ExplainPage({ id, title, summary, layout = 'editorial', density = 'reading', children }) {
@@ -426,9 +477,121 @@ export function Columns({ children }) {
 }
 Columns.displayName = 'Columns';
 
-export function ScrollDocument({ spacing = 'comfortable', children }) {
+const ScrollOutlineContext = React.createContext(null);
+
+function ReadingProgress() {
+  const barRef = React.useRef(null);
+
+  React.useEffect(() => {
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      const ratio = total > 0 ? Math.min(1, Math.max(0, window.scrollY / total)) : 0;
+      if (barRef.current) barRef.current.style.transform = `scaleX(${ratio})`;
+    };
+    const onScroll = () => { if (!frame) frame = window.requestAnimationFrame(update); };
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  return (
+    <div className="reading-progress" aria-hidden="true">
+      <span className="reading-progress-bar" ref={barRef} />
+    </div>
+  );
+}
+
+export function ScrollToc({ items = [], activeId = null, title = '目录' }) {
+  if (items.length < 2) return null;
+  return (
+    <nav className="scroll-toc" aria-label="目录">
+      <div className="scroll-toc-title">{title}</div>
+      <ol className="scroll-toc-list">
+        {items.map(item => (
+          <li key={item.id} className={item.id === activeId ? 'active' : undefined}>
+            <a href={`#${item.id}`}>{item.title}</a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
+ScrollToc.displayName = 'ScrollToc';
+
+export function ScrollDocument({ spacing = 'comfortable', fontSize = 'normal', scale, lineHeight, toc = true, progress = true, children }) {
   const safeSpacing = ['compact', 'comfortable', 'airy'].includes(spacing) ? spacing : 'comfortable';
-  return <article className={`continuous-document continuous-spacing-${safeSpacing}`}>{children}</article>;
+  const preset = FONT_PRESETS[fontSize] || FONT_PRESETS.normal;
+  const [items, setItems] = React.useState([]);
+  const [activeId, setActiveId] = React.useState(null);
+
+  // Stable across renders: sections register once on mount and clean up on
+  // unmount, so the context value never churns and cannot loop.
+  const register = React.useCallback(item => {
+    setItems(previous => {
+      const existing = previous.find(entry => entry.id === item.id);
+      if (existing) return existing.title === item.title ? previous : previous.map(entry => (entry.id === item.id ? item : entry));
+      return [...previous, item];
+    });
+    return () => setItems(previous => previous.filter(entry => entry.id !== item.id));
+  }, []);
+
+  React.useEffect(() => {
+    if (items.length < 2 || typeof IntersectionObserver === 'undefined') return undefined;
+    const observer = new IntersectionObserver(entries => {
+      const visible = entries
+        .filter(entry => entry.isIntersecting)
+        .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      if (visible[0]) setActiveId(visible[0].target.id);
+    }, { rootMargin: '-15% 0px -75% 0px', threshold: 0 });
+    items.forEach(item => {
+      const node = document.getElementById(item.id);
+      if (node) observer.observe(node);
+    });
+    return () => observer.disconnect();
+  }, [items]);
+
+  const outline = React.useMemo(() => ({ register }), [register]);
+  const style = {
+    '--reading-scale': String(scale ?? preset.scale),
+    '--reading-line-height': String(lineHeight ?? preset.lineHeight),
+  };
+
+  const activeIndex = items.findIndex(item => item.id === activeId);
+  const previous = activeIndex > 0 ? items[activeIndex - 1] : null;
+  const next = activeIndex >= 0 && activeIndex < items.length - 1 ? items[activeIndex + 1] : null;
+
+  return (
+    <article className={`continuous-document continuous-spacing-${safeSpacing}`} data-font-size={fontSize} style={style}>
+      {progress && <ReadingProgress />}
+      <ScrollOutlineContext.Provider value={outline}>
+        {toc && <ScrollToc items={items} activeId={activeId} />}
+        {children}
+        {activeIndex >= 0 && (previous || next) && (
+          <nav className="scroll-pager" aria-label="章节导航">
+            {previous ? (
+              <a className="pager-prev" href={`#${previous.id}`}>
+                <span>上一节</span>
+                <strong>{previous.title}</strong>
+              </a>
+            ) : <span className="pager-spacer" />}
+            {next ? (
+              <a className="pager-next" href={`#${next.id}`}>
+                <span>下一节</span>
+                <strong>{next.title}</strong>
+              </a>
+            ) : <span className="pager-spacer" />}
+          </nav>
+        )}
+      </ScrollOutlineContext.Provider>
+    </article>
+  );
 }
 ScrollDocument.displayName = 'ScrollDocument';
 
@@ -437,10 +600,18 @@ export function ScrollHeader({ label = '连续阅读', title, children }) {
 }
 ScrollHeader.displayName = 'ScrollHeader';
 
-export function ScrollSection({ title, wide = false, spacing = 'inherit', children }) {
+export function ScrollSection({ title, id, wide = false, spacing = 'inherit', children }) {
+  const outline = React.useContext(ScrollOutlineContext);
+  const anchor = id || (title ? slugify(title) : '');
   const safeSpacing = ['compact', 'comfortable', 'airy'].includes(spacing) ? ` continuous-spacing-${spacing}` : '';
+
+  React.useEffect(() => {
+    if (!outline || !title || !anchor) return undefined;
+    return outline.register({ id: anchor, title });
+  }, [outline, anchor, title]);
+
   return (
-    <section className={`continuous-section${wide ? ' continuous-section-wide' : ''}${safeSpacing}`}>
+    <section id={anchor || undefined} className={`continuous-section${wide ? ' continuous-section-wide' : ''}${safeSpacing}`}>
       {title && <h2>{title}</h2>}
       {children}
     </section>
@@ -594,6 +765,268 @@ export function NoteGrid({ notes = [], children, width = 'auto', height = 'auto'
   );
 }
 NoteGrid.displayName = 'NoteGrid';
+
+// Math ----------------------------------------------------------------------
+
+export function Math({ formula, children }) {
+  const tex = (formula || childrenToText(children)).trim();
+  if (!tex) return null;
+  return <span className="semantic-math" dangerouslySetInnerHTML={{ __html: renderTex(tex, false) }} />;
+}
+Math.displayName = 'Math';
+
+export function MathBlock({ title = '公式', formula, variables = [], children }) {
+  const tex = (formula || childrenToText(children)).trim();
+  if (!tex) return null;
+  return (
+    <section className="semantic-model-formula semantic-math-block">
+      <div className="framework-model-head">
+        <span className="semantic-tag">∑ {title}</span>
+        <span className="framework-model-type">公式</span>
+      </div>
+      <div className="math-block-expression" dangerouslySetInnerHTML={{ __html: renderTex(tex, true) }} />
+      {variables.length > 0 && (
+        <dl className="model-formula-variables">
+          {variables.map((variable, index) => (
+            <React.Fragment key={index}>
+              <dt dangerouslySetInnerHTML={{ __html: renderTex(variable.symbol || variable.name || '', false) }} />
+              <dd>{variable.description || variable.value}</dd>
+            </React.Fragment>
+          ))}
+        </dl>
+      )}
+    </section>
+  );
+}
+MathBlock.displayName = 'MathBlock';
+
+// Charts --------------------------------------------------------------------
+
+const CHART_COLORS = 6;
+
+function chartColor(index) {
+  return { '--chart-color': `var(--chart-${(index % CHART_COLORS) + 1})` };
+}
+
+function normalizePoints(data) {
+  return (Array.isArray(data) ? data : [])
+    .map((point, index) => {
+      if (typeof point === 'number') return { label: String(index + 1), value: point };
+      if (!point || typeof point !== 'object') return null;
+      const value = Number(point.value ?? point.y ?? 0);
+      return { label: String(point.label ?? point.x ?? index + 1), value: Number.isFinite(value) ? value : 0 };
+    })
+    .filter(Boolean);
+}
+
+function niceMax(value) {
+  if (value <= 0) return 1;
+  const magnitude = 10 ** Math.floor(Math.log10(value));
+  return Math.ceil(value / magnitude) * magnitude;
+}
+
+export function Chart({ title = '图表', type = 'bar', data = [], series = [], labels = [], unit = '', showValues = true, width = 'auto', height = 'auto', x = 0, y = 0, position = 'flow' }) {
+  const points = normalizePoints(data);
+  const seriesList = (Array.isArray(series) ? series : []).filter(Boolean).map((entry, index) => ({
+    name: entry.name || entry.label || `系列 ${index + 1}`,
+    colorIndex: index + 1,
+    values: (Array.isArray(entry.values) ? entry.values : []).map(value => Number(value) || 0),
+  }));
+  const allValues = [...points.map(point => point.value), ...seriesList.flatMap(entry => entry.values)];
+  const max = niceMax(Math.max(1, ...allValues));
+
+  const VIEW_W = 600;
+  const VIEW_H = 260;
+  const PAD = { top: 22, right: 18, bottom: 40, left: 44 };
+  const innerW = VIEW_W - PAD.left - PAD.right;
+  const innerH = VIEW_H - PAD.top - PAD.bottom;
+  const ticks = [0, 0.25, 0.5, 0.75, 1].map(ratio => ({ ratio, value: max * ratio }));
+
+  const body = (() => {
+    if (type === 'pie') {
+      if (!points.length) return null;
+      const total = points.reduce((sum, point) => sum + Math.max(0, point.value), 0) || 1;
+      const radius = Math.min(innerW, innerH) / 2;
+      const cx = PAD.left + innerW / 2;
+      const cy = PAD.top + innerH / 2;
+      let start = -Math.PI / 2;
+      const arcs = points.map((point, index) => {
+        const angle = (Math.max(0, point.value) / total) * Math.PI * 2;
+        const end = start + angle;
+        const x1 = cx + radius * Math.cos(start);
+        const y1 = cy + radius * Math.sin(start);
+        const x2 = cx + radius * Math.cos(end);
+        const y2 = cy + radius * Math.sin(end);
+        const largeArc = angle > Math.PI ? 1 : 0;
+        const d = `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+        start = end;
+        return <path key={index} className="chart-slice" style={chartColor(index)} d={d} />;
+      });
+      return (
+        <>
+          <g className="chart-pie">{arcs}</g>
+          <g className="chart-legend">
+            {points.map((point, index) => (
+              <g key={index} transform={`translate(${PAD.left + 8}, ${PAD.top + index * 22})`}>
+                <rect className="chart-legend-swatch" style={chartColor(index)} width="10" height="10" rx="2" />
+                <text className="chart-legend-label" x="18" y="9">{point.label} · {Math.round((Math.max(0, point.value) / total) * 100)}%</text>
+              </g>
+            ))}
+          </g>
+        </>
+      );
+    }
+
+    const grid = (
+      <g className="chart-grid">
+        {ticks.map((tick, index) => {
+          const yPos = PAD.top + innerH - tick.ratio * innerH;
+          return (
+            <g key={index}>
+              <line x1={PAD.left} y1={yPos} x2={PAD.left + innerW} y2={yPos} />
+              <text className="chart-axis-value" x={PAD.left - 8} y={yPos + 3}>{Math.round(tick.value)}</text>
+            </g>
+          );
+        })}
+      </g>
+    );
+
+    if (type === 'line') {
+      const count = Math.max(1, seriesList[0]?.values.length || 0, labels.length);
+      const stepX = count > 1 ? innerW / (count - 1) : 0;
+      const xFor = idx => PAD.left + idx * stepX;
+      const yFor = value => PAD.top + innerH - (value / max) * innerH;
+      return (
+        <>
+          {grid}
+          {seriesList.map((entry, seriesIndex) => (
+            <g key={seriesIndex}>
+              <polyline
+                className="chart-line"
+                style={chartColor(seriesIndex)}
+                points={entry.values.map((value, idx) => `${xFor(idx)},${yFor(value)}`).join(' ')}
+              />
+              {entry.values.map((value, idx) => (
+                <circle key={idx} className="chart-point" style={chartColor(seriesIndex)} cx={xFor(idx)} cy={yFor(value)} r="3" />
+              ))}
+            </g>
+          ))}
+          {(labels.length ? labels : seriesList[0]?.values.map((_, i) => String(i + 1)) || []).map((label, idx) => (
+            <text key={idx} className="chart-axis-label" x={xFor(idx)} y={VIEW_H - PAD.bottom + 20} textAnchor="middle">{label}</text>
+          ))}
+          <g className="chart-legend">
+            {seriesList.map((entry, index) => (
+              <g key={index} transform={`translate(${PAD.left + index * 130}, ${PAD.top - 10})`}>
+                <rect className="chart-legend-swatch" style={chartColor(index)} width="10" height="10" rx="2" />
+                <text className="chart-legend-label" x="16" y="9">{entry.name}</text>
+              </g>
+            ))}
+          </g>
+        </>
+      );
+    }
+
+    const bars = points.length
+      ? points
+      : (seriesList[0]?.values.map((value, index) => ({ label: labels[index] || String(index + 1), value })) || []);
+    const barCount = Math.max(1, bars.length);
+    const slot = innerW / barCount;
+    const barWidth = Math.min(56, slot * 0.6);
+    return (
+      <>
+        {grid}
+        {bars.map((bar, index) => {
+          const barHeight = (bar.value / max) * innerH;
+          const xPos = PAD.left + slot * index + (slot - barWidth) / 2;
+          const yPos = PAD.top + innerH - barHeight;
+          return (
+            <g key={index}>
+              <rect className="chart-bar" style={chartColor(index)} x={xPos} y={yPos} width={barWidth} height={Math.max(0, barHeight)} rx="3" />
+              {showValues && <text className="chart-bar-value" x={xPos + barWidth / 2} y={yPos - 6} textAnchor="middle">{bar.value}</text>}
+              <text className="chart-axis-label" x={xPos + barWidth / 2} y={VIEW_H - PAD.bottom + 20} textAnchor="middle">{bar.label}</text>
+            </g>
+          );
+        })}
+      </>
+    );
+  })();
+
+  return (
+    <div className={`semantic-chart ${widgetClass(position)}`} style={widgetStyle({ width, height, x, y, position })}>
+      <div className="semantic-widget-head"><span>{title}</span><code>CHART · {type.toUpperCase()}{unit ? ` · ${unit}` : ''}</code></div>
+      {body ? (
+        <svg className="chart-canvas" viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} role="img" aria-label={title} preserveAspectRatio="xMidYMid meet">
+          {body}
+        </svg>
+      ) : <div className="chart-empty">没有可绘制的数据</div>}
+    </div>
+  );
+}
+Chart.displayName = 'Chart';
+
+// Figures -------------------------------------------------------------------
+
+export function Figure({ src, alt = '', caption, label, width = 'auto', height = 'auto', x = 0, y = 0, position = 'flow' }) {
+  return (
+    <figure className={`semantic-figure ${widgetClass(position)}`} style={widgetStyle({ width, height, x, y, position })}>
+      {src
+        ? <img src={src} alt={alt} loading="lazy" />
+        : <div className="figure-placeholder">缺少图片 src</div>}
+      {(caption || label) && (
+        <figcaption>
+          {label && <span className="figure-label">{label}</span>}
+          {caption}
+        </figcaption>
+      )}
+    </figure>
+  );
+}
+Figure.displayName = 'Figure';
+export const Image = Figure;
+
+// Citations -----------------------------------------------------------------
+
+export function Cite({ id, children }) {
+  const index = React.useSyncExternalStore(
+    subscribeReferences,
+    () => getReferenceIndex(id),
+    () => null,
+  );
+  const uid = React.useId().replace(/:/g, '');
+  return (
+    <sup className="semantic-cite" data-missing={index ? undefined : 'true'}>
+      <a href={`#ref-${id}`} id={`cite-${id}-${uid}`}>{children ?? (index ? `[${index}]` : '[?]')}</a>
+    </sup>
+  );
+}
+Cite.displayName = 'Cite';
+
+export function References({ title = '参考文献', items = [], children }) {
+  const key = JSON.stringify(items || []);
+  React.useEffect(() => { registerReferences(items); }, [key]);
+  const list = Array.isArray(items) ? items.filter(Boolean) : [];
+  return (
+    <section className="semantic-references">
+      <div className="framework-model-head"><span className="semantic-tag">❡ {title}</span><code>REFERENCES</code></div>
+      {list.length > 0 ? (
+        <ol className="reference-list">
+          {list.map((item, index) => (
+            <li key={item.id || index} id={item.id ? `ref-${item.id}` : undefined} className="reference-item">
+              {item.authors && <span className="reference-authors">{item.authors}</span>}
+              {item.year && <span className="reference-year">{item.year}</span>}
+              {item.title && (item.url
+                ? <a className="reference-title" href={item.url} target="_blank" rel="noreferrer">{item.title}</a>
+                : <span className="reference-title">{item.title}</span>)}
+              {item.source && <span className="reference-source">{item.source}</span>}
+              {item.note && <span className="reference-note">{item.note}</span>}
+            </li>
+          ))}
+        </ol>
+      ) : children}
+    </section>
+  );
+}
+References.displayName = 'References';
 
 function widgetStyle({ width, height, x, y, position }) {
   const style = {};

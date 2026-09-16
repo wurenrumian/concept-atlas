@@ -1,8 +1,10 @@
 #!/usr/bin/env node
-import { access, constants, mkdir, readFile, rm, rename, writeFile } from 'node:fs/promises';
+import { access, constants, copyFile, cp, mkdir, readFile, rm, rename, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { build } from 'vite';
 import { fileURLToPath } from 'node:url';
+import { validateMdxSource, countBySeverity } from '../template/src/model/validate-content.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const templateRoot = path.join(packageRoot, 'template');
@@ -10,9 +12,11 @@ const args = process.argv.slice(2);
 
 function usage() {
   console.log('Usage:');
-  console.log('  npx concept-atlas-dense-explain <input.mdx> [--mode atlas|scroll] [-o output.html] [--force]');
+  console.log('  npx concept-atlas-dense-explain <input.mdx> [--mode atlas|scroll] [-o output.html] [--force] [--json] [--no-validate]');
   console.log('  npx concept-atlas-dense-explain render <input.mdx> [--mode atlas|scroll] [-o output.html] [--force]');
+  console.log('  npx concept-atlas-dense-explain validate <input.mdx> [--mode atlas|scroll] [--strict] [--json]');
   console.log('  npx concept-atlas-dense-explain create <output.mdx> [--mode atlas|scroll] [--force]');
+  console.log('  npx concept-atlas-dense-explain guide [--mode atlas|scroll] [-o output.mdx] [--force]');
 }
 
 async function exists(filePath) {
@@ -27,9 +31,61 @@ function flagValue(flags, names) {
   return null;
 }
 
-const command = ['help', 'create', 'new', 'render'].includes(args[0]) ? args.shift() : 'render';
+function fail(message) {
+  console.error(message);
+  usage();
+  process.exit(1);
+}
+
+function printDiagnostics(source, options, { json }) {
+  const result = validateMdxSource(source, options);
+  if (json) {
+    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+    return result;
+  }
+  const { diagnostics, carrier, stats } = result;
+  for (const item of diagnostics) {
+    const label = item.severity === 'error' ? 'error' : 'warn ';
+    const where = `${item.line}:${item.column}`;
+    console.error(`${label} ${where}  ${item.code}  ${item.message}`);
+  }
+  const { error, warning } = countBySeverity(diagnostics);
+  const scope = carrier ? `${carrier} · ${stats.nodes} 节点 / ${stats.relations} 关系` : '未识别载体';
+  if (error) console.error(`校验失败：${error} 个错误，${warning} 个警告（${scope}）`);
+  else if (warning) console.error(`校验通过：${warning} 个警告（${scope}）`);
+  else console.error(`校验通过：无问题（${scope}）`);
+  return result;
+}
+
+const command = ['help', 'create', 'new', 'render', 'validate', 'guide'].includes(args[0]) ? args.shift() : 'render';
 
 if (command === 'help') { usage(); process.exit(0); }
+
+if (command === 'guide') {
+  const mode = flagValue(args, ['--mode']) || 'atlas';
+  if (!['atlas', 'scroll'].includes(mode)) fail(`Unknown mode: ${mode}`);
+  const output = path.resolve(flagValue(args, ['-o', '--output']) || `concept-atlas-${mode}-guide.mdx`);
+  if (await exists(output) && !args.includes('--force')) {
+    console.error(`Refusing to overwrite ${output}; pass --force to replace it.`);
+    process.exit(1);
+  }
+  const source = path.join(templateRoot, 'guides', `${mode}-guide.mdx`);
+  if (!(await exists(source))) {
+    console.error(`Guide for mode "${mode}" is missing from the package.`);
+    process.exit(1);
+  }
+  await mkdir(path.dirname(output), { recursive: true });
+  await copyFile(source, output);
+  const assetsSource = path.join(templateRoot, 'guides', 'assets');
+  const assetsTarget = path.join(path.dirname(output), 'assets');
+  if (await exists(assetsSource) && path.resolve(assetsSource) !== path.resolve(assetsTarget) && (args.includes('--force') || !(await exists(assetsTarget)))) {
+    await cp(assetsSource, assetsTarget, { recursive: true, force: true });
+    console.log(`Copied guide assets to ${assetsTarget}`);
+  }
+  console.log(`Wrote ${mode} component guide: ${output}`);
+  console.log('Read it to learn every component and its props, then write your own MDX.');
+  process.exit(0);
+}
 
 if (command === 'create' || command === 'new') {
   const output = args[0] ? path.resolve(args[0]) : null;
@@ -91,7 +147,28 @@ if (command === 'create' || command === 'new') {
 `;
   await writeFile(output, template, 'utf8');
   console.log(`Created ${mode} MDX template: ${output}`);
+  console.log(`Tip: run "npx concept-atlas-dense-explain guide --mode ${mode}" for a full component reference.`);
   process.exit(0);
+}
+
+const json = args.includes('--json');
+const strict = args.includes('--strict');
+const skipValidate = args.includes('--no-validate');
+
+if (command === 'validate') {
+  const target = args[0] ? path.resolve(args[0]) : null;
+  if (!target || path.extname(target).toLowerCase() !== '.mdx' || !(await exists(target))) {
+    fail('Provide an existing .mdx file to validate.');
+  }
+  const source = await readFile(target, 'utf8');
+  const modeFlag = flagValue(args, ['--mode']);
+  const result = printDiagnostics(source, {
+    filePath: target,
+    mode: modeFlag || null,
+    strict,
+    assetExists: spec => existsSync(path.resolve(path.dirname(target), spec)),
+  }, { json });
+  process.exit(countBySeverity(result.diagnostics).error ? 1 : 0);
 }
 
 if (args[0] && args[0].toLowerCase() === 'render') args.shift();
@@ -107,7 +184,20 @@ if (!input || path.extname(input).toLowerCase() !== '.mdx' || !(await exists(inp
 }
 
 const source = await readFile(input, 'utf8');
-const mode = modeFlag || (/<ScrollDocument\b/.test(source) ? 'scroll' : /<ExplainPage\b|<ConceptGraph\b/.test(source) ? 'atlas' : null);
+const validation = printDiagnostics(source, {
+  filePath: input,
+  mode: modeFlag || null,
+  strict,
+  assetExists: spec => existsSync(path.resolve(path.dirname(input), spec)),
+}, { json });
+const { error: errorCount } = countBySeverity(validation.diagnostics);
+
+if (errorCount && !skipValidate) {
+  console.error('内容校验未通过，已停止构建。修复后重试，或用 --no-validate 强制构建。');
+  process.exit(1);
+}
+
+const mode = modeFlag || validation.carrier;
 if (!mode || !['atlas', 'scroll'].includes(mode)) {
   console.error('Could not detect the MDX carrier; choose --mode atlas or --mode scroll.');
   process.exit(1);

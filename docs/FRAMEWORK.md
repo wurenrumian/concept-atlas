@@ -36,7 +36,7 @@ CLI 不会初始化项目，不会复制 MDX，也不会要求用户维护 `pack
 | `atlas` | 概念有层级，需要下钻、回溯和关系图 | `ExplainPage`、`ConceptGraph`、`ConceptNode` |
 | `scroll` | 内容按章节连续阅读，重点是论证、比较和总结 | `ScrollDocument`、`ScrollSection`、`ScrollProse` |
 
-共享的信息组件可以放进合适的位置。比如 `Insight`、`Flow`、`Mermaid`、`Callout`、`FrameworkModel`、`MatrixModel`、`FormulaModel`、`DecisionMatrix`、`FailureMode`、`NoteGrid`、`Tabs` 和 `Details` 并不属于某个外壳。
+共享的信息组件可以放进合适的位置。比如 `Insight`、`Flow`、`Mermaid`、`Callout`、`FrameworkModel`、`MatrixModel`、`FormulaModel`、`DecisionMatrix`、`FailureMode`、`NoteGrid`、`Tabs` 和 `Details` 并不属于某个外壳。扩展组件 `Math`/`MathBlock`、`Chart`、`Figure`、`Cite`/`References` 同样两种外壳通用。
 
 外壳决定页面如何组织，组件决定一段信息如何被理解。
 

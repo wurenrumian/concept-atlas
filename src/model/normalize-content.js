@@ -1,4 +1,5 @@
 import React, { Children, isValidElement } from 'react';
+import { KNOWN_COMPONENT_SET } from './validate-content.js';
 
 /**
  * Extracts structured node and relation data from MDX / React component elements
@@ -84,51 +85,7 @@ function unwrapComponent(element) {
   return current;
 }
 
-const SEMANTIC_COMPONENTS = new Set([
-  'ExplainPage',
-  'ConceptGraph',
-  'ConceptNode',
-  'ConceptRef',
-  'Children',
-  'Relation',
-  'Overview',
-  'Definition',
-  'Mechanism',
-  'Input',
-  'Output',
-  'Prerequisite',
-  'Implementation',
-  'Example',
-  'Counterexample',
-  'Boundary',
-  'Glossary',
-  'Mermaid',
-  'RelationMap',
-  'Insight',
-  'NoteGrid',
-  'Stack',
-  'Grid',
-  'Split',
-  'Tabs',
-  'RelationPath',
-  'LearningObjectives',
-  'KeyQuestion',
-  'Evidence',
-  'Invariant',
-  'FailureMode',
-  'Tradeoff',
-  'FrameworkModel',
-  'MatrixModel',
-  'FormulaModel',
-  'PyramidModel',
-  'FunnelModel',
-  'ScrollDocument',
-  'ScrollHeader',
-  'ScrollSection',
-  'ScrollProse',
-  'ScrollPair',
-  'ScrollGrid',
-]);
+const SEMANTIC_COMPONENTS = KNOWN_COMPONENT_SET;
 
 function isSemanticComponent(name) {
   return SEMANTIC_COMPONENTS.has(name);
