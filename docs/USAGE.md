@@ -30,7 +30,7 @@ npx concept-atlas-dense-explain article.mdx --mode scroll -o dist/article.html
 ```bash
 npm install
 npm run dev
-npm test          # 校验器单元测试
+npm test          # 校验器单元测试 + 渲染冒烟测试
 npm run validate  # 校验 content/*.mdx
 npm run sync      # 把 src/ 同步到 npm 包模板（check:sync 只检查）
 ```
