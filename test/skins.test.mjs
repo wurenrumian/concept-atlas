@@ -1,10 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const stylesRoot = path.join(repoRoot, 'src', 'styles');
+
+// The entry stylesheet is an @import manifest, so structure lives across
+// core.css + packs/*.css. Tests that scan rules must read the whole tree.
+function readAllStyles() {
+  const walk = dir => readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) return walk(full);
+    return entry.name.endsWith('.css') ? [readFileSync(full, 'utf8')] : [];
+  });
+  return walk(stylesRoot).join('\n');
+}
 
 const { SKINS, DEFAULT_SKIN, SKIN_IDS, normalizeSkin, COMPONENT_STYLES, DEFAULT_STYLE, STYLE_IDS, normalizeStyle } = await import('../src/model/skins.js');
 const { RELATION_TYPES, LEVEL_DEFS } = await import('../src/model/relation-types.js');
@@ -41,7 +53,7 @@ test('default skin is registered and unknown ids normalize to null', () => {
 });
 
 test('every component style pack has matching CSS rules', () => {
-  const css = readFileSync(path.join(repoRoot, 'src', 'styles', 'concept-explain.css'), 'utf8');
+  const css = readAllStyles();
   // `classic` is the un-scoped base; the manuscript pack is scoped overrides.
   // The manuscript pack is scoped overrides on top of the classic base; it
   // must cover annotations-adjacent records, plates, notes, flow and math.
@@ -74,7 +86,7 @@ test('every component style pack has matching CSS rules', () => {
 
 test('component style packs re-voice typography through shared font tokens', () => {
   const tokensCss = readFileSync(path.join(repoRoot, 'src', 'styles', 'tokens.css'), 'utf8');
-  const css = readFileSync(path.join(repoRoot, 'src', 'styles', 'concept-explain.css'), 'utf8');
+  const css = readAllStyles();
 
   // tokens.css owns the family stacks; packs only remap the role tokens.
   for (const token of ['--font-sans', '--font-serif', '--font-mono', '--font-body', '--font-heading', '--font-lead', '--font-label', '--font-data']) {
@@ -83,15 +95,38 @@ test('component style packs re-voice typography through shared font tokens', () 
 
   // Structure rules must never hardcode a family stack again.
   const families = [...css.matchAll(/font-family:\s*([^;]+);/g)].map(match => match[1].trim());
-  assert.ok(families.length > 0, 'expected font-family declarations in concept-explain.css');
+  assert.ok(families.length > 0, 'expected font-family declarations in the stylesheets');
   for (const family of families) {
     assert.match(family, /^(inherit|var\(--font-[\w-]+\))$/, `font-family must consume a font token: ${family}`);
   }
 
   // Each pack must declare its heading voice so switching packs visibly changes type.
-  for (const pack of ['classic', 'manuscript']) {
+  for (const pack of ['classic', 'manuscript', 'shadcn', 'elastic']) {
     const block = css.slice(css.indexOf(`[data-style='${pack}']`));
     assert.ok(block.includes('--font-heading:'), `${pack} pack must set --font-heading`);
+  }
+});
+
+test('new component packs restate the shared grammar without a new palette', () => {
+  const css = readAllStyles();
+  // Each pack must cover the same surfaces as manuscript so a reader switching
+  // packs never sees a component fall back to the classic chassis.
+  for (const pack of ['shadcn', 'elastic']) {
+    for (const rule of [
+      `[data-style='${pack}'] .semantic-insight`,
+      `[data-style='${pack}'] .semantic-callout`,
+      `[data-style='${pack}'] .semantic-key-question`,
+      `[data-style='${pack}'] .semantic-flow-steps`,
+      `[data-style='${pack}'] .semantic-references`,
+      `[data-style='${pack}'] .semantic-chart`,
+      `[data-style='${pack}'] .math-block-expression`,
+      `[data-style='${pack}'] .flow-box`,
+    ]) {
+      assert.ok(css.includes(rule), `${pack} pack missing ${rule}`);
+    }
+    // Each pack restates structure only: its token block may not hardcode colors.
+    const block = css.slice(css.indexOf(`[data-style='${pack}'] {`), css.indexOf(`[data-style='${pack}'] .semantic-learning-objectives`));
+    assert.doesNotMatch(block, /#[0-9a-fA-F]{3,8}\b/, `${pack} pack must not hardcode colors`);
   }
 });
 

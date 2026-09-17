@@ -1,0 +1,401 @@
+/* ===========================================================================
+   COMPONENT STYLE PACK — elastic
+   Elastic UI's observability-dashboard grammar, restated structurally: Inter
+   on bordered panels, 6px surfaces with 4px inner chips, subdued headers,
+   EuiCallOut-style tinted annotations, data-dense tables with row hover and
+   250ms cubic-bezier(0.694, 0.0482, 0.335, 1) motion. Colors stay with the
+   active skin, so elastic composes with aurora or ember like the other packs.
+   =========================================================================== */
+
+[data-style='elastic'] {
+  --font-heading: var(--font-sans);
+  --font-lead: var(--font-sans);
+  --font-label: var(--font-sans);
+  --label-transform: none;
+  --label-tracking: 0;
+  --lead-style: normal;
+
+  /* Elastic ships a 6px panel radius with a 4px small step. */
+  --radius-1: 4px;
+  --radius-2: 6px;
+  --radius-3: 6px;
+  --radius-4: 8px;
+
+  --elastic-motion: 250ms cubic-bezier(0.694, 0.0482, 0.335, 1);
+}
+
+/* -- Panels: bordered surface with a soft layered shadow, no accent rule. -- */
+[data-style='elastic'] .semantic-learning-objectives,
+[data-style='elastic'] .semantic-evidence,
+[data-style='elastic'] .semantic-invariant,
+[data-style='elastic'] .semantic-failure-mode,
+[data-style='elastic'] .semantic-tradeoff,
+[data-style='elastic'] .semantic-framework-model,
+[data-style='elastic'] .semantic-model-matrix,
+[data-style='elastic'] .semantic-model-formula,
+[data-style='elastic'] .semantic-model-pyramid,
+[data-style='elastic'] .semantic-model-funnel,
+[data-style='elastic'] .semantic-relation-path,
+[data-style='elastic'] .semantic-decision-matrix,
+[data-style='elastic'] .semantic-compare-table,
+[data-style='elastic'] .semantic-chart,
+[data-style='elastic'] .semantic-mermaid,
+[data-style='elastic'] .semantic-relation-map,
+[data-style='elastic'] .semantic-references {
+  margin: 16px 0;
+  padding: 20px;
+  border: 1px solid var(--border-medium);
+  border-top: 1px solid var(--border-medium);
+  border-radius: var(--radius-2);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-card);
+}
+
+[data-style='elastic'] .draft-board .semantic-grid > .semantic-mermaid,
+[data-style='elastic'] .draft-board .semantic-grid > .semantic-relation-map {
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-2);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-card);
+}
+
+/* -- Panel headers: title-s rhythm, subdued meta in mono. -- */
+[data-style='elastic'] .framework-model-head,
+[data-style='elastic'] .semantic-widget-head {
+  min-height: 0;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+[data-style='elastic'] .framework-model-type,
+[data-style='elastic'] .semantic-widget-head code,
+[data-style='elastic'] .relation-path-kicker {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* -- Labels are bordered badges (4px), never pills. -- */
+[data-style='elastic'] .semantic-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 6px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-1);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+[data-style='elastic'] .framework-model-head .semantic-tag,
+[data-style='elastic'] .semantic-widget-head .semantic-tag,
+[data-style='elastic'] .semantic-references .semantic-tag {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* -- Inner units: subdued fill, 1px border, 4px chip radius. -- */
+[data-style='elastic'] .framework-model-element,
+[data-style='elastic'] .model-matrix-cell,
+[data-style='elastic'] .model-pyramid-level,
+[data-style='elastic'] .model-funnel-step,
+[data-style='elastic'] .model-formula-expression,
+[data-style='elastic'] .relation-path-node,
+[data-style='elastic'] .tradeoff-option,
+[data-style='elastic'] .semantic-note {
+  padding: 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-1);
+  background: var(--bg-subtle);
+  box-shadow: none;
+  transition: background-color var(--elastic-motion), border-color var(--elastic-motion);
+}
+
+/* -- Annotations: EuiCallOut — a 4px tone bar over a tinted panel. -- */
+[data-style='elastic'] .semantic-callout,
+[data-style='elastic'] .semantic-insight,
+[data-style='elastic'] .semantic-key-question {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border: 1px solid var(--border-subtle);
+  border-inline-start: 4px solid var(--annotation-accent);
+  border-radius: var(--radius-2);
+  background: color-mix(in srgb, var(--annotation-accent) 8%, var(--bg-surface));
+  box-shadow: none;
+}
+
+[data-style='elastic'] .callout-title,
+[data-style='elastic'] .insight-kicker {
+  margin: 0 0 4px;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* -- Plain prose records: subdued bordered rows. -- */
+[data-style='elastic'] .semantic-overview,
+[data-style='elastic'] .semantic-definition,
+[data-style='elastic'] .semantic-mechanism,
+[data-style='elastic'] .semantic-prerequisite,
+[data-style='elastic'] .semantic-input,
+[data-style='elastic'] .semantic-output,
+[data-style='elastic'] .semantic-glossary-item,
+[data-style='elastic'] .semantic-example,
+[data-style='elastic'] .semantic-boundary,
+[data-style='elastic'] .semantic-counterexample {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-1);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  box-shadow: none;
+}
+
+/* A definition/mechanism/boundary stack is one split panel. */
+[data-style='elastic'] .semantic-stack:has(> .semantic-definition, > .semantic-mechanism, > .semantic-boundary) {
+  margin: 16px 0;
+  padding: 0 20px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-2);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-card);
+}
+
+[data-style='elastic'] .semantic-stack:has(> .semantic-definition, > .semantic-mechanism, > .semantic-boundary) > .semantic-definition,
+[data-style='elastic'] .semantic-stack:has(> .semantic-definition, > .semantic-mechanism, > .semantic-boundary) > .semantic-mechanism,
+[data-style='elastic'] .semantic-stack:has(> .semantic-definition, > .semantic-mechanism, > .semantic-boundary) > .semantic-boundary {
+  margin: 0;
+  padding: 14px 0;
+  border: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* -- Flow: bounded step cards with a tonal index chip. -- */
+[data-style='elastic'] .semantic-flow-steps {
+  gap: 8px;
+  margin: 16px 0;
+  padding: 0;
+  border: 0;
+  border-top: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+[data-style='elastic'] .flow-step {
+  padding: 12px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-2);
+  background: var(--bg-surface);
+}
+
+[data-style='elastic'] .step-num {
+  border-radius: var(--radius-1);
+  background: color-mix(in srgb, var(--primary) 14%, var(--bg-surface));
+  color: var(--primary);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+[data-style='elastic'] .flow-box {
+  padding: 12px 14px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-2);
+  background: var(--bg-surface);
+  transition: background-color var(--elastic-motion), border-color var(--elastic-motion);
+}
+
+[data-style='elastic'] .flow-box.current-focus {
+  border-color: var(--primary);
+  background: var(--bg-highlight);
+  box-shadow: none;
+}
+
+[data-style='elastic'] .flow-box.clickable:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-subtle);
+  transform: none;
+}
+
+/* -- Tables: subdued header strip, hairline rows, hover highlight. -- */
+[data-style='elastic'] .semantic-decision-matrix,
+[data-style='elastic'] .semantic-compare-table {
+  overflow: hidden;
+  padding: 0;
+}
+
+[data-style='elastic'] .matrix-title {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+[data-style='elastic'] .semantic-decision-matrix th,
+[data-style='elastic'] .semantic-compare-table th {
+  padding: 10px 16px;
+  border: 0;
+  border-bottom: 1px solid var(--border-medium);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+[data-style='elastic'] .semantic-decision-matrix td,
+[data-style='elastic'] .semantic-compare-table td {
+  padding: 10px 16px;
+  border: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-variant-numeric: var(--numeric-variant);
+}
+
+[data-style='elastic'] .semantic-decision-matrix tbody tr:hover td,
+[data-style='elastic'] .semantic-compare-table tbody tr:hover td {
+  background: var(--bg-hover-soft);
+}
+
+[data-style='elastic'] .semantic-decision-matrix tr:last-child td,
+[data-style='elastic'] .semantic-compare-table tr:last-child td {
+  border-bottom: 0;
+}
+
+/* -- Tabs: bordered accordion panels with semibold summaries. -- */
+[data-style='elastic'] .semantic-tabs details {
+  margin: 0 0 8px;
+  padding: 0;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-2);
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+
+[data-style='elastic'] .semantic-tabs summary {
+  padding: 10px 14px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+[data-style='elastic'] .semantic-tabs details[open] > summary {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+[data-style='elastic'] .semantic-tabs details > div {
+  padding: 12px 14px;
+}
+
+/* -- Math, figures and references share the panel treatment. -- */
+[data-style='elastic'] .math-block-expression {
+  margin: 8px 0;
+  padding: 20px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-1);
+  background: var(--bg-subtle);
+}
+
+[data-style='elastic'] .semantic-figure {
+  margin: 16px 0;
+  padding: 12px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-2);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-card);
+}
+
+[data-style='elastic'] .reference-item {
+  padding: 10px 0 10px 28px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 13px;
+}
+
+/* -- Explorer chrome: panels keep the same layer of elevation. -- */
+[data-style='elastic'] .concept-hero-card,
+[data-style='elastic'] .node-block,
+[data-style='elastic'] .subnode-card,
+[data-style='elastic'] .relation-link-card,
+[data-style='elastic'] .panel-rel-card,
+[data-style='elastic'] .code-block,
+[data-style='elastic'] .inline-inspector,
+[data-style='elastic'] .local-flow-ribbon {
+  box-shadow: var(--shadow-card);
+}
+
+[data-style='elastic'] .draft-board .concept-hero-card,
+[data-style='elastic'] .draft-board .node-block {
+  box-shadow: var(--shadow-card);
+}
+
+/* -- Reading carrier: sans titles, hairline dividers, flat progress bar. -- */
+[data-style='elastic'] .continuous-header {
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--border-medium);
+}
+
+[data-style='elastic'] .continuous-header > p {
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+[data-style='elastic'] .continuous-header h1,
+[data-style='elastic'] .continuous-section > h2,
+[data-style='elastic'] .continuous-model-pair h2 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+[data-style='elastic'] .continuous-section {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+[data-style='elastic'] .reading-progress-bar {
+  background: var(--primary);
+}
+
+[data-style='elastic'] .scroll-toc-title {
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* -- Focus ring in the primary tone, matching the panel radius. -- */
+[data-style='elastic'] button:focus-visible,
+[data-style='elastic'] a:focus-visible,
+[data-style='elastic'] [role='button']:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

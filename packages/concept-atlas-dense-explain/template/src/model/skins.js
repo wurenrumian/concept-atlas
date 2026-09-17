@@ -32,7 +32,9 @@ export function normalizeSkin(value) {
  */
 export const COMPONENT_STYLES = [
   { id: 'manuscript', label: 'Manuscript · 评注手稿' },
-  { id: 'classic', label: 'Classic · 经典卡片' }
+  { id: 'classic', label: 'Classic · 经典卡片' },
+  { id: 'shadcn', label: 'shadcn · 极简界面' },
+  { id: 'elastic', label: 'Elastic · 观测面板' }
 ];
 
 export const DEFAULT_STYLE = 'manuscript';

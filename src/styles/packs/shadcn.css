@@ -1,0 +1,396 @@
+/* ===========================================================================
+   COMPONENT STYLE PACK — shadcn
+   A third grammar, restated from shadcn/ui's component design rather than its
+   palette: one radius scale, hairline 1px borders, flat cards with a divided
+   header, muted inner units, secondary "badge" labels and 150ms
+   cubic-bezier(0.4, 0, 0.2, 1) motion. Every color still comes from the active
+   skin tokens, so shadcn composes with aurora or ember like any other pack.
+   =========================================================================== */
+
+[data-style='shadcn'] {
+  --font-heading: var(--font-sans);
+  --font-lead: var(--font-sans);
+  --font-label: var(--font-sans);
+  --label-transform: none;
+  --label-tracking: -0.01em;
+  --lead-style: normal;
+
+  /* shadcn ships a single 0.5rem radius plus a smaller step; map it onto the
+     shared 1–4 scale so buttons/inputs read 6px and cards read 8px. */
+  --radius-1: 4px;
+  --radius-2: 6px;
+  --radius-3: 8px;
+  --radius-4: 10px;
+
+  --shadcn-motion: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* -- Card chassis: flat surface, hairline border, shadow-sm, no accent rule. -- */
+[data-style='shadcn'] .semantic-learning-objectives,
+[data-style='shadcn'] .semantic-evidence,
+[data-style='shadcn'] .semantic-invariant,
+[data-style='shadcn'] .semantic-failure-mode,
+[data-style='shadcn'] .semantic-tradeoff,
+[data-style='shadcn'] .semantic-framework-model,
+[data-style='shadcn'] .semantic-model-matrix,
+[data-style='shadcn'] .semantic-model-formula,
+[data-style='shadcn'] .semantic-model-pyramid,
+[data-style='shadcn'] .semantic-model-funnel,
+[data-style='shadcn'] .semantic-relation-path,
+[data-style='shadcn'] .semantic-decision-matrix,
+[data-style='shadcn'] .semantic-compare-table,
+[data-style='shadcn'] .semantic-chart,
+[data-style='shadcn'] .semantic-mermaid,
+[data-style='shadcn'] .semantic-relation-map,
+[data-style='shadcn'] .semantic-references {
+  margin: 16px 0;
+  padding: 20px;
+  border: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--border-subtle);
+  border-radius: var(--radius-3);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Mermaid / RelationMap inside the explorer grid carry their own chassis rule. */
+[data-style='shadcn'] .draft-board .semantic-grid > .semantic-mermaid,
+[data-style='shadcn'] .draft-board .semantic-grid > .semantic-relation-map {
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-3);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+/* -- Card header: sans, medium weight, separated by a hairline; meta in mono. -- */
+[data-style='shadcn'] .framework-model-head,
+[data-style='shadcn'] .semantic-widget-head {
+  min-height: 0;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+[data-style='shadcn'] .framework-model-type,
+[data-style='shadcn'] .semantic-widget-head code,
+[data-style='shadcn'] .relation-path-kicker {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* -- Labels are secondary badges, except when they title a framed card. -- */
+[data-style='shadcn'] .semantic-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+[data-style='shadcn'] .framework-model-head .semantic-tag,
+[data-style='shadcn'] .semantic-widget-head .semantic-tag,
+[data-style='shadcn'] .semantic-references .semantic-tag {
+  padding: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* -- Inner units: muted surfaces, same hairline, one radius step smaller. -- */
+[data-style='shadcn'] .framework-model-element,
+[data-style='shadcn'] .model-matrix-cell,
+[data-style='shadcn'] .model-pyramid-level,
+[data-style='shadcn'] .model-funnel-step,
+[data-style='shadcn'] .model-formula-expression,
+[data-style='shadcn'] .relation-path-node,
+[data-style='shadcn'] .tradeoff-option,
+[data-style='shadcn'] .semantic-note {
+  padding: 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-subtle);
+  box-shadow: none;
+  transition: background-color var(--shadcn-motion), border-color var(--shadcn-motion);
+}
+
+/* -- Annotations read as alerts: a full hairline card with no accent bar. -- */
+[data-style='shadcn'] .semantic-callout,
+[data-style='shadcn'] .semantic-insight,
+[data-style='shadcn'] .semantic-key-question {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid var(--border-subtle);
+  border-inline-start: 1px solid var(--border-subtle);
+  border-radius: var(--radius-3);
+  background: var(--bg-surface);
+  box-shadow: none;
+}
+
+[data-style='shadcn'] .callout-title,
+[data-style='shadcn'] .insight-kicker {
+  margin: 0 0 4px;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* -- Plain prose records: quiet muted panels, not accent-topped cards. -- */
+[data-style='shadcn'] .semantic-overview,
+[data-style='shadcn'] .semantic-definition,
+[data-style='shadcn'] .semantic-mechanism,
+[data-style='shadcn'] .semantic-prerequisite,
+[data-style='shadcn'] .semantic-input,
+[data-style='shadcn'] .semantic-output,
+[data-style='shadcn'] .semantic-glossary-item,
+[data-style='shadcn'] .semantic-example,
+[data-style='shadcn'] .semantic-boundary,
+[data-style='shadcn'] .semantic-counterexample {
+  margin: 12px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  box-shadow: none;
+}
+
+/* A definition/mechanism/boundary stack is one card divided by hairlines. */
+[data-style='shadcn'] .semantic-stack:has(> .semantic-definition, > .semantic-mechanism, > .semantic-boundary) {
+  margin: 16px 0;
+  padding: 4px 20px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-3);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-style='shadcn'] .semantic-stack:has(> .semantic-definition, > .semantic-mechanism, > .semantic-boundary) > .semantic-definition,
+[data-style='shadcn'] .semantic-stack:has(> .semantic-definition, > .semantic-mechanism, > .semantic-boundary) > .semantic-mechanism,
+[data-style='shadcn'] .semantic-stack:has(> .semantic-definition, > .semantic-mechanism, > .semantic-boundary) > .semantic-boundary {
+  margin: 0;
+  padding: 14px 0;
+  border: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* -- Flow: a row of 6px step cards with a filled index dot. -- */
+[data-style='shadcn'] .semantic-flow-steps {
+  gap: 8px;
+  margin: 16px 0;
+  padding: 0;
+  border: 0;
+  border-top: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+[data-style='shadcn'] .flow-step {
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-subtle);
+}
+
+[data-style='shadcn'] .step-num {
+  border-radius: 9999px;
+  background: var(--primary);
+  color: var(--on-accent);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+[data-style='shadcn'] .flow-box {
+  padding: 12px 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-surface);
+  transition: background-color var(--shadcn-motion), border-color var(--shadcn-motion);
+}
+
+[data-style='shadcn'] .flow-box.current-focus {
+  border-color: var(--primary);
+  background: var(--bg-subtle);
+  box-shadow: none;
+}
+
+[data-style='shadcn'] .flow-box.clickable:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-subtle);
+  transform: none;
+}
+
+/* -- Tables: header on a muted strip, rows split by hairlines only. -- */
+[data-style='shadcn'] .semantic-decision-matrix,
+[data-style='shadcn'] .semantic-compare-table {
+  overflow: hidden;
+  padding: 0;
+}
+
+[data-style='shadcn'] .matrix-title {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+[data-style='shadcn'] .semantic-decision-matrix th,
+[data-style='shadcn'] .semantic-compare-table th {
+  padding: 10px 20px;
+  border: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+[data-style='shadcn'] .semantic-decision-matrix td,
+[data-style='shadcn'] .semantic-compare-table td {
+  padding: 12px 20px;
+  border: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-variant-numeric: var(--numeric-variant);
+}
+
+[data-style='shadcn'] .semantic-decision-matrix tr:last-child td,
+[data-style='shadcn'] .semantic-compare-table tr:last-child td {
+  border-bottom: 0;
+}
+
+/* -- Tabs are collapsible panels rather than ledger rows. -- */
+[data-style='shadcn'] .semantic-tabs details {
+  margin: 0 0 8px;
+  padding: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+
+[data-style='shadcn'] .semantic-tabs summary {
+  padding: 10px 14px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+[data-style='shadcn'] .semantic-tabs details[open] > summary {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+[data-style='shadcn'] .semantic-tabs details > div {
+  padding: 12px 14px;
+}
+
+/* -- Math, figures and references use the same hairline card. -- */
+[data-style='shadcn'] .math-block-expression {
+  margin: 8px 0;
+  padding: 20px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-subtle);
+}
+
+[data-style='shadcn'] .semantic-figure {
+  margin: 16px 0;
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-3);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-style='shadcn'] .reference-item {
+  padding: 10px 0 10px 28px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 13px;
+}
+
+/* -- Explorer chrome: every surface keeps a single flat shadow. -- */
+[data-style='shadcn'] .concept-hero-card,
+[data-style='shadcn'] .node-block,
+[data-style='shadcn'] .subnode-card,
+[data-style='shadcn'] .relation-link-card,
+[data-style='shadcn'] .panel-rel-card,
+[data-style='shadcn'] .code-block,
+[data-style='shadcn'] .inline-inspector,
+[data-style='shadcn'] .local-flow-ribbon {
+  box-shadow: var(--shadow-sm);
+}
+
+[data-style='shadcn'] .draft-board .concept-hero-card,
+[data-style='shadcn'] .draft-board .node-block {
+  box-shadow: var(--shadow-sm);
+}
+
+/* -- Reading carrier: sans headings, hairline dividers, flat progress bar. -- */
+[data-style='shadcn'] .continuous-header {
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+[data-style='shadcn'] .continuous-header > p {
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+[data-style='shadcn'] .continuous-header h1,
+[data-style='shadcn'] .continuous-section > h2,
+[data-style='shadcn'] .continuous-model-pair h2 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+[data-style='shadcn'] .continuous-section {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+[data-style='shadcn'] .reading-progress-bar {
+  background: var(--primary);
+}
+
+[data-style='shadcn'] .scroll-toc-title {
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* -- Focus ring: a two-step ring in the primary tone, offset from the edge. -- */
+[data-style='shadcn'] button:focus-visible,
+[data-style='shadcn'] a:focus-visible,
+[data-style='shadcn'] [role='button']:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

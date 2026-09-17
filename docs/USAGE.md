@@ -63,7 +63,7 @@ npx concept-atlas-dense-explain paper.mdx --link-assets
 
 - **配色皮肤**：`aurora`（冷调蓝紫）或 `ember`（暖调金赤陶），两者都有暗色/亮色两套色板；
 - **明暗模式**：暗色 / 亮色一键切换；
-- **组件风格**：`manuscript`（手稿排版：索引戳记记录卡、双规线图版、页边注示例）或 `classic`（经典卡片）。
+- **组件风格**：`manuscript`（手稿排版：索引戳记记录卡、双规线图版、页边注示例）、`classic`（经典卡片）、`shadcn`（极简界面：统一圆角、1px 发丝描边、扁平卡片与 150ms 动效）或 `elastic`（观测面板：Inter 标题、带边框面板、EuiCallOut 式批注与 250ms 动效）。
 
 选择保存在 localStorage，atlas 与 scroll 两个载体共享。发货默认外观为 **aurora × manuscript × 亮色**。
 
@@ -421,8 +421,12 @@ src/model/validate-content.js      # 内容校验器（浏览器与 CLI 共用�
 src/model/citations.js             # Cite/References 引用编号
 src/model/concept-schema.js        # 概念树与关系图模型
 src/views/NodeExplorer.jsx         # 概念探索画布
-src/views/RelationGraph.jsx        # 层级图 / 概念关系图
-src/styles/concept-explain.css     # 全局和组件样式
+src/views/RelationGraph.jsx         # 层级图 / 概念关系图
+src/styles/concept-explain.css     # 样式入口（按顺序 @import 下列文件）
+src/styles/core.css                # 结构样式：基础、布局、组件
+src/styles/tokens.css              # 设计变量（默认皮肤 + 字号角色）
+src/styles/skins.css               # 各配色皮肤覆盖
+src/styles/packs/*.css             # 组件风格包（manuscript / shadcn / elastic）
 content/*.mdx                      # 知识内容
 test/*.test.mjs                    # 校验器测试
 scripts/sync-template.mjs          # src/ 同步到 npm 包模板
