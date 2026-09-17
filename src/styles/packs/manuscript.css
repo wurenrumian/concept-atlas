@@ -342,14 +342,20 @@
       body fades in, and every surface answers the pointer through tone and
       rule weight — the pack never nudges or scales anything. -- */
 [data-style='manuscript'] .continuous-header,
-[data-style='manuscript'] .continuous-section,
 [data-style='manuscript'] .concept-hero-card,
-[data-style='manuscript'] .node-block {
-  animation: ca-fade calc(var(--motion-slow) + 140ms) var(--ease-standard) both;
+[data-style='manuscript'] .content-blocks > *,
+[data-style='manuscript'] .continuous-section > * {
+  animation: ca-fade calc(var(--motion-slow) + 140ms) var(--ease-standard) backwards;
 }
 
 [data-style='manuscript'] .semantic-tabs details > div {
-  animation: ca-fade var(--motion-base) var(--ease-standard) both;
+  animation: ca-fade var(--motion-base) var(--ease-standard) backwards;
+}
+
+/* Index stamps settle with the page instead of popping. */
+[data-style='manuscript'] .step-num,
+[data-style='manuscript'] .framework-model-index {
+  animation: none;
 }
 
 /* Records and plates warm their frame as the pointer arrives. */

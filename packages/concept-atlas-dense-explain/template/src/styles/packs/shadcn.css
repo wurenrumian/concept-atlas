@@ -395,14 +395,31 @@
   outline-offset: 2px;
 }
 
-/* -- Motion: quick and mechanical on shadcn's 150ms curve. Cards, badges and
-      rows answer the pointer with a hairline shift; revealed bodies unfold.
-      No transforms, no bounce. -- */
+/* -- Motion: quick and mechanical on shadcn's 150ms curve. Cards rise, badges,
+      rows and inner units fade in on the same beat, revealed bodies unfold.
+      No transforms on hover, no bounce. -- */
 [data-style='shadcn'] .continuous-header,
-[data-style='shadcn'] .continuous-section,
 [data-style='shadcn'] .concept-hero-card,
-[data-style='shadcn'] .node-block {
-  animation: ca-rise var(--shadcn-motion) both;
+[data-style='shadcn'] .content-blocks > *,
+[data-style='shadcn'] .continuous-section > * {
+  animation: ca-rise var(--shadcn-motion) backwards;
+}
+
+[data-style='shadcn'] :is(
+  .subnode-card,
+  .framework-model-element,
+  .model-matrix-cell,
+  .model-pyramid-level,
+  .model-funnel-step,
+  .tradeoff-option,
+  .semantic-flow-steps > .flow-step,
+  .relation-path-node,
+  .relation-map-row,
+  .reference-item,
+  .semantic-decision-matrix tbody tr,
+  .semantic-compare-table tbody tr
+) {
+  animation: ca-fade var(--shadcn-motion) backwards;
 }
 
 [data-style='shadcn'] .semantic-tabs details > div {

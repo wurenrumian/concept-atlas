@@ -3824,22 +3824,86 @@ a.reference-title:hover { color: var(--text-accent); }
    MOTION — classic base
 
    Structure is shared, so the un-scoped layer carries one restrained motion
-   grammar: content settles in once when a view mounts, revealed bodies unfold,
-   and surfaces answer the pointer through tint and rules — never a nudge.
-   Each component style pack re-voices the feel further down.
+   grammar: content rises and assembles in order on mount, revealed bodies
+   unfold, diagrams and charts draw themselves, and surfaces answer the pointer
+   through tint and rules — never a nudge. Each component style pack re-voices
+   the feel further down. `animation-fill-mode: backwards` keeps the entrance
+   from leaving a permanent transform on a container (which would re-anchor any
+   absolutely positioned widget inside it).
    =========================================================================== */
 
-/* Content settles into place on mount. */
+/* Content rises on mount. Only one level per nesting is given travel (an outer
+   card rises, the items inside it fade) so motion never compounds. */
 .continuous-header,
-.continuous-section,
 .concept-hero-card,
-.node-block {
-  animation: ca-rise var(--motion-slow) var(--ease-out) both;
+.content-blocks > *,
+.continuous-section > * {
+  animation: ca-rise var(--motion-slow) var(--ease-out) backwards;
+}
+
+/* Inner units fade in, staggered with the rest of their row. */
+.subnode-card,
+.framework-model-element,
+.model-matrix-cell,
+.model-pyramid-level,
+.model-funnel-step,
+.tradeoff-option,
+.semantic-flow-steps > .flow-step,
+.relation-path-node,
+.relation-map-row,
+.reference-item,
+.semantic-decision-matrix tbody tr,
+.semantic-compare-table tbody tr {
+  animation: ca-fade var(--motion-base) var(--ease-standard) backwards;
 }
 
 /* A revealed tab / accordion body unfolds instead of snapping open. */
 .semantic-tabs details > div {
-  animation: ca-unfold var(--motion-base) var(--ease-out) both;
+  animation: ca-unfold var(--motion-base) var(--ease-out) backwards;
+}
+
+/* Index chips pop in a beat after the surface they sit on. */
+.step-num,
+.level-pill,
+.model-pyramid-level .framework-model-index,
+.framework-model-element .framework-model-index {
+  animation: ca-pop var(--motion-base) var(--ease-out) backwards;
+  animation-delay: calc(var(--stagger, 0ms) + 120ms);
+}
+
+/* Charts draw themselves once the panel has arrived: bars grow from the
+   baseline, a line traces its path (pathLength="1" normalizes the metric),
+   and points pop in behind it. */
+.chart-bar {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: ca-grow 700ms var(--ease-out) backwards;
+  animation-delay: calc(var(--stagger, 0ms) + 160ms);
+}
+
+.chart-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  animation: ca-draw 900ms var(--ease-out) both;
+  animation-delay: calc(var(--stagger, 0ms) + 160ms);
+}
+
+.chart-point {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ca-pop 380ms var(--ease-out) backwards;
+  animation-delay: calc(var(--stagger, 0ms) + 420ms);
+}
+
+.chart-slice {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ca-pop 520ms var(--ease-out) backwards;
+}
+
+/* A rendered diagram fades in once Mermaid inserts it. */
+.mermaid-canvas svg {
+  animation: ca-fade calc(var(--motion-base) + 120ms) var(--ease-standard) backwards;
 }
 
 /* Labels, citations and the table of contents take their color in. */

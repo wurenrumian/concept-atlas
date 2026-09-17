@@ -1,16 +1,16 @@
 @charset "UTF-8";
 
 /* ==========================================================================
-   MOTION — shared keyframes and the accessibility guard.
+   MOTION — shared keyframes, stagger rhythm, and the accessibility guard.
    Structure lives in core.css and each component style pack re-voices its own
-   feel; this file only defines the named reveals every pack draws from and
-   guarantees the whole layer collapses when a reader asks for reduced motion.
-   Imported last so the guard wins the cascade over every pack.
+   feel; this file defines the named reveals they draw from, the stagger that
+   lines a row of cards up, and guarantees the whole layer collapses when a
+   reader asks for reduced motion. Imported last so it wins the cascade.
    ========================================================================== */
 
 /* A quiet rise — the default entrance for a block of content. */
 @keyframes ca-rise {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -22,12 +22,159 @@
 
 /* A small slide for a revealed tab / accordion body. */
 @keyframes ca-unfold {
-  from { opacity: 0; transform: translateY(-4px); }
+  from { opacity: 0; transform: translateY(-6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* A pop for chips, badges and step indices as they arrive. */
+@keyframes ca-pop {
+  from { opacity: 0; transform: scale(0.82); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Bar charts grow up from the baseline. */
+@keyframes ca-grow {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+/* Line charts draw themselves in (requires pathLength="1" on the path). */
+@keyframes ca-draw {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+
+/* --------------------------------------------------------------------------
+   Stagger — a row of sibling surfaces assembles in order instead of together.
+   Declared here, after every pack, so a pack's `animation` shorthand cannot
+   reset these delays. Only the first eight steps are scored; later siblings
+   share the last step so a long column never feels slow.
+   -------------------------------------------------------------------------- */
+.content-blocks > *,
+.subnodes-grid > *,
+.continuous-grid > *,
+.framework-model-elements > *,
+.model-pyramid-levels > *,
+.model-funnel-steps > *,
+.model-matrix-grid > .model-matrix-cell,
+.tradeoff-options > *,
+.semantic-flow-steps > *,
+.relation-path-steps > *,
+.relation-map-grid > .relation-map-row,
+.reference-list > .reference-item,
+.semantic-decision-matrix tbody tr,
+.semantic-compare-table tbody tr {
+  --stagger: 0ms;
+  animation-delay: var(--stagger);
+}
+
+.content-blocks > :nth-child(2),
+.subnodes-grid > :nth-child(2),
+.continuous-grid > :nth-child(2),
+.framework-model-elements > :nth-child(2),
+.model-pyramid-levels > :nth-child(2),
+.model-funnel-steps > :nth-child(2),
+.model-matrix-grid > .model-matrix-cell:nth-child(3),
+.tradeoff-options > :nth-child(2),
+.semantic-flow-steps > :nth-child(2),
+.relation-path-steps > :nth-child(2),
+.relation-map-grid > .relation-map-row:nth-child(2),
+.reference-list > .reference-item:nth-child(2),
+.semantic-decision-matrix tbody tr:nth-child(2),
+.semantic-compare-table tbody tr:nth-child(2) { --stagger: 45ms; }
+
+.content-blocks > :nth-child(3),
+.subnodes-grid > :nth-child(3),
+.continuous-grid > :nth-child(3),
+.framework-model-elements > :nth-child(3),
+.model-pyramid-levels > :nth-child(3),
+.model-funnel-steps > :nth-child(3),
+.model-matrix-grid > .model-matrix-cell:nth-child(4),
+.tradeoff-options > :nth-child(3),
+.semantic-flow-steps > :nth-child(3),
+.relation-path-steps > :nth-child(3),
+.relation-map-grid > .relation-map-row:nth-child(3),
+.reference-list > .reference-item:nth-child(3),
+.semantic-decision-matrix tbody tr:nth-child(3),
+.semantic-compare-table tbody tr:nth-child(3) { --stagger: 90ms; }
+
+.content-blocks > :nth-child(4),
+.subnodes-grid > :nth-child(4),
+.continuous-grid > :nth-child(4),
+.framework-model-elements > :nth-child(4),
+.model-pyramid-levels > :nth-child(4),
+.model-funnel-steps > :nth-child(4),
+.model-matrix-grid > .model-matrix-cell:nth-child(5),
+.tradeoff-options > :nth-child(4),
+.semantic-flow-steps > :nth-child(4),
+.relation-path-steps > :nth-child(4),
+.relation-map-grid > .relation-map-row:nth-child(4),
+.reference-list > .reference-item:nth-child(4),
+.semantic-decision-matrix tbody tr:nth-child(4),
+.semantic-compare-table tbody tr:nth-child(4) { --stagger: 135ms; }
+
+.content-blocks > :nth-child(5),
+.subnodes-grid > :nth-child(5),
+.continuous-grid > :nth-child(5),
+.framework-model-elements > :nth-child(5),
+.model-pyramid-levels > :nth-child(5),
+.model-funnel-steps > :nth-child(5),
+.model-matrix-grid > .model-matrix-cell:nth-child(6),
+.tradeoff-options > :nth-child(5),
+.semantic-flow-steps > :nth-child(5),
+.relation-path-steps > :nth-child(5),
+.relation-map-grid > .relation-map-row:nth-child(5),
+.reference-list > .reference-item:nth-child(5),
+.semantic-decision-matrix tbody tr:nth-child(5),
+.semantic-compare-table tbody tr:nth-child(5) { --stagger: 180ms; }
+
+.content-blocks > :nth-child(6),
+.subnodes-grid > :nth-child(6),
+.continuous-grid > :nth-child(6),
+.framework-model-elements > :nth-child(6),
+.model-pyramid-levels > :nth-child(6),
+.model-funnel-steps > :nth-child(6),
+.model-matrix-grid > .model-matrix-cell:nth-child(7),
+.tradeoff-options > :nth-child(6),
+.semantic-flow-steps > :nth-child(6),
+.relation-path-steps > :nth-child(6),
+.relation-map-grid > .relation-map-row:nth-child(6),
+.reference-list > .reference-item:nth-child(6),
+.semantic-decision-matrix tbody tr:nth-child(6),
+.semantic-compare-table tbody tr:nth-child(6) { --stagger: 225ms; }
+
+.content-blocks > :nth-child(7),
+.subnodes-grid > :nth-child(7),
+.continuous-grid > :nth-child(7),
+.framework-model-elements > :nth-child(7),
+.model-pyramid-levels > :nth-child(7),
+.model-funnel-steps > :nth-child(7),
+.model-matrix-grid > .model-matrix-cell:nth-child(8),
+.tradeoff-options > :nth-child(7),
+.semantic-flow-steps > :nth-child(7),
+.relation-path-steps > :nth-child(7),
+.relation-map-grid > .relation-map-row:nth-child(7),
+.reference-list > .reference-item:nth-child(7),
+.semantic-decision-matrix tbody tr:nth-child(7),
+.semantic-compare-table tbody tr:nth-child(7) { --stagger: 270ms; }
+
+.content-blocks > :nth-child(n + 8),
+.subnodes-grid > :nth-child(n + 8),
+.continuous-grid > :nth-child(n + 8),
+.framework-model-elements > :nth-child(n + 8),
+.model-pyramid-levels > :nth-child(n + 8),
+.model-funnel-steps > :nth-child(n + 8),
+.model-matrix-grid > .model-matrix-cell:nth-child(n + 9),
+.tradeoff-options > :nth-child(n + 8),
+.semantic-flow-steps > :nth-child(n + 8),
+.relation-path-steps > :nth-child(n + 8),
+.relation-map-grid > .relation-map-row:nth-child(n + 8),
+.reference-list > .reference-item:nth-child(n + 8),
+.semantic-decision-matrix tbody tr:nth-child(n + 8),
+.semantic-compare-table tbody tr:nth-child(n + 8) { --stagger: 315ms; }
+
 /* Reduced motion: keep the state changes, drop the travel. Durations collapse
-   to a single frame so hover tints and revealed bodies settle instantly. */
+   to a single frame so entrances, draws and hover tints settle instantly. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

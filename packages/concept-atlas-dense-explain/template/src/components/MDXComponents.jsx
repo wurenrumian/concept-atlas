@@ -942,6 +942,7 @@ export function Chart({ title = '图表', type = 'bar', data = [], series = [], 
             <g key={seriesIndex}>
               <polyline
                 className="chart-line"
+                pathLength="1"
                 style={chartColor(seriesIndex)}
                 points={entry.values.map((value, idx) => `${xFor(idx)},${yFor(value)}`).join(' ')}
               />

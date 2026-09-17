@@ -400,14 +400,32 @@
   outline-offset: 2px;
 }
 
-/* -- Motion: elastic's 250ms curve with a single restrained lift. Panels warm
-      their border, tags and rows tint, a hovered step rises one pixel, and a
-      revealed body unfolds — an observability surface, not a bouncy toy. -- */
+/* -- Motion: elastic's 250ms curve with a single restrained lift. Panels rise,
+      inner units fade in on the same beat, tags and rows tint, a hovered step
+      rises one pixel, and a revealed body unfolds — an observability surface,
+      not a bouncy toy. -- */
 [data-style='elastic'] .continuous-header,
-[data-style='elastic'] .continuous-section,
 [data-style='elastic'] .concept-hero-card,
-[data-style='elastic'] .node-block {
-  animation: ca-rise var(--elastic-motion) both;
+[data-style='elastic'] .content-blocks > *,
+[data-style='elastic'] .continuous-section > * {
+  animation: ca-rise var(--elastic-motion) backwards;
+}
+
+[data-style='elastic'] :is(
+  .subnode-card,
+  .framework-model-element,
+  .model-matrix-cell,
+  .model-pyramid-level,
+  .model-funnel-step,
+  .tradeoff-option,
+  .semantic-flow-steps > .flow-step,
+  .relation-path-node,
+  .relation-map-row,
+  .reference-item,
+  .semantic-decision-matrix tbody tr,
+  .semantic-compare-table tbody tr
+) {
+  animation: ca-fade var(--elastic-motion) backwards;
 }
 
 [data-style='elastic'] .semantic-tabs details > div {
