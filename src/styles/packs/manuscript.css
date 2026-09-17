@@ -71,7 +71,8 @@
 [data-style='manuscript'] .semantic-chart,
 [data-style='manuscript'] .semantic-mermaid,
 [data-style='manuscript'] .semantic-relation-map,
-[data-style='manuscript'] .semantic-note-grid {
+[data-style='manuscript'] .semantic-note-grid,
+[data-style='manuscript'] .semantic-figure {
   border: 1px solid var(--border-subtle);
   border-top: 3px double var(--border-strong);
   border-radius: 2px;
@@ -79,16 +80,92 @@
   box-shadow: none;
 }
 
+/* The explorer grid frames its diagram children itself, at a higher
+   specificity; restate the plate so a mounted diagram keeps the manuscript
+   frame wherever it appears. */
+[data-style='manuscript'] .draft-board .semantic-grid > .semantic-mermaid,
+[data-style='manuscript'] .draft-board .semantic-grid > .semantic-relation-map {
+  border: 1px solid var(--border-subtle);
+  border-top: 3px double var(--border-strong);
+  border-radius: 2px;
+  background: var(--bg-surface);
+  box-shadow: none;
+}
+
+[data-style='manuscript'] .semantic-figure img { border-radius: 2px; }
+
+/* Plates that lack a core box get the same one, so a row of unlike diagrams
+   lines up: charts, mermaid, maps and paths all inset 14/16 on the same 14px
+   rhythm. Models already carry that box from core; tables stay edge-to-edge
+   and figures keep their media inset. */
+[data-style='manuscript'] .semantic-chart,
+[data-style='manuscript'] .semantic-mermaid,
+[data-style='manuscript'] .semantic-relation-map,
+[data-style='manuscript'] .semantic-relation-path,
+[data-style='manuscript'] .semantic-note-grid {
+  margin: 14px 0;
+  padding: 14px 16px;
+}
+
+/* Core only normalizes some grid children; inside a scroll grid the row owns
+   the rhythm, so every plate and record drops its own margin too and unlike
+   siblings share one baseline. */
+[data-style='manuscript'] .continuous-grid > .semantic-framework-model,
+[data-style='manuscript'] .continuous-grid > .semantic-model-matrix,
+[data-style='manuscript'] .continuous-grid > .semantic-model-formula,
+[data-style='manuscript'] .continuous-grid > .semantic-model-pyramid,
+[data-style='manuscript'] .continuous-grid > .semantic-model-funnel,
+[data-style='manuscript'] .continuous-grid > .semantic-decision-matrix,
+[data-style='manuscript'] .continuous-grid > .semantic-compare-table,
+[data-style='manuscript'] .continuous-grid > .semantic-chart,
+[data-style='manuscript'] .continuous-grid > .semantic-mermaid,
+[data-style='manuscript'] .continuous-grid > .semantic-relation-map,
+[data-style='manuscript'] .continuous-grid > .semantic-relation-path,
+[data-style='manuscript'] .continuous-grid > .semantic-note-grid,
+[data-style='manuscript'] .continuous-grid > .semantic-figure,
+[data-style='manuscript'] .continuous-grid > .semantic-tradeoff,
+[data-style='manuscript'] .continuous-grid > .semantic-failure-mode,
+[data-style='manuscript'] .continuous-grid > .semantic-flow-steps {
+  margin: 0;
+}
+
+/* Diagram controls and rows keep the pack's near-square, quiet edge. */
+[data-style='manuscript'] .mermaid-tools button { border-radius: 2px; }
+[data-style='manuscript'] .relation-map-row:last-child { border-bottom: 0; }
+
 [data-style='manuscript'] .framework-model-head,
 [data-style='manuscript'] .semantic-widget-head {
   font-family: var(--font-heading);
   font-weight: 600;
 }
 
-/* -- Margin notes: the box dissolves; a short accent tick leads the title. -- */
+/* A plate head's title is a `.semantic-tag`, whose label family would
+   otherwise override the serif head. The record tabs keep the label voice;
+   a plate or bibliography title reads in the heading face. */
+[data-style='manuscript'] .framework-model-head .semantic-tag,
+[data-style='manuscript'] .semantic-widget-head .semantic-tag,
+[data-style='manuscript'] .semantic-references .semantic-tag {
+  font-family: var(--font-heading);
+  font-weight: 600;
+}
+
+/* -- Inner units inherit the plate's near-square frame instead of the shared
+      4px radius, so a mounted model reads as one drawn figure. -- */
+[data-style='manuscript'] .framework-model-element,
+[data-style='manuscript'] .model-matrix-cell,
+[data-style='manuscript'] .model-pyramid-level,
+[data-style='manuscript'] .model-funnel-step,
+[data-style='manuscript'] .model-formula-expression,
+[data-style='manuscript'] .relation-path-node,
+[data-style='manuscript'] .tradeoff-option {
+  border-radius: 2px;
+}
+
+/* -- Margin notes: the box dissolves; a neutral rule leads the title, in the
+      same ink as the prose margin so a note reads as one more marginalia. -- */
 [data-style='manuscript'] .semantic-note {
   border: 0;
-  border-top: 2px solid color-mix(in srgb, var(--primary) 55%, transparent);
+  border-top: 2px solid color-mix(in srgb, var(--border-strong) 70%, transparent);
   border-radius: 0;
   background: transparent;
   box-shadow: none;
@@ -127,24 +204,48 @@
   background: var(--bg-surface);
 }
 
-/* -- Step sequences are ledger rows, not a chassis of cards. -- */
+/* -- Step sequences read as a ruled ledger: a numbered stamp and a serif
+      label per column, under one primary rule with a hairline closing every
+      row (so a wrapped four-step run still reads as a table). -- */
 [data-style='manuscript'] .semantic-flow-steps {
-  gap: 0 18px;
+  gap: 0;
   margin: 18px 0;
   padding: 0;
   border: 0;
   border-top: 2px solid color-mix(in srgb, var(--primary) 55%, transparent);
+  border-right: 1px solid var(--border-subtle);
   border-radius: 0;
   background: transparent;
 }
 
 [data-style='manuscript'] .flow-step {
-  padding: 10px 0 10px 12px;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
   border: 0;
-  border-left: 2px solid var(--border-strong);
+  border-left: 1px solid var(--border-subtle);
   border-radius: 0;
   background: transparent;
+  box-shadow: inset 0 -1px 0 var(--border-subtle);
 }
+
+[data-style='manuscript'] .step-num {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid color-mix(in srgb, var(--primary) 45%, transparent);
+  border-radius: 2px;
+  background: var(--bg-surface);
+  color: var(--primary-light);
+  font-family: var(--font-data);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+[data-style='manuscript'] .step-text { font-size: 13px; }
+[data-style='manuscript'] .step-text strong { font-family: var(--font-heading); font-weight: 600; }
 
 /* -- References sit on the page like a printed bibliography. -- */
 [data-style='manuscript'] .semantic-references {
@@ -231,4 +332,8 @@
 [data-style='manuscript'] .semantic-tabs summary {
   font-family: var(--font-heading);
   font-weight: 600;
+}
+
+[data-style='manuscript'] .semantic-tabs details > div {
+  padding: 4px 0 4px 2px;
 }
