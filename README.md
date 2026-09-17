@@ -26,19 +26,19 @@
 发布到 GitHub 后，可以使用 Skills CLI 安装：
 
 ```bash
-npx skills add <github-owner>/<github-repo> --skill concept-atlas-dense-explain
+npx skills add wurenrumian/concept-atlas --skill concept-atlas-dense-explain
 ```
 
 也可以只生成一次性提示词：
 
 ```bash
-npx skills use <github-owner>/<github-repo> --skill concept-atlas-dense-explain
+npx skills use wurenrumian/concept-atlas --skill concept-atlas-dense-explain
 ```
 
-skill 使用本项目提供的 CLI：
+skill 使用本项目提供的 CLI（npm 包 `concept-atlas-dense-explain`，当前 `0.6.0`）：
 
 ```bash
-# 先取一份可编译的组件参考（guide 顶部有中文 LaTeX 使用说明），学习组件与 prop 写法
+# 先取一份可编译的组件参考（中文，含各组件与 LaTeX 用法示例），学习组件与 prop 写法
 npx concept-atlas-dense-explain guide --mode atlas -o atlas-guide.mdx
 npx concept-atlas-dense-explain guide --mode scroll -o scroll-guide.mdx
 

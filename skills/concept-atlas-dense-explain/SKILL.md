@@ -17,7 +17,7 @@ If the user only wants the prompt/methodology and not files, still choose a shel
    npx concept-atlas-dense-explain guide --mode atlas -o ./concept-atlas-atlas-guide.mdx
    npx concept-atlas-dense-explain guide --mode scroll -o ./concept-atlas-scroll-guide.mdx
    ```
-   It is a real, compilable MDX file demonstrating every component and its exact props. Search it for a component name to copy the correct prop shape instead of guessing. Delete it when done.
+   It is a real, compilable MDX file that demonstrates the components for that shell and their exact props. Search it for a component name to copy the correct prop shape instead of guessing. Delete it when done.
 3. Start from a skeleton when useful: `npx concept-atlas-dense-explain create <file>.mdx --mode atlas|scroll`. `create` and `guide` refuse to overwrite an existing file unless `--force` is passed.
 4. Write the semantic MDX into the user's `.mdx` file (see Authoring rules).
 5. Validate before rendering:
@@ -27,7 +27,7 @@ If the user only wants the prompt/methodology and not files, still choose a shel
    ```
    Every diagnostic is `CODE line:column message`. Fix all `error`s and re-run; warnings are quality signals you should also address when cheap.
 6. Compile: `npx concept-atlas-dense-explain <file>.mdx --mode atlas|scroll [-o out.html] [--skin <id>] [--default-mode dark|light|system] [--style <id>]`. Output is a standalone HTML beside the MDX unless `-o` is given. Validation errors abort the build; use `--no-validate` only to force a knowingly broken build.
-7. **Appearance (optional)**: pages ship with a reader-facing appearance menu — palette (`aurora` cool blue, `ember` warm gold), a dark/light toggle, and a component style pack (`manuscript` editorial marginalia, `classic` boxed cards). The shipped default is aurora × manuscript × light; choices persist in localStorage across both carriers. You can bake different compile-time defaults: `--skin ember --default-mode dark --style classic` (or env `CONCEPT_ATLAS_SKIN` / `CONCEPT_ATLAS_DEFAULT_MODE` / `CONCEPT_ATLAS_STYLE` on the repo build). Bake a default only when the user asks for one. Content MDX never sets appearance — it is carrier/tooling territory, not content.
+7. **Appearance (optional)**: pages ship with a reader-facing appearance menu — palette (`aurora` cool blue, `ember` warm gold), a dark/light toggle, and a component style pack (`manuscript` editorial marginalia, `classic` boxed cards). The shipped default is aurora × manuscript × light; choices persist in localStorage across both carriers. You can bake different compile-time defaults: `--skin ember --default-mode dark --style classic` (or env `CONCEPT_ATLAS_SKIN` / `CONCEPT_ATLAS_DEFAULT_MODE` / `CONCEPT_ATLAS_STYLE` on the repo build). `--default-mode` only honors `dark`/`light`; `system` is accepted by the CLI but resolves to the carrier default (`light`). Bake a default only when the user asks for one. Content MDX never sets appearance — it is carrier/tooling territory, not content.
 8. For several documents, pass them all in one call: `npx concept-atlas-dense-explain a.mdx b.mdx c.mdx -o dist --force [--concurrency 3]`. `-o` is then a directory. The batch validates everything first and builds in parallel. Builds only bundle the heavy renderers the content uses: a page with no `<Math>`/`<Mermaid>` skips KaTeX (its ~1.4MB inlined fonts) and Mermaid, shrinking a typical scroll article from ~5MB to ~250KB. Do not add dummy `<Math>`/`<Mermaid>` nodes to "enable" them — write the components only when the content needs them. Add `--link-assets` when the page carries many screenshots and size matters.
 9. Report the shell, output path, validation result (errors/warnings), and limitations. Do not claim interactions you did not verify.
 
@@ -42,8 +42,8 @@ If the user only wants the prompt/methodology and not files, still choose a shel
 - Node semantics: `Overview`, `Definition`, `Mechanism`, `Implementation`, `Boundary`, `Example`, `Counterexample`, `Prerequisite`, `Input`, `Output`, `Glossary`
 - Argument and evidence: `Evidence`, `Invariant`, `FailureMode`, `Tradeoff`, `LearningObjectives`, `KeyQuestion`
 - Information models: `Flow`, `Timeline`, `Compare`, `DecisionMatrix`, `FrameworkModel`, `MatrixModel`, `FormulaModel`, `PyramidModel`, `FunnelModel`
-- Reading and layout: `Insight`, `Callout`, `Details`, `NoteGrid`, `Tabs`, `Columns`, `Stack`, `Grid`, `Split`, `ScrollGrid`
-- Graphics and extensions: `Mermaid`, `RelationMap`, `RelationPath`, `Math`, `MathBlock`, `Chart`, `Figure`, `Cite`, `References`
+- Reading and layout: `Insight`, `Callout`, `Details`, `NoteGrid`, `Tabs`, `Columns`, `Stack`, `Grid`, `Split`, `ScrollGrid`, `ScrollPair`, `ScrollToc`
+- Graphics and extensions: `Mermaid`, `RelationMap`, `RelationPath`, `Math`, `MathBlock`, `Chart`, `Figure` (alias `Image`), `Cite`, `References`
 
 ## Authoring rules
 
@@ -61,7 +61,7 @@ If the user only wants the prompt/methodology and not files, still choose a shel
 
 ## Validation diagnostics
 
-`validate` and the build print `CODE line:column message`. Fix these `error`s before building: `UNKNOWN_COMPONENT`, `CARRIER_MISSING`, `CARRIER_CONFLICT`, `CARRIER_MODE_MISMATCH`, `NODE_MISSING_ID`, `DUPLICATE_NODE_ID`, `NODE_MISSING_TITLE`, `MISSING_PARENT`, `GRAPH_ROOT_UNRESOLVED`, `REF_UNRESOLVED`, `RELATION_FROM_UNRESOLVED`, `RELATION_TO_UNRESOLVED`. Warnings worth fixing: `NODE_MISSING_SUMMARY`, `NODE_NO_CORE_CONTENT`, `UNKNOWN_LEVEL`, `UNKNOWN_RELATION_TYPE`, `RELATION_MISSING_LABEL`, `PROP_EXPECTS_ARRAY`, `MATH_CHILDREN_BRACES`, `GRAPH_MISSING_ROOT`, `ASSET_MISSING`.
+`validate` and the build print `CODE line:column message`. Fix these `error`s before building: `UNKNOWN_COMPONENT`, `CARRIER_MISSING`, `CARRIER_CONFLICT`, `CARRIER_MODE_MISMATCH`, `NODE_MISSING_ID`, `DUPLICATE_NODE_ID`, `NODE_MISSING_TITLE`, `MISSING_PARENT`, `GRAPH_ROOT_UNRESOLVED`, `REF_MISSING_ID`, `REF_UNRESOLVED`, `RELATION_FROM_UNRESOLVED`, `RELATION_TO_UNRESOLVED`. Warnings worth fixing: `NODE_MISSING_SUMMARY`, `NODE_NO_CORE_CONTENT`, `UNKNOWN_LEVEL`, `UNKNOWN_RELATION_TYPE`, `RELATION_MISSING_LABEL`, `RELATION_SELF`, `PROP_EXPECTS_ARRAY`, `MATH_CHILDREN_BRACES`, `PROSE_EXPRESSION`, `FRONTMATTER_UNSUPPORTED`, `GRAPH_MISSING_ROOT`, `FIGURE_MISSING_SRC`, `ASSET_MISSING`, `REF_SELF`; `NO_ROOT_LEVEL` and `MULTIPLE_ROOT_LEVEL` are warnings that `--strict` promotes to errors.
 
 ## Before you report
 
