@@ -4,7 +4,7 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { build } from 'vite';
 import { fileURLToPath } from 'node:url';
-import { validateMdxSource, countBySeverity, detectFeatures } from '../template/src/model/validate-content.js';
+import { validateMdxSource, countBySeverity, detectFeatures, extractPageTitle } from '../template/src/model/validate-content.js';
 import { SKINS, normalizeSkin, COMPONENT_STYLES, normalizeStyle } from '../template/src/model/skins.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -144,6 +144,7 @@ if (command === 'create' || command === 'new') {
   }
   await mkdir(path.dirname(output), { recursive: true });
   const template = mode === 'atlas' ? `\
+{/* shell 的 title 会成为浏览器标签页标题；页面图标固定为 📃。请把“主题名称”改成真实标题。 */}
 <ExplainPage id="topic-id" title="主题名称" summary="用一句话说明这个主题解决什么问题。">
   <ConceptGraph root="root-node">
     <ConceptNode id="root-node" title="核心概念" level="L0" summary="给读者建立整体认知。">
@@ -168,6 +169,7 @@ if (command === 'create' || command === 'new') {
   </ConceptGraph>
 </ExplainPage>
 ` : `\
+{/* shell 的 title 会成为浏览器标签页标题；页面图标固定为 📃。请把“主题名称”改成真实标题。 */}
 <ScrollDocument>
   <ScrollHeader title="主题名称">用一两句话说明主题、背景和读者应该带走的判断。</ScrollHeader>
 
@@ -300,7 +302,7 @@ const jobs = inputs.map((input, index) => {
   if (linkAssets && path.resolve(path.dirname(outputs[index])) !== path.resolve(path.dirname(input))) {
     console.error(`警告：--link-assets 下 ${outputs[index]} 不在 ${path.dirname(input)} 内，相对图片路径会失效。`);
   }
-  return { input, output: outputs[index], mode, features: detectFeatures(sources[index]), linkAssets };
+  return { input, output: outputs[index], mode, title: extractPageTitle(sources[index]), features: detectFeatures(sources[index]), linkAssets };
 });
 
 const limit = clampConcurrency(parsed.values.get('--concurrency'), jobs.length);
@@ -316,7 +318,7 @@ if (failures.length) {
 }
 
 async function buildOne(job) {
-  const { input, output, mode, features, linkAssets: link } = job;
+  const { input, output, mode, title, features, linkAssets: link } = job;
   const templateEntry = mode === 'atlas' ? 'index.html' : 'scroll.html';
   // Each build gets its own scratch outDir: the template always writes
   // `index.html`/`scroll.html`, so concurrent builds sharing a directory would
@@ -326,6 +328,7 @@ async function buildOne(job) {
   await mkdir(scratch, { recursive: true });
   const define = { __ATLAS_FEATURES__: JSON.stringify(features) };
   if (link) define.__ATLAS_INLINE_ASSETS__ = 'false';
+  if (title) define.__ATLAS_PAGE_TITLE__ = JSON.stringify(title);
   if (skinFlag) define.__ATLAS_DEFAULT_SKIN__ = JSON.stringify(skinFlag);
   if (defaultModeFlag) define.__ATLAS_DEFAULT_MODE__ = JSON.stringify(defaultModeFlag);
   if (styleFlag) define.__ATLAS_DEFAULT_STYLE__ = JSON.stringify(styleFlag);
@@ -343,7 +346,7 @@ async function buildOne(job) {
     });
     await rm(output, { force: true });
     await rename(path.join(scratch, templateEntry), output);
-    console.log(`Built ${mode} HTML: ${output}${describeFeatures(features)}${link ? '  [figures linked]' : ''}`);
+    console.log(`Built ${mode} HTML: ${output}${title ? `  [tab: ${title}]` : ''}${describeFeatures(features)}${link ? '  [figures linked]' : ''}`);
     return { ok: true, input, output };
   } catch (error) {
     return { ok: false, input, output, error };

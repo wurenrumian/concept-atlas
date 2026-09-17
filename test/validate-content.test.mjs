@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateMdxSource, countBySeverity, detectFeatures, KNOWN_COMPONENT_SET } from '../src/model/validate-content.js';
+import { validateMdxSource, countBySeverity, detectFeatures, extractPageTitle, KNOWN_COMPONENT_SET } from '../src/model/validate-content.js';
 
 const codes = result => result.diagnostics.map(item => item.code);
 const errorsOf = result => result.diagnostics.filter(item => item.severity === 'error').map(item => item.code);
@@ -168,4 +168,19 @@ test('detectFeatures ignores samples inside code fences and inline code', () => 
 
   const inline = detectFeatures(`${atlas(rootNode)}\n  <Definition>写作 \`<Mermaid>\` 表示图表节点。</Definition>`);
   assert.equal(inline.mermaid, false);
+});
+
+test('extractPageTitle reads the tab title from the carrier shell', () => {
+  assert.equal(extractPageTitle(atlas(rootNode)), 'T');
+  assert.equal(extractPageTitle('<ScrollDocument>\n  <ScrollHeader title="用概念模型组织一次技术判断">intro</ScrollHeader>\n</ScrollDocument>'), '用概念模型组织一次技术判断');
+
+  // Expression titles and missing shells fall back to null so the build keeps
+  // the carrier's default <title>.
+  assert.equal(extractPageTitle('<ExplainPage id="p" title={dynamic} summary="S"></ExplainPage>'), null);
+  assert.equal(extractPageTitle('<ScrollDocument>\n  <ScrollProse>没有标题</ScrollProse>\n</ScrollDocument>'), null);
+});
+
+test('extractPageTitle decodes JSX entities without double-decoding', () => {
+  assert.equal(extractPageTitle('<ExplainPage id="p" title="A &amp; B" summary="S"></ExplainPage>'), 'A & B');
+  assert.equal(extractPageTitle('<ExplainPage id="p" title="&amp;lt;" summary="S"></ExplainPage>'), '&lt;');
 });

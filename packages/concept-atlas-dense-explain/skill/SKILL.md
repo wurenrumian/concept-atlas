@@ -35,6 +35,7 @@ If the user only wants the prompt/methodology and not files, still choose a shel
 
 - `atlas`: `ExplainPage` → `ConceptGraph` → `ConceptNode`, plus `Children`/`ConceptRef` and cross-branch `Relation`s. Exactly one `L0` root, several `L1` branches, depth to `L3`/`L4`. Shared components live inside nodes.
 - `scroll`: `ScrollDocument` → `ScrollHeader` + `ScrollSection` (+ `ScrollProse`, `ScrollGrid`). Shared components live inside sections. The shell auto-builds a table of contents and reading progress from section titles — do not hand-build navigation.
+- The browser tab comes from the shell, not the build flags: `ExplainPage title="..."` (atlas) or `ScrollHeader title="..."` (scroll) becomes the `<title>`, so give it a real, specific document name — never leave a placeholder like "主题名称". The favicon is a fixed 📃 document emoji on every generated page.
 - Never make one MDX file both shells. When switching shells, convert only the outer structure.
 
 ## Component families

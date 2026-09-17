@@ -598,3 +598,28 @@ export function detectFeatures(source) {
     mermaid: used.has('Mermaid'),
   };
 }
+
+/** JSX string literals decode these five entities; a single pass avoids
+ * double-decoding sequences like `&amp;lt;`. */
+const ENTITY_MAP = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" };
+const decodeEntities = text => text.replace(/&(amp|lt|gt|quot|#39);/g, (_, entity) => ENTITY_MAP[entity]);
+
+/**
+ * Reads the browser-tab title from the MDX source without rendering: the atlas
+ * shell declares it on <ExplainPage title="...">, the scroll shell on
+ * <ScrollHeader title="...">. Only quoted string props count — a `{...}`
+ * expression title cannot be known at build time. Returns null when no static
+ * title exists, so the build keeps the carrier's default <title>.
+ */
+export function extractPageTitle(source) {
+  const tags = tokenize(maskIgnored(source));
+  for (const shell of ['ExplainPage', 'ScrollHeader']) {
+    const tag = tags.find(item => item.name === shell && item.kind !== 'close');
+    if (!tag) continue;
+    const attr = attrsToMap(tag.attrs).title;
+    if (attr && attr.hasValue && attr.quoted && attr.value.trim()) {
+      return decodeEntities(attr.value).trim();
+    }
+  }
+  return null;
+}

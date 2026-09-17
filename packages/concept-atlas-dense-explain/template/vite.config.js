@@ -161,6 +161,31 @@ function resolveToken(raw, validate) {
   return validate(value);
 }
 
+/**
+ * Bakes the per-document <title> into the carrier HTML.
+ *
+ * The CLI (and the repository's demo build) extract the title from the MDX
+ * source — <ExplainPage title="..."> for the atlas carrier, <ScrollHeader
+ * title="..."> for scroll — and forward it as the `__ATLAS_PAGE_TITLE__`
+ * define. When present, the carrier's default <title> is replaced so the
+ * browser tab names the actual document instead of the demo placeholder.
+ * Without the define the default title survives unchanged.
+ */
+function pageTitle() {
+  let title = null;
+  return {
+    name: 'concept-atlas-page-title',
+    configResolved(config) {
+      title = resolveToken(config.define && config.define.__ATLAS_PAGE_TITLE__, value => value.trim() || null);
+    },
+    transformIndexHtml(html) {
+      if (!title) return html;
+      const escaped = title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return html.replace(/<title>[\s\S]*?<\/title>/, `<title>${escaped}</title>`);
+    },
+  };
+}
+
 export default defineConfig({
   plugins: [
     inlineMdxAssets(),
@@ -173,6 +198,7 @@ export default defineConfig({
     react(),
     optionalFeatures(),
     appearanceDefaults(),
+    pageTitle(),
     viteSingleFile(),
   ],
   build: {

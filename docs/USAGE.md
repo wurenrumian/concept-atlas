@@ -104,6 +104,8 @@ npm run build
 
 `atlas` 和 `scroll` 是渲染载体，不是两种项目模板。CLI 会根据顶层组件自动识别载体；也可以通过 `--mode` 明确指定。
 
+浏览器标签页标题取自 MDX 外壳：`atlas` 用 `<ExplainPage title="...">`，`scroll` 用 `<ScrollHeader title="...">`；未声明时保留载体默认标题。所有产物页面的标签页图标固定为 📃 文档 emoji。
+
 ## 2. 内容入口
 
 默认展示内容位于：
