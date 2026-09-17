@@ -72,6 +72,29 @@ test('every component style pack has matching CSS rules', () => {
   }
 });
 
+test('component style packs re-voice typography through shared font tokens', () => {
+  const tokensCss = readFileSync(path.join(repoRoot, 'src', 'styles', 'tokens.css'), 'utf8');
+  const css = readFileSync(path.join(repoRoot, 'src', 'styles', 'concept-explain.css'), 'utf8');
+
+  // tokens.css owns the family stacks; packs only remap the role tokens.
+  for (const token of ['--font-sans', '--font-serif', '--font-mono', '--font-body', '--font-heading', '--font-lead', '--font-label', '--font-data']) {
+    assert.ok(tokensCss.includes(token), `tokens.css missing ${token}`);
+  }
+
+  // Structure rules must never hardcode a family stack again.
+  const families = [...css.matchAll(/font-family:\s*([^;]+);/g)].map(match => match[1].trim());
+  assert.ok(families.length > 0, 'expected font-family declarations in concept-explain.css');
+  for (const family of families) {
+    assert.match(family, /^(inherit|var\(--font-[\w-]+\))$/, `font-family must consume a font token: ${family}`);
+  }
+
+  // Each pack must declare its heading voice so switching packs visibly changes type.
+  for (const pack of ['classic', 'manuscript']) {
+    const block = css.slice(css.indexOf(`[data-style='${pack}']`));
+    assert.ok(block.includes('--font-heading:'), `${pack} pack must set --font-heading`);
+  }
+});
+
 test('relation and level colors are themeable var() references', () => {
   for (const def of Object.values(RELATION_TYPES)) {
     assert.match(def.color, /^var\(--rel-[\w-]+\)$/, `relation color must be a var(): ${def.color}`);

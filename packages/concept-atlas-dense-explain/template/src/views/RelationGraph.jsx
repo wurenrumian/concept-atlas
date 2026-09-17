@@ -224,6 +224,11 @@ export function RelationGraph({
           .force('collision', d3.forceCollide().radius(34).strength(0.35))
       : null;
 
+    // Resolve the shared label stack once; SVG presentation attributes cannot
+    // read CSS custom properties, so the graph mirrors the document font here.
+    const labelFont = getComputedStyle(document.documentElement).getPropertyValue('--font-sans').trim()
+      || "'Plus Jakarta Sans', -apple-system, sans-serif";
+
     // Links group
     const linkGroup = g.append('g').attr('class', 'links');
     const links = linkGroup.selectAll('g.link-item')
@@ -306,7 +311,7 @@ export function RelationGraph({
       .attr('text-anchor', 'middle')
       .style('fill', 'var(--text-primary)')
       .attr('font-size', '12px')
-      .attr('font-family', "'Plus Jakarta Sans', -apple-system, sans-serif")
+      .attr('font-family', labelFont)
       .attr('font-weight', d => d.id === selectedNodeId ? '700' : '500')
       .text(d => d.title);
 

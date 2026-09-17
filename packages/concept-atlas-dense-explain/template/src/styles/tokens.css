@@ -227,3 +227,36 @@
   --mermaid-line: #64748b;
   --mermaid-canvas: #f8fafc;
 }
+
+/* ==========================================================================
+   TYPOGRAPHY — family stacks and type rhythm shared by every skin and mode.
+   Fonts are theme-independent, so these live outside the mode blocks. The
+   component style packs ([data-style]) re-voice the *roles* below in
+   concept-explain.css; every structure rule must consume the roles, never a
+   raw family stack.
+   ========================================================================== */
+
+:root {
+  /* Family stacks */
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+  --font-serif: 'Lora', 'Noto Serif SC', Georgia, serif;
+  --font-mono: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* Roles — the only families component styles should consume */
+  --font-body: var(--font-sans);
+  --font-heading: var(--font-serif);
+  --font-lead: var(--font-serif);
+  --font-label: var(--font-sans);
+  --font-data: var(--font-mono);
+
+  /* Label rhythm, flipped per pack to re-voice tags, kickers and type tags */
+  --label-transform: none;
+  --label-tracking: 0;
+  --label-weight: 600;
+
+  /* Lead paragraph rhythm */
+  --lead-style: italic;
+
+  /* Numeric rhythm for indices, data tables and chart values */
+  --numeric-variant: tabular-nums;
+}

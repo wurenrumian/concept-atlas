@@ -70,7 +70,7 @@ function configureMermaid() {
       lineColor: read('--mermaid-line', MERMAID_FALLBACKS.lineColor),
       secondaryColor: nodeBg,
       tertiaryColor: read('--mermaid-canvas', MERMAID_FALLBACKS.tertiaryColor),
-      fontFamily: 'Plus Jakarta Sans, sans-serif',
+      fontFamily: read('--font-sans', "'Plus Jakarta Sans', sans-serif"),
     },
   });
 }

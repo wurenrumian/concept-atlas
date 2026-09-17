@@ -23,7 +23,7 @@ html, body {
   height: 100%;
   background: var(--bg-canvas);
   color: var(--text-primary);
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   line-height: 1.6;
   letter-spacing: -0.01em;
@@ -35,12 +35,38 @@ html, body {
 
 /* Editorial Title Font Styling */
 h1, h2, h3, .hero-title, .brand-title {
-  font-family: 'Lora', 'Noto Serif SC', Georgia, serif;
+  font-family: var(--font-heading);
+  text-wrap: balance;
 }
 
 button, input, select {
   font: inherit;
   color: inherit;
+}
+
+/* ==========================================================================
+   COMPONENT STYLE PACKS — typographic voice
+   The un-scoped structure rules below are the `classic` base; each pack only
+   re-voices the role tokens from tokens.css, so structure never hardcodes a
+   family. manuscript is serif-led marginalia; classic is a clean sans card set.
+   ========================================================================== */
+
+[data-style='classic'] {
+  --font-heading: var(--font-sans);
+  --font-lead: var(--font-sans);
+  --font-label: var(--font-sans);
+  --label-transform: none;
+  --label-tracking: 0;
+  --lead-style: normal;
+}
+
+[data-style='manuscript'] {
+  --font-heading: var(--font-serif);
+  --font-lead: var(--font-serif);
+  --font-label: var(--font-sans);
+  --label-transform: uppercase;
+  --label-tracking: 0.08em;
+  --lead-style: italic;
 }
 
 button {
@@ -474,7 +500,8 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
   padding: 1px 6px;
   border-radius: 4px;
   border: 1px solid;
-  font-family: monospace;
+  font-family: var(--font-data);
+  font-variant-numeric: var(--numeric-variant);
 }
 
 .bc-title {
@@ -553,7 +580,8 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
   font-size: 10px;
   font-weight: 600;
   color: var(--text-dim);
-  font-family: monospace;
+  font-family: var(--font-data);
+  font-variant-numeric: var(--numeric-variant);
 }
 
 /* Navigation Hierarchy Tree */
@@ -621,7 +649,8 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
   font-size: 10px;
   font-weight: 600;
   color: var(--text-dim);
-  font-family: monospace;
+  font-family: var(--font-data);
+  font-variant-numeric: var(--numeric-variant);
 }
 
 /* ==========================================================================
@@ -654,7 +683,8 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
   font-size: 11px;
   font-weight: 600;
   color: var(--text-dim);
-  font-family: 'Fira Code', monospace;
+  font-family: var(--font-data);
+  font-variant-numeric: var(--numeric-variant);
   letter-spacing: 0.04em;
 }
 
@@ -769,8 +799,8 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
   color: var(--text-secondary);
   line-height: 1.7;
   margin-bottom: 24px;
-  font-family: 'Lora', Georgia, serif;
-  font-style: italic;
+  font-family: var(--font-lead);
+  font-style: var(--lead-style);
 }
 
 .hero-meta-chips {
@@ -962,7 +992,7 @@ button.flow-box {
 .impl-lang {
   font-size: 11px;
   font-weight: 700;
-  font-family: 'Fira Code', monospace;
+  font-family: var(--font-data);
   text-transform: uppercase;
   background: var(--bg-canvas);
   padding: 3px 8px;
@@ -976,7 +1006,7 @@ button.flow-box {
   padding: 18px 20px;
   border-radius: 10px;
   overflow-x: auto;
-  font-family: "Fira Code", monospace;
+  font-family: var(--font-data);
   font-size: 13px;
   line-height: 1.6;
   color: var(--code-text);
@@ -993,6 +1023,7 @@ button.flow-box {
 }
 
 .ex-title {
+  font-family: var(--font-heading);
   font-weight: 700;
   color: var(--accent-emerald);
   margin-bottom: 6px;
@@ -1000,6 +1031,7 @@ button.flow-box {
 }
 
 .cex-title {
+  font-family: var(--font-heading);
   font-weight: 700;
   color: var(--accent-rose);
   margin-bottom: 6px;
@@ -1042,7 +1074,8 @@ button.flow-box {
 .sn-level {
   font-size: 11px;
   font-weight: 800;
-  font-family: monospace;
+  font-family: var(--font-data);
+  font-variant-numeric: var(--numeric-variant);
 }
 
 .sn-arrow {
@@ -1056,6 +1089,7 @@ button.flow-box {
 }
 
 .sn-title {
+  font-family: var(--font-heading);
   font-size: 15px;
   font-weight: 700;
   color: var(--text-primary);
@@ -1612,7 +1646,7 @@ button.flow-box {
 
 .hierarchy-strip-path span {
   color: var(--text-dim);
-  font-family: 'Fira Code', monospace;
+  font-family: var(--font-data);
   font-size: 9px;
 }
 
@@ -1656,7 +1690,7 @@ button.flow-box {
 .hierarchy-nav-label {
   margin-bottom: 6px;
   color: var(--text-dim);
-  font-family: 'Fira Code', monospace;
+  font-family: var(--font-data);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -1999,7 +2033,7 @@ button.flow-box {
 
 .semantic-widget-head code {
   color: var(--text-dim);
-  font-family: 'Fira Code', monospace;
+  font-family: var(--font-data);
   font-size: 9px;
 }
 
@@ -2041,7 +2075,7 @@ button.flow-box {
 
 .relation-map-source { color: var(--text-secondary); }
 .relation-map-target { color: var(--text-accent); font-weight: 700; }
-.relation-map-arrow { color: var(--accent-amber); font-family: 'Fira Code', monospace; font-size: 10px; }
+.relation-map-arrow { color: var(--accent-amber); font-family: var(--font-data); font-size: 10px; }
 .relation-map-row small { grid-column: 1 / -1; color: var(--text-dim); }
 
 .semantic-insight {
@@ -2451,7 +2485,7 @@ button.flow-box {
 
 .model-formula-expression { padding: 12px; border-radius: 8px; background: var(--bg-surface); color: var(--accent-cyan); text-align: center; font-size: 16px; }
 .model-formula-variables { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; margin: 10px 0 0; font-size: 12px; }
-.model-formula-variables dt { color: var(--accent-cyan); font-family: ui-monospace, monospace; }
+.model-formula-variables dt { color: var(--accent-cyan); font-family: var(--font-data); }
 .model-formula-variables dd { margin: 0; color: var(--text-secondary); }
 
 .semantic-model-pyramid, .semantic-model-funnel {
@@ -2640,7 +2674,7 @@ button.flow-box {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-1);
   color: var(--text-dim);
-  font-family: inherit;
+  font-family: var(--font-label);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.03em;
@@ -2695,7 +2729,7 @@ button.flow-box {
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border-subtle);
   color: var(--text-primary);
-  font-family: inherit;
+  font-family: var(--font-heading);
   font-size: 14px;
   font-weight: 700;
   line-height: 1.45;
@@ -2705,20 +2739,20 @@ button.flow-box {
 .semantic-widget-head code,
 .relation-path-kicker {
   color: var(--text-secondary);
-  font-family: inherit;
+  font-family: var(--font-label);
   font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0;
-  text-transform: none;
+  font-weight: var(--label-weight);
+  letter-spacing: var(--label-tracking);
+  text-transform: var(--label-transform);
 }
 
 .semantic-tag {
   color: var(--text-primary);
-  font-family: inherit;
+  font-family: var(--font-label);
   font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0;
-  text-transform: none;
+  letter-spacing: var(--label-tracking);
+  text-transform: var(--label-transform);
 }
 
 /* Inner units use the same compact surface across every model. */
@@ -2808,6 +2842,7 @@ button.flow-box {
   padding: 12px 16px 10px;
   border-bottom: 1px solid var(--border-subtle);
   background: transparent;
+  font-family: var(--font-heading);
   font-size: 12px;
 }
 
@@ -2824,6 +2859,7 @@ button.flow-box {
   padding: 10px 14px;
   border-color: var(--border-subtle);
   font-size: 12px;
+  font-variant-numeric: var(--numeric-variant);
 }
 
 /* Callout, insight and a guiding question are annotations, not alert cards.
@@ -2860,7 +2896,7 @@ button.flow-box {
 .insight-kicker {
   margin: 0;
   color: var(--text-primary);
-  font-family: inherit;
+  font-family: var(--font-heading);
   font-size: 14px;
   font-weight: 700;
   line-height: 1.45;
@@ -2971,7 +3007,7 @@ button.flow-box {
 
 [data-style='manuscript'] .framework-model-head,
 [data-style='manuscript'] .semantic-widget-head {
-  font-family: 'Lora', 'Noto Serif SC', Georgia, serif;
+  font-family: var(--font-heading);
   font-weight: 600;
 }
 
@@ -3119,7 +3155,7 @@ button.flow-box {
 
 /* -- Tabs become ledger rows with a serif summary. -- */
 [data-style='manuscript'] .semantic-tabs summary {
-  font-family: 'Lora', 'Noto Serif SC', Georgia, serif;
+  font-family: var(--font-heading);
   font-weight: 600;
 }
 
@@ -3189,14 +3225,17 @@ html[data-carrier='scroll'] #root {
 .continuous-header > p {
   margin-bottom: 12px;
   color: var(--text-secondary);
+  font-family: var(--font-label);
   font-size: 13px;
   font-weight: 700;
+  letter-spacing: var(--label-tracking);
+  text-transform: var(--label-transform);
 }
 
 .continuous-header h1 {
   margin: 0 0 16px;
   color: var(--text-primary);
-  font-family: inherit;
+  font-family: var(--font-heading);
   font-size: clamp(30px, 4vw, 48px);
   font-weight: 750;
   line-height: 1.2;
@@ -3227,7 +3266,7 @@ html[data-carrier='scroll'] #root {
 .continuous-model-pair h2 {
   margin: 0 0 14px;
   color: var(--text-primary);
-  font-family: inherit;
+  font-family: var(--font-heading);
   font-size: 21px;
   font-weight: 750;
   line-height: 1.35;
@@ -3707,14 +3746,15 @@ html[data-carrier='scroll'] #root {
 .chart-axis-label {
   fill: var(--text-dim);
   font-size: 10px;
-  font-family: inherit;
+  font-family: var(--font-body);
+  font-variant-numeric: var(--numeric-variant);
 }
 
 .chart-axis-value { text-anchor: end; }
-.chart-bar-value { fill: var(--text-secondary); font-size: 10px; font-weight: 600; font-family: inherit; }
+.chart-bar-value { fill: var(--text-secondary); font-size: 10px; font-weight: 600; font-family: var(--font-body); font-variant-numeric: var(--numeric-variant); }
 
 .chart-legend-swatch { fill: var(--chart-color, var(--primary)); }
-.chart-legend-label { fill: var(--text-secondary); font-size: 11px; font-family: inherit; }
+.chart-legend-label { fill: var(--text-secondary); font-size: 11px; font-family: var(--font-body); }
 .chart-empty { padding: 24px; color: var(--text-dim); font-size: 13px; text-align: center; }
 
 .semantic-chart {
