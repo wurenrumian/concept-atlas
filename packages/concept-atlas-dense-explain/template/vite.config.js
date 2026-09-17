@@ -54,6 +54,45 @@ function inlineMdxAssets() {
 }
 
 /**
+ * Mermaid is the single largest dependency in the bundle (~2100 modules); it is
+ * pulled in whenever a document uses <Mermaid>. By default it is NOT bundled:
+ * the `mermaid` import resolves to this virtual module, which lazily injects the
+ * CDN build at render time and keeps the ~3700-module transform out of the
+ * build. `--inline-mermaid` (or CONCEPT_ATLAS_INLINE_MERMAID=1) restores the
+ * fully self-contained/offline bundle.
+ */
+const MERMAID_CDN_DEFAULT = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js';
+
+function mermaidCdnModule(cdnUrl) {
+  return `let config = null;
+let loader = null;
+function loadMermaid() {
+  if (typeof window === 'undefined') return Promise.reject(new Error('Mermaid CDN 加载需要浏览器环境'));
+  if (window.mermaid) return Promise.resolve(window.mermaid);
+  if (loader) return loader;
+  loader = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = ${JSON.stringify(cdnUrl)};
+    script.async = true;
+    script.onload = () => (window.mermaid ? resolve(window.mermaid) : reject(new Error('Mermaid CDN 已加载，但未暴露 window.mermaid')));
+    script.onerror = () => { loader = null; reject(new Error('无法从 CDN 加载 Mermaid；需要离线单文件请用 --inline-mermaid 重新编译。')); };
+    document.head.appendChild(script);
+  });
+  return loader;
+}
+const mermaid = {
+  initialize(value) { config = value; },
+  async render(id, text) {
+    const lib = await loadMermaid();
+    lib.initialize(config || {});
+    return lib.render(id, text);
+  },
+};
+export default mermaid;
+`;
+}
+
+/**
  * Swaps optional renderers for stubs when the document never uses them.
  *
  * Mermaid and KaTeX are the two dependencies whose transform cost and payload
@@ -95,24 +134,42 @@ export default katex;
 
 function optionalFeatures() {
   let enabled = { math: true, mermaid: true };
+  let mermaidMode = 'inline';
+  let mermaidCdnUrl = MERMAID_CDN_DEFAULT;
   return {
     name: 'concept-atlas-optional-features',
     enforce: 'pre',
     configResolved(config) {
-      const raw = config.define && config.define.__ATLAS_FEATURES__;
-      if (typeof raw !== 'string') return;
-      try {
-        enabled = { math: true, mermaid: true, ...JSON.parse(raw) };
-      } catch {
-        enabled = { math: true, mermaid: true };
+      // Reset per resolution: one process may run several builds (the CLI's
+      // batch mode) and each must not inherit the previous build's mode.
+      enabled = { math: true, mermaid: true };
+      mermaidMode = 'inline';
+      mermaidCdnUrl = MERMAID_CDN_DEFAULT;
+      const define = config.define || {};
+      const raw = define.__ATLAS_FEATURES__;
+      if (typeof raw === 'string') {
+        try {
+          enabled = { math: true, mermaid: true, ...JSON.parse(raw) };
+        } catch {
+          enabled = { math: true, mermaid: true };
+        }
       }
+      const mode = define.__ATLAS_MERMAID_MODE__;
+      if (mode === 'cdn' || mode === '"cdn"') mermaidMode = 'cdn';
+      const url = define.__ATLAS_MERMAID_CDN_URL__;
+      if (typeof url === 'string') mermaidCdnUrl = url.replace(/^"([\s\S]*)"$/, '$1');
     },
     resolveId(source) {
+      if (source === 'mermaid') {
+        if (enabled.mermaid === false) return '\0atlas-stub:mermaid';
+        return mermaidMode === 'cdn' ? '\0atlas-mermaid-cdn' : null;
+      }
       const entry = OPTIONAL_FEATURES[source];
       if (!entry || enabled[entry.feature] !== false) return null;
       return `\0atlas-stub:${entry.stub}`;
     },
     load(id) {
+      if (id === '\0atlas-mermaid-cdn') return mermaidCdnModule(mermaidCdnUrl);
       if (!id.startsWith('\0atlas-stub:')) return null;
       const stub = id.slice('\0atlas-stub:'.length);
       return Object.hasOwn(FEATURE_STUBS, stub) ? FEATURE_STUBS[stub] : null;

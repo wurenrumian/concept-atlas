@@ -46,6 +46,25 @@ npx concept-atlas-dense-explain papers/*.mdx -o dist --concurrency 3
 
 构建结束会打印汇总，例如 `(KaTeX dropped on 3/3)`。一篇不使用公式和图表的 `scroll` 文章通常是约 250KB 而不是约 5MB。如果确实需要某个渲染器，正常写组件即可，无需任何开关。
 
+### Mermaid 的 CDN 加载与 `--inline-mermaid`
+
+Mermaid 是最大的依赖（约 2100 个模块）。默认情况下它**不打进产物**，而是在页面第一次渲染 `<Mermaid>` 时从 CDN 动态加载 `mermaid@11`。这样含图表的文档构建更快、HTML 更小，代价是查看图表需要联网。
+
+需要完全离线的单文件时，用 `--inline-mermaid` 把 Mermaid 烘焙回 HTML；`--mermaid-cdn <url>` 可替换默认 CDN 地址（例如自建镜像）：
+
+```bash
+# 默认：Mermaid 走 CDN
+npx concept-atlas-dense-explain paper.mdx --mode atlas
+
+# 离线单文件：内联 Mermaid
+npx concept-atlas-dense-explain paper.mdx --mode atlas --inline-mermaid
+
+# 换 CDN 地址（仍走运行时加载）
+npx concept-atlas-dense-explain paper.mdx --mode atlas --mermaid-cdn https://cdn.example.com/mermaid.min.js
+```
+
+仓库自身构建用环境变量 `CONCEPT_ATLAS_INLINE_MERMAID=1`（另有 `CONCEPT_ATLAS_MERMAID_CDN`）。CDN 加载失败时图表位置会显示提示，其余内容不受影响。
+
 ### 图片内联与 `--link-assets`
 
 默认（不传开关）会把 `Figure` 的相对路径图片读成 base64 内联进 HTML，产物单文件、离线可开，代价是每张截图都会让 HTML 变大。传入 `--link-assets` 后图片保持相对链接：
@@ -61,7 +80,12 @@ npx concept-atlas-dense-explain paper.mdx --link-assets
 
 每个产物页面右上有外观菜单（调色板图标），读者可随时切换三件事：
 
-- **配色皮肤**：`aurora`（冷调蓝紫）或 `ember`（暖调金赤陶），两者都有暗色/亮色两套色板；
+- **配色皮肤**：五套可选，每套都有暗色/亮色两版色板——
+  - `aurora` 极光：冷调靛蓝 + 青，深空科技感（默认）；
+  - `ember` 炉火：暖调香槟金 + 赤陶，暗色如锻炉、亮色如旧纸；
+  - `verdant` 苔原：翡翠绿 + 青，森林与苔藓的清新感；
+  - `sakura` 樱雾：品红 + 兰紫，深梅暗色与胭脂纸亮色；
+  - `noir` 墨白：无彩印刷风，近黑/纸白为主，仅留一抹绯红信号色；
 - **明暗模式**：暗色 / 亮色一键切换；
 - **组件风格**：`manuscript`（手稿排版：索引戳记记录卡、双规线图版、页边注示例）、`classic`（经典卡片）、`shadcn`（极简界面：统一圆角、1px 发丝描边、扁平卡片与 150ms 动效）或 `elastic`（观测面板：Inter 标题、带边框面板、EuiCallOut 式批注与 250ms 动效）。
 

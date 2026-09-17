@@ -10,26 +10,27 @@
 [data-theme="dark"] {
   --theme-mode: "dark";
 
-  /* Background layers - deep indigo slate for high-tech monograph feel */
-  --bg-canvas: #090d16;
-  --bg-surface: #0f172a;
-  --bg-card: #151f32;
-  --bg-card-hover: #1c2a44;
-  --bg-subtle: #1e293b;
-  --bg-highlight: rgba(56, 189, 248, 0.08);
-  --bg-hover-soft: rgba(125, 125, 125, 0.08);
+  /* Background layers - deep indigo slate for high-tech monograph feel.
+     Layers step by a consistent value so canvas/surface/card stay distinct. */
+  --bg-canvas: #080b13;
+  --bg-surface: #0e1421;
+  --bg-card: #151d2e;
+  --bg-card-hover: #1d2840;
+  --bg-subtle: #1a2236;
+  --bg-highlight: rgba(56, 189, 248, 0.09);
+  --bg-hover-soft: rgba(148, 163, 184, 0.1);
 
   /* Borders & Dividers */
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-medium: rgba(255, 255, 255, 0.14);
-  --border-strong: rgba(255, 255, 255, 0.24);
-  --border-accent: rgba(99, 102, 241, 0.4);
+  --border-subtle: rgba(226, 232, 240, 0.09);
+  --border-medium: rgba(226, 232, 240, 0.15);
+  --border-strong: rgba(226, 232, 240, 0.26);
+  --border-accent: rgba(99, 102, 241, 0.42);
 
   /* Typography Colors */
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
-  --text-muted: #a7b5c7;
-  --text-dim: #8494a9;
+  --text-muted: #a9b8cc;
+  --text-dim: #8a9bb2;
   --text-accent: #38bdf8;
 
   /* Accent & Category Semantic Tones */
@@ -37,7 +38,7 @@
   --primary-light: #818cf8;
   --primary-glow: rgba(99, 102, 241, 0.25);
 
-  --accent-cyan: #06b6d4;
+  --accent-cyan: #22d3ee;
   --accent-emerald: #10b981;
   --accent-amber: #f59e0b;
   --accent-rose: #f43f5e;
@@ -55,18 +56,18 @@
   --code-text: #34d399;
   --code-border: rgba(255, 255, 255, 0.1);
 
-  /* Shadows & Depth - soft diffuse elevation, never offset-print blocks */
-  --shadow-sm: 0 1px 1px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 2px 8px -4px rgba(0, 0, 0, 0.55);
-  --shadow-lg: 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  /* Shadows & Depth - soft diffuse elevation, tinted to the indigo ground */
+  --shadow-sm: 0 1px 1px rgba(2, 6, 23, 0.35);
+  --shadow-md: 0 2px 8px -4px rgba(2, 6, 23, 0.55);
+  --shadow-lg: 0 8px 24px -12px rgba(2, 6, 23, 0.6);
   --shadow-glow: none;
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.28), 0 4px 14px -6px rgba(0, 0, 0, 0.3);
-  --shadow-pop: 0 10px 28px -10px rgba(0, 0, 0, 0.45);
-  --shadow-inset: inset 0 2px 8px rgba(0, 0, 0, 0.2);
-  --shadow-modal: 0 24px 60px -22px rgba(0, 0, 0, 0.75);
+  --shadow-card: 0 1px 2px rgba(2, 6, 23, 0.28), 0 4px 14px -6px rgba(2, 6, 23, 0.3);
+  --shadow-pop: 0 10px 28px -10px rgba(2, 6, 23, 0.45);
+  --shadow-inset: inset 0 2px 8px rgba(2, 6, 23, 0.2);
+  --shadow-modal: 0 24px 60px -22px rgba(2, 6, 23, 0.75);
 
   /* Fullscreen scrim behind modals / zoom overlays */
-  --overlay-scrim: rgba(5, 8, 15, 0.84);
+  --overlay-scrim: rgba(3, 6, 14, 0.86);
 
   /* Radius scale - differentiated by component weight, not one value everywhere */
   --radius-1: 3px;
@@ -111,36 +112,36 @@
     linear-gradient(90deg, rgba(56, 189, 248, 0.025) 1px, transparent 1px);
 
   /* Mermaid diagram palette (read by JS at render time) */
-  --mermaid-node-bg: #172554;
+  --mermaid-node-bg: #1b2540;
   --mermaid-node-text: #e0f2fe;
   --mermaid-node-border: #38bdf8;
-  --mermaid-line: #64748b;
-  --mermaid-canvas: #0f172a;
+  --mermaid-line: #6b7c93;
+  --mermaid-canvas: #0e1421;
 }
 
 [data-theme="light"] {
   --theme-mode: "light";
 
-  /* Background layers - warm parchment & crisp editorial paper */
-  --bg-canvas: #f6f7f9;
+  /* Background layers - cool editorial paper with crisp white cards */
+  --bg-canvas: #f4f6fa;
   --bg-surface: #ffffff;
   --bg-card: #ffffff;
-  --bg-card-hover: #f1f5f9;
+  --bg-card-hover: #eef2f8;
   --bg-subtle: #f8fafc;
   --bg-highlight: rgba(37, 99, 235, 0.06);
   --bg-hover-soft: rgba(15, 23, 42, 0.06);
 
   /* Borders & Dividers */
-  --border-subtle: rgba(0, 0, 0, 0.06);
-  --border-medium: rgba(0, 0, 0, 0.12);
-  --border-strong: rgba(0, 0, 0, 0.2);
-  --border-accent: rgba(79, 70, 229, 0.35);
+  --border-subtle: rgba(15, 23, 42, 0.08);
+  --border-medium: rgba(15, 23, 42, 0.14);
+  --border-strong: rgba(15, 23, 42, 0.22);
+  --border-accent: rgba(79, 70, 229, 0.38);
 
   /* Typography Colors */
   --text-primary: #0f172a;
   --text-secondary: #2b3a4f;
-  --text-muted: #4a5a70;
-  --text-dim: #5f6f83;
+  --text-muted: #475569;
+  --text-dim: #5d6b80;
   --text-accent: #2563eb;
 
   /* Accent & Category Semantic Tones */
@@ -225,7 +226,7 @@
   --mermaid-node-text: #0f172a;
   --mermaid-node-border: #2563eb;
   --mermaid-line: #64748b;
-  --mermaid-canvas: #f8fafc;
+  --mermaid-canvas: #ffffff;
 }
 
 /* ==========================================================================

@@ -13,6 +13,21 @@ export const SKINS = [
     id: 'ember',
     label: 'Ember · 炉火',
     swatch: { dark: '#1c1812', light: '#f6f1e7', accent: '#d99a4e' }
+  },
+  {
+    id: 'verdant',
+    label: 'Verdant · 苔原',
+    swatch: { dark: '#0f1813', light: '#f3f7f2', accent: '#10b981' }
+  },
+  {
+    id: 'sakura',
+    label: 'Sakura · 樱雾',
+    swatch: { dark: '#1e131d', light: '#fbf3f7', accent: '#ec4899' }
+  },
+  {
+    id: 'noir',
+    label: 'Noir · 墨白',
+    swatch: { dark: '#141416', light: '#f5f5f4', accent: '#e63946' }
   }
 ];
 

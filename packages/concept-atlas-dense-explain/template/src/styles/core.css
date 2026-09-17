@@ -278,6 +278,9 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
   right: 0;
   z-index: 120;
   min-width: 190px;
+  max-height: min(72vh, 520px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 5px;
   border: 1px solid var(--border-medium);
   border-radius: 10px;

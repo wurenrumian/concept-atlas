@@ -1,5 +1,17 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import * as d3 from 'd3';
+import {
+  select,
+  zoom,
+  zoomTransform,
+  zoomIdentity,
+  drag,
+  forceSimulation,
+  forceLink,
+  forceCenter,
+  forceCollide,
+  hierarchy,
+  tree as treeLayout,
+} from 'd3';
 import { Search, Filter, ZoomIn, ZoomOut, RotateCcw, ArrowRight, Layers, Eye } from 'lucide-react';
 import { RELATION_TYPES, LEVEL_DEFS } from '../model/relation-types.js';
 
@@ -136,7 +148,7 @@ export function RelationGraph({
     const width = containerRef.current.clientWidth || 900;
     const height = containerRef.current.clientHeight || 650;
 
-    const svg = d3.select(svgRef.current);
+    const svg = select(svgRef.current);
     svg.selectAll('*').remove(); // Clear previous
 
     // Marker definitions for directed arrows
@@ -159,7 +171,7 @@ export function RelationGraph({
     // Container group with zoom/pan
     const g = svg.append('g').attr('class', 'zoom-container');
 
-    const zoomBehavior = d3.zoom()
+    const zoomBehavior = zoom()
       .scaleExtent([0.2, 3])
       .filter((event) => event.type !== 'wheel' || event.ctrlKey || event.metaKey)
       .wheelDelta((event) => {
@@ -176,10 +188,10 @@ export function RelationGraph({
     const handleWheelPan = (event) => {
       if (event.ctrlKey || event.metaKey) return;
       event.preventDefault();
-      const current = d3.zoomTransform(svgRef.current);
+      const current = zoomTransform(svgRef.current);
       const stepX = event.shiftKey ? event.deltaY : event.deltaX;
       const stepY = event.shiftKey ? 0 : event.deltaY;
-      const nextTransform = d3.zoomIdentity
+      const nextTransform = zoomIdentity
         .translate(current.x - stepX, current.y - stepY)
         .scale(current.k);
       svg.call(zoomBehavior.transform, nextTransform);
@@ -209,8 +221,8 @@ export function RelationGraph({
       .filter(link => link.source && link.target));
 
     const simulation = isConceptMode
-      ? d3.forceSimulation(positionedNodes)
-          .force('link', d3.forceLink(positionedLinks).id(d => d.id).distance(185).strength(0.9))
+      ? forceSimulation(positionedNodes)
+          .force('link', forceLink(positionedLinks).id(d => d.id).distance(185).strength(0.9))
           // Keep semantic neighbours legible: connected pairs get a stronger
           // local push, while unrelated nodes only receive a gentle baseline
           // separation so the whole map does not balloon.
@@ -220,8 +232,8 @@ export function RelationGraph({
             distanceMax: 360,
             distanceMin: 28,
           }))
-          .force('center', d3.forceCenter(width / 2, height / 2))
-          .force('collision', d3.forceCollide().radius(34).strength(0.35))
+          .force('center', forceCenter(width / 2, height / 2))
+          .force('collision', forceCollide().radius(34).strength(0.35))
       : null;
 
     // Resolve the shared label stack once; SVG presentation attributes cannot
@@ -274,7 +286,7 @@ export function RelationGraph({
       });
 
     if (isConceptMode) {
-      nodesSelection.call(d3.drag()
+      nodesSelection.call(drag()
         .on('start', (event, d) => {
           if (!event.active) simulation.alphaTarget(0.3).restart();
           d.fx = d.x;
@@ -343,7 +355,7 @@ export function RelationGraph({
     if (!isConceptMode && selectedNodeId) {
       const targetNode = positionedNodes.find(n => n.id === selectedNodeId);
       if (targetNode) {
-        const transform = d3.zoomIdentity
+        const transform = zoomIdentity
           .translate(width / 2 - targetNode.x, height / 2 - targetNode.y)
           .scale(1.1);
         svg.transition().duration(500).call(zoomBehavior.transform, transform);
@@ -522,8 +534,8 @@ function layoutTree(nodes, width, height) {
 
   const roots = Array.from(nodeMap.values()).filter(node => !node.parent || !nodeMap.has(node.parent));
   const treeData = { id: '__atlas-root__', children: roots };
-  const root = d3.hierarchy(treeData);
-  const tree = d3.tree().nodeSize([110, 155]);
+  const root = hierarchy(treeData);
+  const tree = treeLayout().nodeSize([110, 155]);
   tree(root);
 
   const visible = root.descendants().filter(node => node.data.id !== '__atlas-root__');

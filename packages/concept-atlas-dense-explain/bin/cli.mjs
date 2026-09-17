@@ -14,7 +14,7 @@ let buildCounter = 0;
 
 function usage() {
   console.log('Usage:');
-  console.log('  npx concept-atlas-dense-explain <input.mdx>... [--mode atlas|scroll] [--skin <id>] [--default-mode dark|light|system] [--style <id>] [-o output.html|dir] [--force] [--concurrency N] [--link-assets] [--json] [--no-validate]');
+  console.log('  npx concept-atlas-dense-explain <input.mdx>... [--mode atlas|scroll] [--skin <id>] [--default-mode dark|light|system] [--style <id>] [-o output.html|dir] [--force] [--concurrency N] [--link-assets] [--inline-mermaid] [--mermaid-cdn <url>] [--json] [--no-validate]');
   console.log('  npx concept-atlas-dense-explain render <input.mdx>... [-o output.html|dir]');
   console.log('  npx concept-atlas-dense-explain validate <input.mdx> [--mode atlas|scroll] [--strict] [--json]');
   console.log('  npx concept-atlas-dense-explain create <output.mdx> [--mode atlas|scroll] [--force]');
@@ -22,6 +22,7 @@ function usage() {
   console.log('');
   console.log('  Multiple inputs build in parallel (default 2 at a time, cap 4); -o is then a directory.');
   console.log('  --link-assets keeps figures as relative links instead of inlining them as base64.');
+  console.log('  Mermaid diagrams load from a CDN at runtime by default (fast builds, needs network); --inline-mermaid bakes Mermaid into the HTML for a fully offline single file; --mermaid-cdn overrides the CDN URL.');
   console.log(`  --skin bakes a default palette (${SKINS.map(skin => skin.id).join(', ')}); --default-mode bakes a default dark/light mode; --style bakes a default component style (${COMPONENT_STYLES.map(style => style.id).join(', ')}). Readers can still switch in the UI.`);
 }
 
@@ -43,7 +44,7 @@ function fail(message) {
   process.exit(1);
 }
 
-const VALUE_FLAGS = new Set(['--mode', '-o', '--output', '--concurrency', '--skin', '--default-mode', '--style']);
+const VALUE_FLAGS = new Set(['--mode', '-o', '--output', '--concurrency', '--skin', '--default-mode', '--style', '--mermaid-cdn']);
 
 /** Splits argv into flags, flag values and positional arguments. */
 function parseFlags(argv) {
@@ -203,6 +204,8 @@ const strict = parsed.flags.has('--strict');
 const skipValidate = parsed.flags.has('--no-validate');
 const force = parsed.flags.has('--force');
 const linkAssets = parsed.flags.has('--link-assets');
+const inlineMermaid = parsed.flags.has('--inline-mermaid');
+const mermaidCdn = parsed.values.get('--mermaid-cdn') || null;
 const modeFlag = parsed.values.get('--mode') || null;
 
 // Compile-time appearance defaults. Invalid values fail fast with the valid
@@ -332,6 +335,10 @@ async function buildOne(job) {
   if (skinFlag) define.__ATLAS_DEFAULT_SKIN__ = JSON.stringify(skinFlag);
   if (defaultModeFlag) define.__ATLAS_DEFAULT_MODE__ = JSON.stringify(defaultModeFlag);
   if (styleFlag) define.__ATLAS_DEFAULT_STYLE__ = JSON.stringify(styleFlag);
+  if (features.mermaid) {
+    define.__ATLAS_MERMAID_MODE__ = JSON.stringify(inlineMermaid ? 'inline' : 'cdn');
+    if (mermaidCdn) define.__ATLAS_MERMAID_CDN_URL__ = JSON.stringify(mermaidCdn);
+  }
   try {
     await build({
       root: templateRoot,
@@ -357,9 +364,10 @@ async function buildOne(job) {
 
 /** Saves the mermaid/KaTeX payload when a document never renders them. */
 function describeFeatures(features) {
-  if (features.math && features.mermaid) return '';
-  const dropped = [features.math ? null : 'KaTeX', features.mermaid ? null : 'Mermaid'].filter(Boolean);
-  return `  [no ${dropped.join('/')}]`;
+  const tags = [];
+  if (features.mermaid) tags.push(inlineMermaid ? 'mermaid inline' : 'mermaid cdn');
+  if (features.math) tags.push('KaTeX');
+  return tags.length ? `  [${tags.join(', ')}]` : '';
 }
 
 function summarizeFeatures(jobs, results) {
@@ -368,7 +376,9 @@ function summarizeFeatures(jobs, results) {
   if (!pages.length) return '';
   const droppedMath = pages.filter(job => !job.features.math).length;
   const droppedMermaid = pages.filter(job => !job.features.mermaid).length;
+  const cdnMermaid = pages.filter(job => job.features.mermaid && !inlineMermaid).length;
   const parts = [];
+  if (cdnMermaid) parts.push(`Mermaid via CDN on ${cdnMermaid}/${pages.length}`);
   if (droppedMath) parts.push(`KaTeX dropped on ${droppedMath}/${pages.length}`);
   if (droppedMermaid) parts.push(`Mermaid dropped on ${droppedMermaid}/${pages.length}`);
   return parts.join(', ');
