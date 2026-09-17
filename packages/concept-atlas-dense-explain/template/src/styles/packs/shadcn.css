@@ -394,3 +394,107 @@
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
+
+/* -- Motion: quick and mechanical on shadcn's 150ms curve. Cards, badges and
+      rows answer the pointer with a hairline shift; revealed bodies unfold.
+      No transforms, no bounce. -- */
+[data-style='shadcn'] .continuous-header,
+[data-style='shadcn'] .continuous-section,
+[data-style='shadcn'] .concept-hero-card,
+[data-style='shadcn'] .node-block {
+  animation: ca-rise var(--shadcn-motion) both;
+}
+
+[data-style='shadcn'] .semantic-tabs details > div {
+  animation: ca-unfold var(--shadcn-motion);
+}
+
+/* Card chassis: the hairline warms a step, nothing else moves. */
+[data-style='shadcn'] .semantic-learning-objectives,
+[data-style='shadcn'] .semantic-evidence,
+[data-style='shadcn'] .semantic-invariant,
+[data-style='shadcn'] .semantic-failure-mode,
+[data-style='shadcn'] .semantic-tradeoff,
+[data-style='shadcn'] .semantic-framework-model,
+[data-style='shadcn'] .semantic-model-matrix,
+[data-style='shadcn'] .semantic-model-formula,
+[data-style='shadcn'] .semantic-model-pyramid,
+[data-style='shadcn'] .semantic-model-funnel,
+[data-style='shadcn'] .semantic-relation-path,
+[data-style='shadcn'] .semantic-decision-matrix,
+[data-style='shadcn'] .semantic-compare-table,
+[data-style='shadcn'] .semantic-chart,
+[data-style='shadcn'] .semantic-mermaid,
+[data-style='shadcn'] .semantic-relation-map,
+[data-style='shadcn'] .semantic-references {
+  transition: border-color var(--shadcn-motion), box-shadow var(--shadcn-motion);
+}
+
+[data-style='shadcn'] .semantic-learning-objectives:hover,
+[data-style='shadcn'] .semantic-evidence:hover,
+[data-style='shadcn'] .semantic-invariant:hover,
+[data-style='shadcn'] .semantic-failure-mode:hover,
+[data-style='shadcn'] .semantic-tradeoff:hover,
+[data-style='shadcn'] .semantic-framework-model:hover,
+[data-style='shadcn'] .semantic-model-matrix:hover,
+[data-style='shadcn'] .semantic-model-formula:hover,
+[data-style='shadcn'] .semantic-decision-matrix:hover,
+[data-style='shadcn'] .semantic-compare-table:hover,
+[data-style='shadcn'] .semantic-chart:hover,
+[data-style='shadcn'] .semantic-figure:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+/* Badges tint to the interactive surface. */
+[data-style='shadcn'] .semantic-tag {
+  transition: background-color var(--shadcn-motion), color var(--shadcn-motion);
+}
+
+[data-style='shadcn'] .semantic-tag:hover {
+  background: var(--bg-hover-soft);
+  color: var(--text-primary);
+}
+
+/* Title tags are plain text, not badges — never tint them. */
+[data-style='shadcn'] .framework-model-head .semantic-tag:hover,
+[data-style='shadcn'] .semantic-widget-head .semantic-tag:hover,
+[data-style='shadcn'] .semantic-references .semantic-tag:hover {
+  background: transparent;
+  color: var(--text-primary);
+}
+
+/* Inner units and step cards warm their edge. */
+[data-style='shadcn'] .framework-model-element:hover,
+[data-style='shadcn'] .model-matrix-cell:hover,
+[data-style='shadcn'] .model-pyramid-level:hover,
+[data-style='shadcn'] .model-funnel-step:hover,
+[data-style='shadcn'] .relation-path-node:hover,
+[data-style='shadcn'] .tradeoff-option:hover,
+[data-style='shadcn'] .semantic-note:hover {
+  border-color: var(--border-medium);
+  background: var(--bg-surface);
+}
+
+[data-style='shadcn'] .flow-step {
+  transition: background-color var(--shadcn-motion), border-color var(--shadcn-motion);
+}
+
+[data-style='shadcn'] .flow-step:hover {
+  border-color: var(--border-medium);
+  background: var(--bg-surface);
+}
+
+/* Tabs summary and data rows answer on the same curve. */
+[data-style='shadcn'] .semantic-tabs summary {
+  transition: color var(--shadcn-motion);
+}
+
+[data-style='shadcn'] .semantic-tabs summary:hover {
+  color: var(--primary);
+}
+
+[data-style='shadcn'] .semantic-decision-matrix tbody tr,
+[data-style='shadcn'] .semantic-compare-table tbody tr {
+  transition: background-color var(--shadcn-motion);
+}

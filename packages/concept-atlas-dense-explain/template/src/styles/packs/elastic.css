@@ -399,3 +399,101 @@
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
+
+/* -- Motion: elastic's 250ms curve with a single restrained lift. Panels warm
+      their border, tags and rows tint, a hovered step rises one pixel, and a
+      revealed body unfolds — an observability surface, not a bouncy toy. -- */
+[data-style='elastic'] .continuous-header,
+[data-style='elastic'] .continuous-section,
+[data-style='elastic'] .concept-hero-card,
+[data-style='elastic'] .node-block {
+  animation: ca-rise var(--elastic-motion) both;
+}
+
+[data-style='elastic'] .semantic-tabs details > div {
+  animation: ca-unfold var(--elastic-motion);
+}
+
+/* Panels: the border strengthens before any shadow does. */
+[data-style='elastic'] .semantic-learning-objectives,
+[data-style='elastic'] .semantic-evidence,
+[data-style='elastic'] .semantic-invariant,
+[data-style='elastic'] .semantic-failure-mode,
+[data-style='elastic'] .semantic-tradeoff,
+[data-style='elastic'] .semantic-framework-model,
+[data-style='elastic'] .semantic-model-matrix,
+[data-style='elastic'] .semantic-model-formula,
+[data-style='elastic'] .semantic-model-pyramid,
+[data-style='elastic'] .semantic-model-funnel,
+[data-style='elastic'] .semantic-relation-path,
+[data-style='elastic'] .semantic-decision-matrix,
+[data-style='elastic'] .semantic-compare-table,
+[data-style='elastic'] .semantic-chart,
+[data-style='elastic'] .semantic-mermaid,
+[data-style='elastic'] .semantic-relation-map,
+[data-style='elastic'] .semantic-references {
+  transition: border-color var(--elastic-motion), box-shadow var(--elastic-motion);
+}
+
+[data-style='elastic'] .semantic-learning-objectives:hover,
+[data-style='elastic'] .semantic-evidence:hover,
+[data-style='elastic'] .semantic-invariant:hover,
+[data-style='elastic'] .semantic-failure-mode:hover,
+[data-style='elastic'] .semantic-tradeoff:hover,
+[data-style='elastic'] .semantic-framework-model:hover,
+[data-style='elastic'] .semantic-model-matrix:hover,
+[data-style='elastic'] .semantic-model-formula:hover,
+[data-style='elastic'] .semantic-decision-matrix:hover,
+[data-style='elastic'] .semantic-compare-table:hover,
+[data-style='elastic'] .semantic-chart:hover,
+[data-style='elastic'] .semantic-figure:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-pop);
+}
+
+/* Badges take their tint in. */
+[data-style='elastic'] .semantic-tag {
+  transition: background-color var(--elastic-motion), color var(--elastic-motion),
+              border-color var(--elastic-motion);
+}
+
+[data-style='elastic'] .semantic-tag:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+/* Title tags are plain text, not badges — never tint them. */
+[data-style='elastic'] .framework-model-head .semantic-tag:hover,
+[data-style='elastic'] .semantic-widget-head .semantic-tag:hover,
+[data-style='elastic'] .semantic-references .semantic-tag:hover {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-primary);
+}
+
+/* Step cards rise a single pixel on the elastic curve. */
+[data-style='elastic'] .flow-step {
+  transition: background-color var(--elastic-motion), border-color var(--elastic-motion),
+              transform var(--elastic-motion);
+}
+
+[data-style='elastic'] .flow-step:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-subtle);
+  transform: translateY(-1px);
+}
+
+/* Tabs summary and data rows answer on the same curve. */
+[data-style='elastic'] .semantic-tabs summary {
+  transition: color var(--elastic-motion);
+}
+
+[data-style='elastic'] .semantic-tabs summary:hover {
+  color: var(--primary);
+}
+
+[data-style='elastic'] .semantic-decision-matrix tbody tr,
+[data-style='elastic'] .semantic-compare-table tbody tr {
+  transition: background-color var(--elastic-motion);
+}

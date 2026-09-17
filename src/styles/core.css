@@ -3819,3 +3819,66 @@ a.reference-title:hover { color: var(--text-accent); }
   background: var(--bg-highlight);
   border-radius: var(--radius-2);
 }
+
+/* ===========================================================================
+   MOTION — classic base
+
+   Structure is shared, so the un-scoped layer carries one restrained motion
+   grammar: content settles in once when a view mounts, revealed bodies unfold,
+   and surfaces answer the pointer through tint and rules — never a nudge.
+   Each component style pack re-voices the feel further down.
+   =========================================================================== */
+
+/* Content settles into place on mount. */
+.continuous-header,
+.continuous-section,
+.concept-hero-card,
+.node-block {
+  animation: ca-rise var(--motion-slow) var(--ease-out) both;
+}
+
+/* A revealed tab / accordion body unfolds instead of snapping open. */
+.semantic-tabs details > div {
+  animation: ca-unfold var(--motion-base) var(--ease-out) both;
+}
+
+/* Labels, citations and the table of contents take their color in. */
+.semantic-tag,
+.semantic-cite a,
+.scroll-toc-list a,
+.semantic-tabs summary {
+  transition: color var(--motion-fast) var(--ease-standard),
+              background-color var(--motion-fast) var(--ease-standard),
+              border-color var(--motion-fast) var(--ease-standard);
+}
+
+/* Step cards read as one sequence; a hover only warms the step. */
+.flow-step {
+  transition: background-color var(--motion-base) var(--ease-standard),
+              border-color var(--motion-base) var(--ease-standard);
+}
+
+.flow-step:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-subtle);
+}
+
+/* Data rows highlight under the pointer. */
+.semantic-decision-matrix tbody tr,
+.semantic-compare-table tbody tr {
+  transition: background-color var(--motion-fast) var(--ease-standard);
+}
+
+.semantic-decision-matrix tbody tr:hover td,
+.semantic-compare-table tbody tr:hover td {
+  background: var(--bg-hover-soft);
+}
+
+/* Chart marks take their fill and stroke in rather than flipping to it. */
+.chart-bar,
+.chart-slice,
+.chart-point,
+.chart-line {
+  transition: fill var(--motion-base) var(--ease-standard),
+              stroke var(--motion-base) var(--ease-standard);
+}

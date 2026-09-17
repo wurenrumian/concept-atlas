@@ -260,4 +260,13 @@
 
   /* Numeric rhythm for indices, data tables and chart values */
   --numeric-variant: tabular-nums;
+
+  /* Motion — shared durations and easings. Structure consumes these roles the
+     same way it consumes type roles; each component style pack re-voices the
+     feel (shadcn 150ms, elastic 250ms) by overriding its own motion token. */
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --motion-slow: 300ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }

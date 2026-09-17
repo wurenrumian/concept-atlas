@@ -337,3 +337,84 @@
 [data-style='manuscript'] .semantic-tabs details > div {
   padding: 4px 0 4px 2px;
 }
+
+/* -- Motion: paper does not bounce. Content settles in like ink, a revealed
+      body fades in, and every surface answers the pointer through tone and
+      rule weight — the pack never nudges or scales anything. -- */
+[data-style='manuscript'] .continuous-header,
+[data-style='manuscript'] .continuous-section,
+[data-style='manuscript'] .concept-hero-card,
+[data-style='manuscript'] .node-block {
+  animation: ca-fade calc(var(--motion-slow) + 140ms) var(--ease-standard) both;
+}
+
+[data-style='manuscript'] .semantic-tabs details > div {
+  animation: ca-fade var(--motion-base) var(--ease-standard) both;
+}
+
+/* Records and plates warm their frame as the pointer arrives. */
+[data-style='manuscript'] .semantic-learning-objectives,
+[data-style='manuscript'] .semantic-evidence,
+[data-style='manuscript'] .semantic-invariant,
+[data-style='manuscript'] .semantic-failure-mode,
+[data-style='manuscript'] .semantic-tradeoff,
+[data-style='manuscript'] .semantic-framework-model,
+[data-style='manuscript'] .semantic-model-matrix,
+[data-style='manuscript'] .semantic-model-formula,
+[data-style='manuscript'] .semantic-model-pyramid,
+[data-style='manuscript'] .semantic-model-funnel,
+[data-style='manuscript'] .semantic-decision-matrix,
+[data-style='manuscript'] .semantic-compare-table,
+[data-style='manuscript'] .semantic-chart,
+[data-style='manuscript'] .semantic-mermaid,
+[data-style='manuscript'] .semantic-relation-map,
+[data-style='manuscript'] .semantic-figure {
+  transition: border-color var(--motion-base) var(--ease-standard),
+              background-color var(--motion-base) var(--ease-standard);
+}
+
+[data-style='manuscript'] .semantic-learning-objectives:hover,
+[data-style='manuscript'] .semantic-evidence:hover,
+[data-style='manuscript'] .semantic-invariant:hover,
+[data-style='manuscript'] .semantic-failure-mode:hover,
+[data-style='manuscript'] .semantic-tradeoff:hover,
+[data-style='manuscript'] .semantic-framework-model:hover,
+[data-style='manuscript'] .semantic-model-matrix:hover,
+[data-style='manuscript'] .semantic-model-formula:hover,
+[data-style='manuscript'] .semantic-decision-matrix:hover,
+[data-style='manuscript'] .semantic-compare-table:hover,
+[data-style='manuscript'] .semantic-figure:hover {
+  border-color: var(--border-medium);
+}
+
+/* An annotation's marginal rule deepens to its full tone on hover. */
+[data-style='manuscript'] .semantic-insight,
+[data-style='manuscript'] .semantic-callout,
+[data-style='manuscript'] .semantic-key-question {
+  transition: border-color var(--motion-base) var(--ease-standard);
+}
+
+[data-style='manuscript'] .semantic-insight:hover,
+[data-style='manuscript'] .semantic-callout:hover,
+[data-style='manuscript'] .semantic-key-question:hover {
+  border-inline-start-color: var(--annotation-accent);
+}
+
+/* A ledger row highlights its column; the index stamp inks in with it. */
+[data-style='manuscript'] .flow-step {
+  transition: background-color var(--motion-base) var(--ease-standard);
+}
+
+[data-style='manuscript'] .flow-step:hover {
+  background: var(--bg-highlight);
+}
+
+[data-style='manuscript'] .step-num {
+  transition: color var(--motion-base) var(--ease-standard),
+              border-color var(--motion-base) var(--ease-standard);
+}
+
+[data-style='manuscript'] .flow-step:hover .step-num {
+  border-color: var(--primary);
+  color: var(--primary);
+}

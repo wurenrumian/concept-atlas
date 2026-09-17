@@ -1,0 +1,42 @@
+@charset "UTF-8";
+
+/* ==========================================================================
+   MOTION — shared keyframes and the accessibility guard.
+   Structure lives in core.css and each component style pack re-voices its own
+   feel; this file only defines the named reveals every pack draws from and
+   guarantees the whole layer collapses when a reader asks for reduced motion.
+   Imported last so the guard wins the cascade over every pack.
+   ========================================================================== */
+
+/* A quiet rise — the default entrance for a block of content. */
+@keyframes ca-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* A fade only — the manuscript pack's ink-settling entrance. */
+@keyframes ca-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* A small slide for a revealed tab / accordion body. */
+@keyframes ca-unfold {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Reduced motion: keep the state changes, drop the travel. Durations collapse
+   to a single frame so hover tints and revealed bodies settle instantly. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}

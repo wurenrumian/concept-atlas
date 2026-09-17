@@ -3,8 +3,9 @@
 /* ==========================================================================
    CONCEPT ATLAS STYLESHEET — entry point.
    The order below is the cascade: tokens define the variables, skins override
-   the palette, core.css holds all structure, and the component style packs
-   come last so they can restate the shared grammar for [data-style].
+   the palette, core.css holds all structure, the component style packs come
+   next so they can restate the shared grammar for [data-style], and motion.css
+   closes the file so its reduced-motion guard outranks every pack.
    ========================================================================== */
 
 @import './tokens.css';
@@ -13,3 +14,4 @@
 @import './packs/manuscript.css';
 @import './packs/shadcn.css';
 @import './packs/elastic.css';
+@import './motion.css';
