@@ -54,10 +54,22 @@ test('every component style pack has matching CSS rules', () => {
   ]) {
     assert.ok(css.includes(rule), `manuscript pack missing ${rule}`);
   }
-  // Callout/insight keep the canonical boxed look in both packs: the base
-  // must NOT be overridden by the manuscript pack.
-  assert.ok(!css.includes(`[data-style='manuscript'] .semantic-callout`));
-  assert.ok(!css.includes(`[data-style='manuscript'] .insight-kicker`));
+  // Manuscript re-reads every annotation as a margin note. Insight, callout
+  // and guiding question must all be overridden together so the trio stays
+  // visually consistent instead of mixing the boxed chassis with marginalia.
+  for (const rule of [
+    `[data-style='manuscript'] .semantic-insight`,
+    `[data-style='manuscript'] .semantic-callout`,
+    `[data-style='manuscript'] .semantic-key-question`,
+    `[data-style='manuscript'] .callout-title`,
+    `[data-style='manuscript'] .insight-kicker`,
+    `[data-style='manuscript'] .semantic-flow-steps`,
+    `[data-style='manuscript'] .semantic-references`,
+    `[data-style='manuscript'] .semantic-example`,
+    `[data-style='manuscript'] .semantic-definition`,
+  ]) {
+    assert.ok(css.includes(rule), `manuscript pack missing ${rule}`);
+  }
 });
 
 test('relation and level colors are themeable var() references', () => {

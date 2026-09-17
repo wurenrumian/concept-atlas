@@ -2827,8 +2827,8 @@ button.flow-box {
 }
 
 /* Callout, insight and a guiding question are annotations, not alert cards.
-   Kept identical across both style packs: the boxed annotation is the
-   canonical look. */
+   This boxed form is the `classic` base; the manuscript pack re-reads the
+   same trio as marginalia further down. */
 .semantic-callout,
 .semantic-insight,
 .semantic-key-question {
@@ -2901,7 +2901,10 @@ button.flow-box {
 [data-style='manuscript'] .semantic-evidence,
 [data-style='manuscript'] .semantic-invariant,
 [data-style='manuscript'] .semantic-failure-mode,
-[data-style='manuscript'] .semantic-tradeoff {
+[data-style='manuscript'] .semantic-tradeoff,
+[data-style='manuscript'] .semantic-example,
+[data-style='manuscript'] .semantic-boundary,
+[data-style='manuscript'] .semantic-counterexample {
   --record-accent: var(--text-accent);
   position: relative;
   margin: 20px 0 14px;
@@ -2917,7 +2920,10 @@ button.flow-box {
 [data-style='manuscript'] .semantic-evidence > .semantic-tag,
 [data-style='manuscript'] .semantic-invariant > .semantic-tag,
 [data-style='manuscript'] .semantic-failure-mode > .semantic-tag,
-[data-style='manuscript'] .semantic-tradeoff > .semantic-tag {
+[data-style='manuscript'] .semantic-tradeoff > .semantic-tag,
+[data-style='manuscript'] .semantic-example > .semantic-tag,
+[data-style='manuscript'] .semantic-boundary > .semantic-tag,
+[data-style='manuscript'] .semantic-counterexample > .semantic-tag {
   position: absolute;
   top: -10px;
   left: 12px;
@@ -2932,9 +2938,12 @@ button.flow-box {
   letter-spacing: 0.02em;
 }
 
-[data-style='manuscript'] .semantic-evidence { --record-accent: var(--accent-emerald); }
+[data-style='manuscript'] .semantic-evidence,
+[data-style='manuscript'] .semantic-example { --record-accent: var(--accent-emerald); }
 [data-style='manuscript'] .semantic-failure-mode,
-[data-style='manuscript'] .semantic-tradeoff { --record-accent: var(--accent-amber); }
+[data-style='manuscript'] .semantic-tradeoff,
+[data-style='manuscript'] .semantic-boundary { --record-accent: var(--accent-amber); }
+[data-style='manuscript'] .semantic-counterexample { --record-accent: var(--accent-rose); }
 [data-style='manuscript'] .semantic-invariant { --record-accent: var(--primary-light); }
 
 [data-style='manuscript'] .tradeoff-option { border-radius: 2px; background: var(--bg-canvas); }
@@ -2976,20 +2985,98 @@ button.flow-box {
   padding: 8px 0 8px 2px;
 }
 
-/* -- Examples, counterexamples and boundaries hang in the margin. -- */
+/* -- Insights, callouts and guiding questions all read as margin annotations:
+      the chassis dissolves into a hairline in the annotation's own tone, and
+      the label is keyed to that tone. -- */
+[data-style='manuscript'] .semantic-insight,
+[data-style='manuscript'] .semantic-callout,
+[data-style='manuscript'] .semantic-key-question {
+  position: relative;
+  margin: 18px 0;
+  padding: 2px 10px 2px 16px;
+  border: 0;
+  border-inline-start: 2px solid color-mix(in srgb, var(--annotation-accent) 55%, transparent);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+[data-style='manuscript'] .insight-kicker,
+[data-style='manuscript'] .callout-title,
+[data-style='manuscript'] .semantic-key-question .semantic-tag {
+  margin: 0 0 6px;
+  color: var(--annotation-accent);
+}
+
+/* An absolutely positioned insight floats over the canvas, so it keeps the
+   surface fill and chassis it needs to stay legible. */
+[data-style='manuscript'] .semantic-insight.semantic-widget-absolute {
+  padding: 10px 12px 10px 14px;
+  border: 1px solid var(--border-subtle);
+  border-inline-start: 2px solid var(--annotation-accent);
+  background: var(--bg-surface);
+}
+
+/* -- Step sequences are ledger rows, not a chassis of cards. -- */
+[data-style='manuscript'] .semantic-flow-steps {
+  gap: 0 18px;
+  margin: 18px 0;
+  padding: 0;
+  border: 0;
+  border-top: 2px solid color-mix(in srgb, var(--primary) 55%, transparent);
+  border-radius: 0;
+  background: transparent;
+}
+
+[data-style='manuscript'] .flow-step {
+  padding: 10px 0 10px 12px;
+  border: 0;
+  border-left: 2px solid var(--border-strong);
+  border-radius: 0;
+  background: transparent;
+}
+
+/* -- References sit on the page like a printed bibliography. -- */
+[data-style='manuscript'] .semantic-references {
+  margin: 20px 0 14px;
+  padding: 12px 0 0;
+  border: 0;
+  border-top: 2px solid color-mix(in srgb, var(--component-accent) 45%, transparent);
+  border-radius: 0;
+  background: transparent;
+}
+
+/* -- Plain prose records (overview, definition, mechanism, ...) hang in the
+      margin off a neutral rule instead of sitting in their own card. -- */
+[data-style='manuscript'] .semantic-overview,
+[data-style='manuscript'] .semantic-definition,
+[data-style='manuscript'] .semantic-mechanism,
+[data-style='manuscript'] .semantic-prerequisite,
+[data-style='manuscript'] .semantic-input,
+[data-style='manuscript'] .semantic-output,
+[data-style='manuscript'] .semantic-glossary-item,
 [data-style='manuscript'] .example-item,
 [data-style='manuscript'] .counterexample-item,
 [data-style='manuscript'] .boundary-card {
-  margin-top: 14px;
-  padding: 6px 0 6px 14px;
-  background: transparent;
+  margin: 14px 0;
+  padding: 2px 0 2px 14px;
   border: 0;
-  border-left: 2px solid color-mix(in srgb, var(--accent-emerald) 50%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--border-strong) 70%, transparent);
   border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
-[data-style='manuscript'] .counterexample-item { border-left-color: color-mix(in srgb, var(--accent-rose) 50%, transparent); }
-[data-style='manuscript'] .boundary-card { border-left-color: color-mix(in srgb, var(--accent-amber) 50%, transparent); }
+/* A stack of definition/mechanism/boundary is a reading sequence, not a card
+   that wraps other cards. */
+[data-style='manuscript'] .semantic-stack:has(> .semantic-definition, > .semantic-mechanism, > .semantic-boundary) {
+  margin: 14px 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
 
 /* -- Flow: the ribbon loses its chassis; steps are ledgers off a left rule. -- */
 [data-style='manuscript'] .local-flow-ribbon {
