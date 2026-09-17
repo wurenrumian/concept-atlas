@@ -1,0 +1,194 @@
+@charset "UTF-8";
+
+/* ==========================================================================
+   SKINS — palette overrides on top of tokens.css.
+   A skin only redefines colors; radius/typography stay shared.
+   Register every skin in src/model/skins.js so UI + tooling agree.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   ember — warm forge dark & aged-paper light. Champagne gold primary,
+   terracotta danger, moss success, one cool teal counterpoint for info.
+   -------------------------------------------------------------------------- */
+
+[data-skin="ember"][data-theme="dark"] {
+  --theme-mode: "dark";
+
+  --bg-canvas: #14110b;
+  --bg-surface: #1c1812;
+  --bg-card: #221d15;
+  --bg-card-hover: #2a2419;
+  --bg-subtle: #262016;
+  --bg-highlight: rgba(224, 164, 88, 0.08);
+  --bg-hover-soft: rgba(255, 235, 200, 0.06);
+
+  --border-subtle: rgba(255, 240, 220, 0.08);
+  --border-medium: rgba(255, 240, 220, 0.14);
+  --border-strong: rgba(255, 240, 220, 0.24);
+  --border-accent: rgba(224, 164, 88, 0.4);
+
+  --text-primary: #f6efe3;
+  --text-secondary: #dcd2c0;
+  --text-muted: #bfb29a;
+  --text-dim: #9d9078;
+  --text-accent: #e0a458;
+
+  --primary: #d99a4e;
+  --primary-light: #eab873;
+  --primary-glow: rgba(217, 154, 78, 0.25);
+
+  --accent-cyan: #52b3a4;
+  --accent-emerald: #7fb069;
+  --accent-amber: #e0a458;
+  --accent-rose: #d96c57;
+  --accent-purple: #a984c9;
+
+  --on-accent: #1a1208;
+
+  --brand-gradient: linear-gradient(135deg, #d99a4e 0%, #d96c57 100%);
+  --progress-gradient: linear-gradient(90deg, #d99a4e 0%, #d96c57 50%, #7fb069 100%);
+
+  --code-bg: #0e0c07;
+  --code-text: #d9b36a;
+  --code-border: rgba(255, 240, 220, 0.1);
+
+  --shadow-sm: 0 1px 1px rgba(10, 6, 2, 0.35);
+  --shadow-md: 0 2px 8px -4px rgba(10, 6, 2, 0.55);
+  --shadow-lg: 0 8px 24px -12px rgba(10, 6, 2, 0.6);
+  --shadow-glow: none;
+  --shadow-card: 0 1px 2px rgba(10, 6, 2, 0.28), 0 4px 14px -6px rgba(10, 6, 2, 0.3);
+  --shadow-pop: 0 10px 28px -10px rgba(10, 6, 2, 0.45);
+  --shadow-inset: inset 0 2px 8px rgba(10, 6, 2, 0.3);
+  --shadow-modal: 0 24px 60px -22px rgba(10, 6, 2, 0.8);
+
+  --overlay-scrim: rgba(12, 9, 5, 0.84);
+
+  --callout-info-bg: rgba(82, 179, 164, 0.08);
+  --callout-info-border: #52b3a4;
+  --callout-warn-bg: rgba(224, 164, 88, 0.08);
+  --callout-warn-border: #e0a458;
+  --callout-danger-bg: rgba(217, 108, 87, 0.08);
+  --callout-danger-border: #d96c57;
+  --callout-success-bg: rgba(127, 176, 105, 0.08);
+  --callout-success-border: #7fb069;
+
+  --rel-parent-child: #e0c48a;
+  --rel-prerequisite: #a8c684;
+  --rel-causes: #e08a6d;
+  --rel-produces: #98c47f;
+  --rel-uses: #6fc3d8;
+  --rel-implements: #c39bd9;
+  --rel-contrasts: #e0915c;
+  --rel-depends-on: #a89a85;
+  --rel-exception-of: #e06559;
+  --rel-precedes: #52b3a4;
+  --rel-default: #a89a85;
+
+  --level-l0: #e0b873;
+  --level-l1: #6fc3d8;
+  --level-l2: #98c47f;
+  --level-l3: #e0915c;
+  --level-l4: #e06559;
+
+  --graph-grid: radial-gradient(circle, rgba(255, 240, 220, 0.06) 1px, transparent 1px);
+  --explorer-grid:
+    linear-gradient(rgba(224, 164, 88, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(224, 164, 88, 0.025) 1px, transparent 1px);
+
+  --mermaid-node-bg: #332412;
+  --mermaid-node-text: #f6efe3;
+  --mermaid-node-border: #e0a458;
+  --mermaid-line: #9d9078;
+  --mermaid-canvas: #1c1812;
+}
+
+[data-skin="ember"][data-theme="light"] {
+  --theme-mode: "light";
+
+  --bg-canvas: #f6f1e7;
+  --bg-surface: #fdfaf3;
+  --bg-card: #fdfaf3;
+  --bg-card-hover: #f1e9da;
+  --bg-subtle: #faf5ea;
+  --bg-highlight: rgba(169, 106, 42, 0.08);
+  --bg-hover-soft: rgba(90, 70, 40, 0.06);
+
+  --border-subtle: rgba(70, 50, 30, 0.08);
+  --border-medium: rgba(70, 50, 30, 0.14);
+  --border-strong: rgba(70, 50, 30, 0.22);
+  --border-accent: rgba(154, 90, 32, 0.35);
+
+  --text-primary: #2e2519;
+  --text-secondary: #4c4030;
+  --text-muted: #6d5f49;
+  --text-dim: #8a7c65;
+  --text-accent: #b06a28;
+
+  --primary: #a5622a;
+  --primary-light: #b9743a;
+  --primary-glow: rgba(165, 98, 42, 0.16);
+
+  --accent-cyan: #1f7a6d;
+  --accent-emerald: #5d7d3f;
+  --accent-amber: #b07d18;
+  --accent-rose: #bd4f35;
+  --accent-purple: #7d5499;
+
+  --on-accent: #fffaf0;
+
+  --brand-gradient: linear-gradient(135deg, #a5622a 0%, #bd4f35 100%);
+  --progress-gradient: linear-gradient(90deg, #a5622a 0%, #bd4f35 50%, #5d7d3f 100%);
+
+  --code-bg: #2b2115;
+  --code-text: #e6c07e;
+  --code-border: rgba(70, 50, 30, 0.1);
+
+  --shadow-sm: 0 1px 1px rgba(60, 42, 20, 0.05);
+  --shadow-md: 0 2px 8px -4px rgba(60, 42, 20, 0.12);
+  --shadow-lg: 0 8px 24px -12px rgba(60, 42, 20, 0.14);
+  --shadow-glow: none;
+  --shadow-card: 0 1px 2px rgba(60, 42, 20, 0.05), 0 4px 14px -6px rgba(60, 42, 20, 0.09);
+  --shadow-pop: 0 10px 28px -10px rgba(60, 42, 20, 0.16);
+  --shadow-inset: inset 0 2px 8px rgba(60, 42, 20, 0.1);
+  --shadow-modal: 0 24px 60px -22px rgba(60, 42, 20, 0.4);
+
+  --overlay-scrim: rgba(50, 38, 22, 0.5);
+
+  --callout-info-bg: #e9f2ef;
+  --callout-info-border: #1f7a6d;
+  --callout-warn-bg: #f9f0dc;
+  --callout-warn-border: #b07d18;
+  --callout-danger-bg: #f8e9e2;
+  --callout-danger-border: #bd4f35;
+  --callout-success-bg: #edf2e3;
+  --callout-success-border: #5d7d3f;
+
+  --rel-parent-child: #9a6b1f;
+  --rel-prerequisite: #5d7d3f;
+  --rel-causes: #bd4f35;
+  --rel-produces: #3f7d52;
+  --rel-uses: #22708f;
+  --rel-implements: #7d5499;
+  --rel-contrasts: #bc6418;
+  --rel-depends-on: #6d5f49;
+  --rel-exception-of: #b23a2a;
+  --rel-precedes: #1f8a6d;
+  --rel-default: #6d5f49;
+
+  --level-l0: #9c6b1d;
+  --level-l1: #22708f;
+  --level-l2: #3f7d52;
+  --level-l3: #bc6418;
+  --level-l4: #b23a2a;
+
+  --graph-grid: radial-gradient(circle, rgba(70, 50, 30, 0.09) 1px, transparent 1px);
+  --explorer-grid:
+    linear-gradient(rgba(154, 90, 32, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(154, 90, 32, 0.04) 1px, transparent 1px);
+
+  --mermaid-node-bg: #f0e3cb;
+  --mermaid-node-text: #2e2519;
+  --mermaid-node-border: #a5622a;
+  --mermaid-line: #8a7c65;
+  --mermaid-canvas: #fdfaf3;
+}

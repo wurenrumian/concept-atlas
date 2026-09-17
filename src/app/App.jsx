@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Network, Compass, Sun, Moon, Search, X, Link as LinkIcon } from 'lucide-react';
 import { buildGraphModel } from '../model/concept-schema.js';
 import { extractConceptData } from '../model/normalize-content.js';
+import { useAppearance } from './use-appearance.js';
+import { SkinPicker } from '../components/SkinPicker.jsx';
 import { NodeExplorer } from '../views/NodeExplorer.jsx';
 import { RelationGraph } from '../views/RelationGraph.jsx';
 import '../styles/concept-explain.css';
@@ -19,19 +21,10 @@ export function App({ mdxContent, initialData }) {
     return buildGraphModel({ meta: {}, nodes: [], relations: [] });
   });
 
-  // Theme state ('light' | 'dark')
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('concept_atlas_theme') || 'dark';
-  });
+  // Appearance state (skin x mode x component style), shared with the scroll carrier via localStorage
+  const { skin, mode: theme, style, setSkin, setStyle, toggleMode } = useAppearance({ defaultMode: 'light' });
 
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('concept_atlas_theme', theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
-  };
+  const toggleTheme = toggleMode;
 
   // Global shared state
   const [currentView, setCurrentView] = useState('explore'); // 'explore' | 'graph'
@@ -190,6 +183,7 @@ export function App({ mdxContent, initialData }) {
             )}
           </div>
 
+          <SkinPicker skin={skin} style={style} onSkinChange={setSkin} onStyleChange={setStyle} />
           <button
             className="theme-toggle-btn"
             onClick={toggleTheme}
@@ -230,7 +224,6 @@ export function App({ mdxContent, initialData }) {
             currentNodeId={currentNodeId}
             onSelectNode={navigateToNode}
             onSwitchView={setCurrentView}
-            theme={theme}
           />
         )}
       </main>

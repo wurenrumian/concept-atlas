@@ -8,7 +8,6 @@ export function RelationGraph({
   currentNodeId,
   onSelectNode,
   onSwitchView,
-  theme = 'dark',
 }) {
   const { nodes, relations } = graph;
   const svgRef = useRef(null);
@@ -94,7 +93,7 @@ export function RelationGraph({
             type: r.type,
             label: r.typeLabel || r.type,
             description: r.description,
-            typeInfo: r.typeInfo || RELATION_TYPES[r.type] || { color: '#94a3b8' }
+            typeInfo: r.typeInfo || RELATION_TYPES[r.type] || { color: 'var(--rel-default)' }
           });
         }
       }
@@ -154,7 +153,7 @@ export function RelationGraph({
         .attr('orient', 'auto')
         .append('path')
         .attr('d', 'M0,-5L10,0L0,5')
-        .attr('fill', typeDef.color || '#87a6ff');
+        .style('fill', typeDef.color || 'var(--level-l0)');
     });
 
     // Container group with zoom/pan
@@ -235,7 +234,7 @@ export function RelationGraph({
 
     const linkPaths = links.append('path')
       .attr('class', 'graph-edge')
-      .attr('stroke', d => d.typeInfo?.color || '#526b8d')
+      .style('stroke', d => d.typeInfo?.color || 'var(--rel-default)')
       .attr('stroke-width', d => d.type === 'parent-child' ? 2 : 1.5)
       .attr('stroke-dasharray', d => d.typeInfo?.strokeDasharray || 'none')
       .attr('marker-end', d => d.typeInfo?.hasArrow ? `url(#arrow-${d.type})` : null)
@@ -248,7 +247,7 @@ export function RelationGraph({
 
     const linkLabels = links.append('text')
       .attr('class', 'graph-edge-label')
-      .attr('fill', d => d.typeInfo?.color || '#94a3b8')
+      .style('fill', d => d.typeInfo?.color || 'var(--rel-default)')
       .attr('font-size', '10px')
       .attr('text-anchor', 'middle')
       .attr('dy', -5)
@@ -291,21 +290,21 @@ export function RelationGraph({
     // Outer glow for selected or level
     nodesSelection.append('circle')
       .attr('r', d => (d.level === 'L0' ? 24 : d.level === 'L1' ? 20 : 16))
-      .attr('fill', d => LEVEL_DEFS[d.level]?.color || '#87a6ff')
+      .style('fill', d => LEVEL_DEFS[d.level]?.color || 'var(--level-l0)')
       .attr('fill-opacity', 0.2)
-      .attr('stroke', d => LEVEL_DEFS[d.level]?.color || '#87a6ff')
+      .style('stroke', d => LEVEL_DEFS[d.level]?.color || 'var(--level-l0)')
       .attr('stroke-width', d => d.id === selectedNodeId ? 3 : 1.5);
 
     // Inner center dot
     nodesSelection.append('circle')
       .attr('r', d => (d.level === 'L0' ? 10 : d.level === 'L1' ? 7 : 5))
-      .attr('fill', d => LEVEL_DEFS[d.level]?.color || '#87a6ff');
+      .style('fill', d => LEVEL_DEFS[d.level]?.color || 'var(--level-l0)');
 
     // Node Title Label
     nodesSelection.append('text')
       .attr('dy', d => (d.level === 'L0' ? 38 : 30))
       .attr('text-anchor', 'middle')
-      .attr('fill', theme === 'light' ? '#0f172a' : '#f8fafc')
+      .style('fill', 'var(--text-primary)')
       .attr('font-size', '12px')
       .attr('font-family', "'Plus Jakarta Sans', -apple-system, sans-serif")
       .attr('font-weight', d => d.id === selectedNodeId ? '700' : '500')
@@ -315,7 +314,7 @@ export function RelationGraph({
     nodesSelection.append('text')
       .attr('dy', -22)
       .attr('text-anchor', 'middle')
-      .attr('fill', d => LEVEL_DEFS[d.level]?.color || '#94a3b8')
+      .style('fill', d => LEVEL_DEFS[d.level]?.color || 'var(--rel-default)')
       .attr('font-size', '9px')
       .text(d => d.level);
 
@@ -351,7 +350,7 @@ export function RelationGraph({
       svg.on('wheel.pan', null);
       svg.on('.zoom', null);
     };
-  }, [graphNodes, graphLinks, selectedNodeId, theme, graphMode]);
+  }, [graphNodes, graphLinks, selectedNodeId, graphMode]);
 
   return (
     <div className="relation-graph-layout">

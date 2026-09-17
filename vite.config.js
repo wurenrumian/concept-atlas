@@ -4,6 +4,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import mdx from '@mdx-js/rollup';
 import { viteSingleFile } from 'vite-plugin-singlefile';
+import { normalizeSkin, normalizeStyle } from './src/model/skins.js';
 
 const MIME_TYPES = {
   '.png': 'image/png',
@@ -119,6 +120,47 @@ function optionalFeatures() {
   };
 }
 
+/**
+ * Bakes the compile-time appearance defaults into the carrier HTML.
+ *
+ * The anti-flash inline script in index.html/scroll.html carries the literal
+ * placeholders `__ATLAS_DEFAULT_SKIN__` / `__ATLAS_DEFAULT_MODE__` plus a
+ * per-carrier runtime fallback (atlas: dark, scroll: system). When a default
+ * IS configured — `CONCEPT_ATLAS_SKIN` / `CONCEPT_ATLAS_DEFAULT_MODE` env vars
+ * or the CLI's `--skin` / `--default-mode` flags, forwarded through `define` —
+ * the placeholders are replaced in the emitted HTML so first paint already
+ * uses the configured default. Without configuration the placeholders survive
+ * and the runtime fallbacks keep today's behaviour.
+ */
+function appearanceDefaults() {
+  let skin = null;
+  let mode = null;
+  let style = null;
+  return {
+    name: 'concept-atlas-appearance-defaults',
+    configResolved(config) {
+      const define = config.define || {};
+      skin = resolveToken(define.__ATLAS_DEFAULT_SKIN__, normalizeSkin);
+      mode = resolveToken(define.__ATLAS_DEFAULT_MODE__, value => (['dark', 'light', 'system'].includes(value) ? value : null));
+      style = resolveToken(define.__ATLAS_DEFAULT_STYLE__, normalizeStyle);
+    },
+    transformIndexHtml(html) {
+      let output = html;
+      if (skin) output = output.split('__ATLAS_DEFAULT_SKIN__').join(skin);
+      if (mode) output = output.split('__ATLAS_DEFAULT_MODE__').join(mode);
+      if (style) output = output.split('__ATLAS_DEFAULT_STYLE__').join(style);
+      return output;
+    },
+  };
+}
+
+/** Define values arrive as JSON literals (`"ember"`); unwrap and validate. */
+function resolveToken(raw, validate) {
+  if (typeof raw !== 'string') return null;
+  const value = raw.replace(/^"([\s\S]*)"$/, '$1');
+  return validate(value);
+}
+
 export default defineConfig({
   plugins: [
     inlineMdxAssets(),
@@ -130,6 +172,7 @@ export default defineConfig({
     },
     react(),
     optionalFeatures(),
+    appearanceDefaults(),
     viteSingleFile(),
   ],
   build: {

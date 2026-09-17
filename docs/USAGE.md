@@ -57,6 +57,28 @@ npx concept-atlas-dense-explain paper.mdx --link-assets
 
 实测同一个目标：内联 1.51MB → 链接 270KB。代价是页面不再自包含，`<html>` 必须和 MDX 的 `assets/` 保持相对位置；如果 `-o` 指到别处，CLI 会打印警告，此时需要自行拷贝 `assets/`。
 
+### 外观系统与编译期默认值
+
+每个产物页面右上有外观菜单（调色板图标），读者可随时切换三件事：
+
+- **配色皮肤**：`aurora`（冷调蓝紫）或 `ember`（暖调金赤陶），两者都有暗色/亮色两套色板；
+- **明暗模式**：暗色 / 亮色一键切换；
+- **组件风格**：`manuscript`（手稿排版：索引戳记记录卡、双规线图版、页边注示例）或 `classic`（经典卡片）。
+
+选择保存在 localStorage，atlas 与 scroll 两个载体共享。发货默认外观为 **aurora × manuscript × 亮色**。
+
+需要不同的默认外观时，可在编译期烘焙（读者仍可切换）：
+
+```bash
+# CLI 参数
+npx concept-atlas-dense-explain paper.mdx --skin ember --default-mode dark --style classic
+
+# 仓库自身构建可用环境变量
+CONCEPT_ATLAS_SKIN=ember CONCEPT_ATLAS_DEFAULT_MODE=dark CONCEPT_ATLAS_STYLE=classic npm run build
+```
+
+默认外观在构建时写进防闪烁脚本，首屏渲染前即生效，不会闪白/闪黑。内容 MDX 不涉及外观——外观属于载体与工具层，内容层不要设置。
+
 仓库自身仍可以使用以下命令进行开发：
 
 ```bash

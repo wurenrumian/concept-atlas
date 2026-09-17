@@ -132,7 +132,7 @@ export function NodeExplorer({
   const incomingRelations = relations.filter(r => r.to === currentNode.id);
 
   // Level definition
-  const levelInfo = LEVEL_DEFS[currentNode.level] || { name: currentNode.level, tag: currentNode.level, color: '#87a6ff' };
+  const levelInfo = LEVEL_DEFS[currentNode.level] || { name: currentNode.level, tag: currentNode.level, color: 'var(--level-l0)' };
 
   return (
     <div className="node-explorer-layout">
@@ -651,7 +651,7 @@ function renderNavTree(nodes, rootId, currentNodeId, onSelectNode) {
           style={{ paddingLeft: `${12 + depth * 14}px` }}
           onClick={() => onSelectNode(id)}
         >
-          <span className="node-bullet" style={{ backgroundColor: LEVEL_DEFS[node.level]?.color || '#87a6ff' }} />
+          <span className="node-bullet" style={{ backgroundColor: LEVEL_DEFS[node.level]?.color || 'var(--level-l0)' }} />
           <span className="tree-title">{node.title}</span>
           <span className="tree-level">{node.level}</span>
         </button>

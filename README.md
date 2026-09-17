@@ -17,6 +17,7 @@
 - **共享信息组件**：支持 `Insight`、`Flow`、`FrameworkModel`、`MatrixModel`、`Mermaid`、`RelationMap`、`NoteGrid`、`Callout`、`Details`、`Columns`、`Grid`、`Stack` 和 `Tabs` 等组件。
 - **扩展能力**：`Math`/`MathBlock`（KaTeX 公式）、`Chart`（bar/line/pie 图表）、`Figure`（构建时内联图片）、`Cite`/`References`（引用与文献）。
 - **阅读体验可配置**：`scroll` 自动生成侧栏目录和阅读进度，并支持 `fontSize`/`scale`/`lineHeight` 调整正文大小。
+- **外观系统**：读者可随时切换配色皮肤（`aurora` 冷调 / `ember` 暖调）× 明暗模式 × 组件风格（`manuscript` 手稿排版 / `classic` 经典卡片），选择在 localStorage 持久化；CLI/环境变量可把默认外观烘焙进产物。
 - **内容校验**：CLI 在构建前校验结构，断链、重复 id、缺失字段和错误 prop 会直接报错。
 - **单文件输出**：MDX 可直接编译为无需额外运行时的独立 `.html` 文件。无图片时基础产物通常较小；实际体积主要取决于文档是否使用 Mermaid、KaTeX，以及是否将本地图片内联进 HTML。
 
@@ -48,9 +49,9 @@ npx concept-atlas-dense-explain create article.mdx --mode scroll
 # 构建前校验内容结构（--json 输出机器可读结果，--strict 提升警告）
 npx concept-atlas-dense-explain validate topic.mdx --mode atlas
 
-# 编译为同目录下的独立 HTML
+# 编译为同目录下的独立 HTML（--skin/--default-mode/--style 可烘焙默认外观）
 npx concept-atlas-dense-explain topic.mdx --mode atlas
-npx concept-atlas-dense-explain article.mdx --mode scroll
+npx concept-atlas-dense-explain article.mdx --mode scroll --skin ember --default-mode light --style manuscript
 ```
 
 使用 `-o` 指定输出路径，使用 `--force` 覆盖已有文件。校验未通过时构建会被阻止，可用 `--no-validate` 强制跳过。

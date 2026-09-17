@@ -6,26 +6,73 @@ import { ZoomIn } from 'lucide-react';
 import 'katex/dist/katex.min.css';
 import { registerReferences, subscribeReferences, getReferenceIndex } from '../model/citations.js';
 
-let mermaidReady = false;
+// Mermaid reads the active skin/mode from CSS variables so diagrams follow
+// the current appearance. A MutationObserver re-renders charts when the
+// attributes on <html> change.
+const appearanceStore = (() => {
+  const listeners = new Set();
+  const readKey = () => (typeof document === 'undefined'
+    ? ''
+    : `${document.documentElement.getAttribute('data-skin') || ''}:${document.documentElement.getAttribute('data-theme') || ''}`);
+  let observer = null;
+  let lastKey = '';
+  return {
+    subscribe(listener) {
+      listeners.add(listener);
+      if (!observer && typeof MutationObserver !== 'undefined') {
+        lastKey = readKey();
+        observer = new MutationObserver(() => {
+          const nextKey = readKey();
+          if (nextKey !== lastKey) {
+            lastKey = nextKey;
+            listeners.forEach(fn => fn());
+          }
+        });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-skin', 'data-theme'] });
+      }
+      return () => {
+        listeners.delete(listener);
+        if (listeners.size === 0 && observer) {
+          observer.disconnect();
+          observer = null;
+        }
+      };
+    },
+    getKey: readKey,
+  };
+})();
 
-function ensureMermaid() {
-  if (mermaidReady) return;
+function useAppearanceKey() {
+  return React.useSyncExternalStore(appearanceStore.subscribe, appearanceStore.getKey, appearanceStore.getKey);
+}
+
+const MERMAID_FALLBACKS = {
+  primaryColor: '#172554',
+  primaryTextColor: '#e0f2fe',
+  primaryBorderColor: '#38bdf8',
+  lineColor: '#64748b',
+  tertiaryColor: '#0f172a',
+};
+
+function configureMermaid() {
+  const styles = getComputedStyle(document.documentElement);
+  const read = (name, fallback) => styles.getPropertyValue(name).trim() || fallback;
+  const nodeBg = read('--mermaid-node-bg', MERMAID_FALLBACKS.primaryColor);
   mermaid.initialize({
     startOnLoad: false,
     securityLevel: 'loose',
     theme: 'base',
     look: 'handDrawn',
     themeVariables: {
-      primaryColor: '#172554',
-      primaryTextColor: '#e0f2fe',
-      primaryBorderColor: '#38bdf8',
-      lineColor: '#64748b',
-      secondaryColor: '#172554',
-      tertiaryColor: '#0f172a',
+      primaryColor: nodeBg,
+      primaryTextColor: read('--mermaid-node-text', MERMAID_FALLBACKS.primaryTextColor),
+      primaryBorderColor: read('--mermaid-node-border', MERMAID_FALLBACKS.primaryBorderColor),
+      lineColor: read('--mermaid-line', MERMAID_FALLBACKS.lineColor),
+      secondaryColor: nodeBg,
+      tertiaryColor: read('--mermaid-canvas', MERMAID_FALLBACKS.tertiaryColor),
       fontFamily: 'Plus Jakarta Sans, sans-serif',
     },
   });
-  mermaidReady = true;
 }
 
 // Shared helpers ------------------------------------------------------------
@@ -645,6 +692,7 @@ Tabs.displayName = 'Tabs';
 export function Mermaid({ chart = '', title = '关系草图', width = 'auto', height = 'auto', x = 0, y = 0, position = 'flow' }) {
   const ref = React.useRef(null);
   const id = React.useId().replace(/:/g, '');
+  const appearanceKey = useAppearanceKey();
   const [error, setError] = React.useState('');
   const [scale, setScale] = React.useState(1);
   const [pan, setPan] = React.useState({ x: 0, y: 0 });
@@ -654,8 +702,9 @@ export function Mermaid({ chart = '', title = '关系草图', width = 'auto', he
     async function renderChart() {
       if (!ref.current || !chart.trim()) return;
       try {
-        ensureMermaid();
-        const { svg } = await mermaid.render(`mermaid-${id}`, chart.trim());
+        configureMermaid();
+        const renderId = `mermaid-${id}-${appearanceKey.replace(/[^a-z0-9]/gi, '')}`;
+        const { svg } = await mermaid.render(renderId, chart.trim());
         if (!cancelled && ref.current) {
           ref.current.innerHTML = svg;
           setError('');
@@ -666,7 +715,7 @@ export function Mermaid({ chart = '', title = '关系草图', width = 'auto', he
     }
     renderChart();
     return () => { cancelled = true; };
-  }, [chart, id]);
+  }, [chart, id, appearanceKey]);
 
   const zoom = (delta) => setScale(value => Math.max(0.5, Math.min(3, +(value + delta).toFixed(2))));
   const reset = () => { setScale(1); setPan({ x: 0, y: 0 }); };

@@ -4,6 +4,31 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Concept Atlas · 概念缩放式知识图谱</title>
+    <script>
+      (function () {
+        var doc = document.documentElement;
+        var stored = null;
+        try { stored = JSON.parse(localStorage.getItem('concept_atlas_appearance') || 'null'); } catch (e) {}
+        var legacy = localStorage.getItem('concept_atlas_theme');
+        // Placeholders are replaced at build time when --skin/--default-mode
+        // (or CONCEPT_ATLAS_* env vars) are configured; otherwise the runtime
+        // fallbacks below keep the carrier defaults.
+        var skin = '__ATLAS_DEFAULT_SKIN__';
+        if (/^__.+__$/.test(skin)) skin = 'aurora';
+        var mode = '__ATLAS_DEFAULT_MODE__';
+        if (/^__.+__$/.test(mode)) mode = 'light';
+        var style = '__ATLAS_DEFAULT_STYLE__';
+        if (/^__.+__$/.test(style)) style = 'manuscript';
+        if (stored && (stored.mode === 'light' || stored.mode === 'dark')) {
+          mode = stored.mode;
+        } else if (mode !== 'light' && mode !== 'dark') {
+          mode = legacy === 'light' || legacy === 'dark' ? legacy : 'light';
+        }
+        doc.setAttribute('data-skin', stored && stored.skin ? stored.skin : skin);
+        doc.setAttribute('data-theme', mode);
+        doc.setAttribute('data-style', stored && stored.style ? stored.style : style);
+      })();
+    </script>
     <!-- Google Fonts for Academic / Editorial Knowledge style -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

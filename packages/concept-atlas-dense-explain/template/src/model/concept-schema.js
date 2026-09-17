@@ -93,7 +93,7 @@ export function buildGraphModel(rawGraph) {
     if (nodes.has(rel.from) && nodes.has(rel.to)) {
       const typeDef = RELATION_TYPES[rel.type] || {
         label: rel.type,
-        color: '#94a3b8',
+        color: 'var(--rel-default)',
         hasArrow: true
       };
       validRelations.push({

@@ -1,0 +1,229 @@
+@charset "UTF-8";
+
+/* ==========================================================================
+   DESIGN TOKENS — aurora (default skin)
+   Every skin overrides these variables per mode. Structure styles in
+   concept-explain.css must only ever consume the variables defined here.
+   ========================================================================== */
+
+:root,
+[data-theme="dark"] {
+  --theme-mode: "dark";
+
+  /* Background layers - deep indigo slate for high-tech monograph feel */
+  --bg-canvas: #090d16;
+  --bg-surface: #0f172a;
+  --bg-card: #151f32;
+  --bg-card-hover: #1c2a44;
+  --bg-subtle: #1e293b;
+  --bg-highlight: rgba(56, 189, 248, 0.08);
+  --bg-hover-soft: rgba(125, 125, 125, 0.08);
+
+  /* Borders & Dividers */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.14);
+  --border-strong: rgba(255, 255, 255, 0.24);
+  --border-accent: rgba(99, 102, 241, 0.4);
+
+  /* Typography Colors */
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #a7b5c7;
+  --text-dim: #8494a9;
+  --text-accent: #38bdf8;
+
+  /* Accent & Category Semantic Tones */
+  --primary: #6366f1;
+  --primary-light: #818cf8;
+  --primary-glow: rgba(99, 102, 241, 0.25);
+
+  --accent-cyan: #06b6d4;
+  --accent-emerald: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-rose: #f43f5e;
+  --accent-purple: #a855f7;
+
+  /* Foreground used on top of --primary fills */
+  --on-accent: #ffffff;
+
+  /* Brand & progress gradients */
+  --brand-gradient: linear-gradient(135deg, var(--primary) 0%, #38bdf8 100%);
+  --progress-gradient: linear-gradient(90deg, var(--primary) 0%, #38bdf8 50%, #34d399 100%);
+
+  /* Code & Syntax */
+  --code-bg: #060911;
+  --code-text: #34d399;
+  --code-border: rgba(255, 255, 255, 0.1);
+
+  /* Shadows & Depth - soft diffuse elevation, never offset-print blocks */
+  --shadow-sm: 0 1px 1px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 2px 8px -4px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --shadow-glow: none;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.28), 0 4px 14px -6px rgba(0, 0, 0, 0.3);
+  --shadow-pop: 0 10px 28px -10px rgba(0, 0, 0, 0.45);
+  --shadow-inset: inset 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-modal: 0 24px 60px -22px rgba(0, 0, 0, 0.75);
+
+  /* Fullscreen scrim behind modals / zoom overlays */
+  --overlay-scrim: rgba(5, 8, 15, 0.84);
+
+  /* Radius scale - differentiated by component weight, not one value everywhere */
+  --radius-1: 3px;
+  --radius-2: 4px;
+  --radius-3: 6px;
+  --radius-4: 8px;
+
+  /* Knowledge Badge & Callouts */
+  --callout-info-bg: rgba(56, 189, 248, 0.08);
+  --callout-info-border: #38bdf8;
+  --callout-warn-bg: rgba(245, 158, 11, 0.08);
+  --callout-warn-border: #f59e0b;
+  --callout-danger-bg: rgba(244, 63, 94, 0.08);
+  --callout-danger-border: #f43f5e;
+  --callout-success-bg: rgba(16, 185, 129, 0.08);
+  --callout-success-border: #10b981;
+
+  /* Relation type strokes (consumed via .style() in D3 so var() resolves) */
+  --rel-parent-child: #87a6ff;
+  --rel-prerequisite: #f1bc74;
+  --rel-causes: #ef8585;
+  --rel-produces: #72d0a1;
+  --rel-uses: #38bdf8;
+  --rel-implements: #c084fc;
+  --rel-contrasts: #fb923c;
+  --rel-depends-on: #94a3b8;
+  --rel-exception-of: #f43f5e;
+  --rel-precedes: #2dd4bf;
+  --rel-default: #94a3b8;
+
+  /* Concept level accents */
+  --level-l0: #818cf8;
+  --level-l1: #38bdf8;
+  --level-l2: #34d399;
+  --level-l3: #fbbf24;
+  --level-l4: #f87171;
+
+  /* Graph background grids */
+  --graph-grid: radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  --explorer-grid:
+    linear-gradient(rgba(56, 189, 248, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.025) 1px, transparent 1px);
+
+  /* Mermaid diagram palette (read by JS at render time) */
+  --mermaid-node-bg: #172554;
+  --mermaid-node-text: #e0f2fe;
+  --mermaid-node-border: #38bdf8;
+  --mermaid-line: #64748b;
+  --mermaid-canvas: #0f172a;
+}
+
+[data-theme="light"] {
+  --theme-mode: "light";
+
+  /* Background layers - warm parchment & crisp editorial paper */
+  --bg-canvas: #f6f7f9;
+  --bg-surface: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --bg-subtle: #f8fafc;
+  --bg-highlight: rgba(37, 99, 235, 0.06);
+  --bg-hover-soft: rgba(15, 23, 42, 0.06);
+
+  /* Borders & Dividers */
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-medium: rgba(0, 0, 0, 0.12);
+  --border-strong: rgba(0, 0, 0, 0.2);
+  --border-accent: rgba(79, 70, 229, 0.35);
+
+  /* Typography Colors */
+  --text-primary: #0f172a;
+  --text-secondary: #2b3a4f;
+  --text-muted: #4a5a70;
+  --text-dim: #5f6f83;
+  --text-accent: #2563eb;
+
+  /* Accent & Category Semantic Tones */
+  --primary: #4f46e5;
+  --primary-light: #6366f1;
+  --primary-glow: rgba(79, 70, 229, 0.18);
+
+  --accent-cyan: #0891b2;
+  --accent-emerald: #059669;
+  --accent-amber: #d97706;
+  --accent-rose: #e11d48;
+  --accent-purple: #9333ea;
+
+  /* Foreground used on top of --primary fills */
+  --on-accent: #ffffff;
+
+  /* Brand & progress gradients */
+  --brand-gradient: linear-gradient(135deg, var(--primary) 0%, #38bdf8 100%);
+  --progress-gradient: linear-gradient(90deg, var(--primary) 0%, #38bdf8 50%, #34d399 100%);
+
+  /* Code & Syntax */
+  --code-bg: #1e293b;
+  --code-text: #38bdf8;
+  --code-border: rgba(0, 0, 0, 0.08);
+
+  /* Shadows & Depth */
+  --shadow-sm: 0 1px 1px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 2px 8px -4px rgba(15, 23, 42, 0.12);
+  --shadow-lg: 0 8px 24px -12px rgba(15, 23, 42, 0.14);
+  --shadow-glow: none;
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 14px -6px rgba(15, 23, 42, 0.08);
+  --shadow-pop: 0 10px 28px -10px rgba(15, 23, 42, 0.16);
+  --shadow-inset: inset 0 2px 8px rgba(15, 23, 42, 0.08);
+  --shadow-modal: 0 24px 60px -22px rgba(15, 23, 42, 0.35);
+
+  /* Fullscreen scrim behind modals / zoom overlays */
+  --overlay-scrim: rgba(15, 23, 42, 0.45);
+
+  --radius-1: 3px;
+  --radius-2: 4px;
+  --radius-3: 6px;
+  --radius-4: 8px;
+
+  /* Knowledge Badge & Callouts */
+  --callout-info-bg: #eff6ff;
+  --callout-info-border: #3b82f6;
+  --callout-warn-bg: #fffbeb;
+  --callout-warn-border: #f59e0b;
+  --callout-danger-bg: #fff1f2;
+  --callout-danger-border: #f43f5e;
+  --callout-success-bg: #ecfdf5;
+  --callout-success-border: #10b981;
+
+  /* Relation type strokes */
+  --rel-parent-child: #4f6fd8;
+  --rel-prerequisite: #b07d18;
+  --rel-causes: #d95757;
+  --rel-produces: #1f9d6b;
+  --rel-uses: #0284c7;
+  --rel-implements: #9333ea;
+  --rel-contrasts: #ea6a1f;
+  --rel-depends-on: #64748b;
+  --rel-exception-of: #dc2626;
+  --rel-precedes: #0d9488;
+  --rel-default: #64748b;
+
+  /* Concept level accents */
+  --level-l0: #6366f1;
+  --level-l1: #0284c7;
+  --level-l2: #059669;
+  --level-l3: #d97706;
+  --level-l4: #dc2626;
+
+  /* Graph background grids */
+  --graph-grid: radial-gradient(circle, rgba(0, 0, 0, 0.07) 1px, transparent 1px);
+  --explorer-grid:
+    linear-gradient(rgba(37, 99, 235, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 99, 235, 0.04) 1px, transparent 1px);
+
+  /* Mermaid diagram palette */
+  --mermaid-node-bg: #dbeafe;
+  --mermaid-node-text: #0f172a;
+  --mermaid-node-border: #2563eb;
+  --mermaid-line: #64748b;
+  --mermaid-canvas: #f8fafc;
+}

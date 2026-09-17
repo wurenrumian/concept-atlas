@@ -1,6 +1,6 @@
 {
   "name": "concept-atlas-dense-explain",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Portable dense-explanation skill and MDX concept atlas template",
   "type": "module",
   "bin": {

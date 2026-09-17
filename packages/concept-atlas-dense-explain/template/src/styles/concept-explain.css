@@ -1,145 +1,13 @@
 @charset "UTF-8";
 
 /* ==========================================================================
-   THEME VARIABLES & DESIGN SYSTEM (Editorial / Knowledge Atlas Style)
+   DESIGN SYSTEM (Editorial / Knowledge Atlas Style)
+   Structure only — every color lives in tokens.css (default) and
+   skins.css (per-skin palettes), keyed by [data-skin] x [data-theme].
    ========================================================================== */
 
-:root,
-[data-theme="dark"] {
-  --theme-mode: "dark";
-  
-  /* Background layers - deep indigo slate for high-tech monograph feel */
-  --bg-canvas: #090d16;
-  --bg-surface: #0f172a;
-  --bg-card: #151f32;
-  --bg-card-hover: #1c2a44;
-  --bg-subtle: #1e293b;
-  --bg-highlight: rgba(56, 189, 248, 0.08);
-
-  /* Borders & Dividers */
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-medium: rgba(255, 255, 255, 0.14);
-  --border-strong: rgba(255, 255, 255, 0.24);
-  --border-accent: rgba(99, 102, 241, 0.4);
-
-  /* Typography Colors */
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #a7b5c7;
-  --text-dim: #8494a9;
-  --text-accent: #38bdf8;
-
-  /* Accent & Category Semantic Tones */
-  --primary: #6366f1;
-  --primary-light: #818cf8;
-  --primary-glow: rgba(99, 102, 241, 0.25);
-  
-  --accent-cyan: #06b6d4;
-  --accent-emerald: #10b981;
-  --accent-amber: #f59e0b;
-  --accent-rose: #f43f5e;
-  --accent-purple: #a855f7;
-
-  /* Code & Syntax */
-  --code-bg: #060911;
-  --code-text: #34d399;
-  --code-border: rgba(255, 255, 255, 0.1);
-
-  /* Shadows & Depth - restrained, hairline-first. Offset shadows read as
-     printed paper rather than floating SaaS cards. */
-  --shadow-sm: 0 1px 1px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 2px 8px -4px rgba(0, 0, 0, 0.55);
-  --shadow-lg: 0 8px 24px -12px rgba(0, 0, 0, 0.6);
-  --shadow-glow: none;
-  --shadow-card: 2px 3px 0 rgba(0, 0, 0, 0.45);
-  --shadow-pop: 3px 4px 0 rgba(0, 0, 0, 0.55);
-
-  /* Radius scale - differentiated by component weight, not one value everywhere */
-  --radius-1: 3px;
-  --radius-2: 4px;
-  --radius-3: 6px;
-  --radius-4: 8px;
-
-  /* Knowledge Badge & Callouts */
-  --callout-info-bg: rgba(56, 189, 248, 0.08);
-  --callout-info-border: #38bdf8;
-  --callout-warn-bg: rgba(245, 158, 11, 0.08);
-  --callout-warn-border: #f59e0b;
-  --callout-danger-bg: rgba(244, 63, 94, 0.08);
-  --callout-danger-border: #f43f5e;
-  --callout-success-bg: rgba(16, 185, 129, 0.08);
-  --callout-success-border: #10b981;
-
-  /* Graph background grid */
-  --graph-grid: radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
-}
-
-[data-theme="light"] {
-  --theme-mode: "light";
-  
-  /* Background layers - warm parchment & crisp editorial paper */
-  --bg-canvas: #f6f7f9;
-  --bg-surface: #ffffff;
-  --bg-card: #ffffff;
-  --bg-card-hover: #f1f5f9;
-  --bg-subtle: #f8fafc;
-  --bg-highlight: rgba(37, 99, 235, 0.06);
-
-  /* Borders & Dividers */
-  --border-subtle: rgba(0, 0, 0, 0.06);
-  --border-medium: rgba(0, 0, 0, 0.12);
-  --border-strong: rgba(0, 0, 0, 0.2);
-  --border-accent: rgba(79, 70, 229, 0.35);
-
-  /* Typography Colors */
-  --text-primary: #0f172a;
-  --text-secondary: #2b3a4f;
-  --text-muted: #4a5a70;
-  --text-dim: #5f6f83;
-  --text-accent: #2563eb;
-
-  /* Accent & Category Semantic Tones */
-  --primary: #4f46e5;
-  --primary-light: #6366f1;
-  --primary-glow: rgba(79, 70, 229, 0.18);
-
-  --accent-cyan: #0891b2;
-  --accent-emerald: #059669;
-  --accent-amber: #d97706;
-  --accent-rose: #e11d48;
-  --accent-purple: #9333ea;
-
-  /* Code & Syntax */
-  --code-bg: #1e293b;
-  --code-text: #38bdf8;
-  --code-border: rgba(0, 0, 0, 0.08);
-
-  /* Shadows & Depth */
-  --shadow-sm: 0 1px 1px rgba(15, 23, 42, 0.04);
-  --shadow-md: 0 2px 8px -4px rgba(15, 23, 42, 0.12);
-  --shadow-lg: 0 8px 24px -12px rgba(15, 23, 42, 0.14);
-  --shadow-glow: none;
-  --shadow-card: 2px 3px 0 rgba(15, 23, 42, 0.08);
-  --shadow-pop: 3px 4px 0 rgba(15, 23, 42, 0.12);
-
-  --radius-1: 3px;
-  --radius-2: 4px;
-  --radius-3: 6px;
-  --radius-4: 8px;
-
-  /* Knowledge Badge & Callouts */
-  --callout-info-bg: #eff6ff;
-  --callout-info-border: #3b82f6;
-  --callout-warn-bg: #fffbeb;
-  --callout-warn-border: #f59e0b;
-  --callout-danger-bg: #fff1f2;
-  --callout-danger-border: #f43f5e;
-  --callout-success-bg: #ecfdf5;
-  --callout-success-border: #10b981;
-
-  /* Graph background grid */
-  --graph-grid: radial-gradient(circle, rgba(0, 0, 0, 0.07) 1px, transparent 1px);
-}
+@import './tokens.css';
+@import './skins.css';
 
 /* ==========================================================================
    RESET & BASE TYPOGRAPHY
@@ -267,8 +135,8 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: linear-gradient(135deg, var(--primary) 0%, #38bdf8 100%);
-  color: #fff;
+  background: var(--brand-gradient);
+  color: var(--on-accent);
   box-shadow: var(--shadow-glow);
 }
 
@@ -329,7 +197,7 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
 
 .view-tab:hover {
   color: var(--text-primary);
-  background: rgba(125, 125, 125, 0.08);
+  background: var(--bg-hover-soft);
 }
 
 .view-tab.active {
@@ -358,6 +226,80 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
   border-color: var(--primary);
   background: var(--bg-highlight);
   transform: translateY(-1px);
+}
+
+/* Skin picker (palette switcher, shared by atlas & scroll toolbars) */
+.skin-picker { position: relative; display: inline-flex; }
+.skin-picker-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-medium);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+.skin-picker-btn:hover,
+.skin-picker-btn[aria-expanded="true"] {
+  color: var(--text-primary);
+  border-color: var(--primary);
+  background: var(--bg-highlight);
+  transform: translateY(-1px);
+}
+.skin-picker-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 120;
+  min-width: 190px;
+  padding: 5px;
+  border: 1px solid var(--border-medium);
+  border-radius: 10px;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-lg);
+}
+.skin-option {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  text-align: left;
+}
+.skin-option:hover { background: var(--bg-subtle); }
+.skin-option.active { background: var(--bg-highlight); color: var(--text-accent); }
+.skin-option-label { flex: 1; }
+.skin-picker-group {
+  padding: 6px 9px 3px;
+  color: var(--text-dim);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.skin-picker-group:not(:first-child) { margin-top: 4px; border-top: 1px solid var(--border-subtle); padding-top: 9px; }
+.style-glyph {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+  background: var(--bg-subtle);
+}
+.style-glyph-classic { border-radius: 50%; }
+.skin-swatch {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
 }
 
 /* Viewport Area */
@@ -747,7 +689,7 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
 
 .level-pill.active {
   background: var(--primary);
-  color: #fff;
+  color: var(--on-accent);
   border-color: var(--primary);
   box-shadow: var(--shadow-sm);
 }
@@ -769,7 +711,7 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
 
 .view-graph-btn:hover {
   background: var(--primary);
-  color: #fff;
+  color: var(--on-accent);
   border-color: var(--primary);
   transform: translateY(-1px);
 }
@@ -793,7 +735,7 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, var(--primary) 0%, #38bdf8 50%, #34d399 100%);
+  background: var(--progress-gradient);
 }
 
 .hero-level-banner {
@@ -1039,7 +981,7 @@ button.flow-box {
   line-height: 1.6;
   color: var(--code-text);
   border: 1px solid var(--code-border);
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-inset);
 }
 
 .example-item, .counterexample-item {
@@ -1326,7 +1268,7 @@ button.flow-box {
 }
 
 .graph-mode-switch button.active {
-  color: #fff;
+  color: var(--on-accent);
   background: var(--primary);
 }
 
@@ -1465,8 +1407,7 @@ button.flow-box {
   overflow: hidden;
   padding: 16px 20px 20px;
   background:
-    linear-gradient(rgba(56, 189, 248, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(56, 189, 248, 0.025) 1px, transparent 1px),
+    var(--explorer-grid),
     var(--bg-canvas);
   background-size: 28px 28px;
 }
@@ -1601,7 +1542,7 @@ button.flow-box {
   padding: 22px 26px;
   border-radius: 7px 12px 8px 10px;
   border-style: solid;
-  box-shadow: 3px 4px 0 rgba(15, 23, 42, 0.12), var(--shadow-sm);
+  box-shadow: var(--shadow-pop), var(--shadow-sm);
 }
 
 .draft-board .hero-title {
@@ -1812,7 +1753,7 @@ button.flow-box {
   min-width: 0;
   padding: 16px 17px;
   border-radius: 8px 11px 7px 10px;
-  box-shadow: 2px 3px 0 rgba(15, 23, 42, 0.09), var(--shadow-sm);
+  box-shadow: var(--shadow-card), var(--shadow-sm);
 }
 
 .draft-board .node-block:nth-child(3n) {
@@ -1857,7 +1798,7 @@ button.flow-box {
   border: 1px dashed var(--border-strong);
   border-radius: 10px 7px 11px 8px;
   background: color-mix(in srgb, var(--bg-surface) 86%, var(--primary) 14%);
-  box-shadow: 2px 3px 0 rgba(15, 23, 42, 0.08);
+  box-shadow: var(--shadow-card);
 }
 
 .inline-inspector-head {
@@ -2128,7 +2069,7 @@ button.flow-box {
   border: 1px solid var(--border-subtle);
   border-radius: 4px 8px 5px 7px;
   background: var(--bg-card);
-  box-shadow: 2px 2px 0 rgba(15, 23, 42, 0.08);
+  box-shadow: var(--shadow-card);
 }
 
 .semantic-note strong,
@@ -2222,7 +2163,7 @@ button.flow-box {
   padding: 12px;
   border-radius: 10px;
   background: var(--primary);
-  color: #fff;
+  color: var(--on-accent);
   font-weight: 700;
   font-size: 13px;
   box-shadow: var(--shadow-sm);
@@ -2347,19 +2288,19 @@ button.flow-box {
 
 .semantic-learning-objectives ul { margin: 8px 0 0; padding-left: 20px; }
 .semantic-learning-objectives li { margin: 4px 0; }
-.semantic-key-question { display: flex; align-items: baseline; gap: 10px; border-color: rgba(56, 189, 248, .35); }
+.semantic-key-question { display: flex; align-items: baseline; gap: 10px; border-color: color-mix(in srgb, var(--accent-cyan) 35%, transparent); }
 .semantic-key-question strong { color: var(--text-primary); }
-.semantic-evidence { display: grid; gap: 7px; border-color: rgba(52, 211, 153, .3); }
+.semantic-evidence { display: grid; gap: 7px; border-color: color-mix(in srgb, var(--accent-emerald) 30%, transparent); }
 .evidence-command { overflow-x: auto; color: var(--text-primary); }
 .evidence-observes { color: var(--text-secondary); }
-.semantic-invariant { border-color: rgba(129, 140, 248, .35); }
+.semantic-invariant { border-color: color-mix(in srgb, var(--primary-light) 35%, transparent); }
 .semantic-invariant > div:last-child { margin-top: 6px; }
-.semantic-failure-mode { border-color: rgba(251, 146, 60, .38); }
+.semantic-failure-mode { border-color: color-mix(in srgb, var(--accent-amber) 38%, transparent); }
 .semantic-failure-mode dl { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; margin: 8px 0 0; }
 .semantic-failure-mode dt { color: var(--text-primary); font-size: .82rem; font-weight: 700; }
 .semantic-failure-mode dd { margin: 0; color: var(--text-secondary); }
 .failure-details { margin-top: 10px; }
-.semantic-tradeoff { border: 1px solid rgba(250, 204, 21, .3); border-radius: 12px; padding: 12px 14px; background: var(--bg-surface); }
+.semantic-tradeoff { border: 1px solid color-mix(in srgb, var(--accent-amber) 30%, transparent); border-radius: 12px; padding: 12px 14px; background: var(--bg-surface); }
 .tradeoff-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-top: 8px; }
 .tradeoff-option { display: grid; gap: 4px; padding: 9px; border-radius: 8px; background: var(--bg-subtle); }
 .tradeoff-option span { color: var(--text-secondary); font-size: .86rem; }
@@ -2504,9 +2445,9 @@ button.flow-box {
 .model-matrix-cell { display: flex; flex-direction: column; gap: 4px; padding: 9px; border: 1px solid var(--border-subtle); border-radius: 7px; background: var(--bg-surface); }
 .model-matrix-cell strong { color: var(--text-primary); font-size: 12px; }
 .model-matrix-cell span { color: var(--text-secondary); font-size: 11px; line-height: 1.4; }
-.tone-success { border-color: rgba(52, 211, 153, .45); }
-.tone-warn { border-color: rgba(251, 191, 36, .45); }
-.tone-danger { border-color: rgba(248, 113, 113, .45); }
+.tone-success { border-color: color-mix(in srgb, var(--accent-emerald) 45%, transparent); }
+.tone-warn { border-color: color-mix(in srgb, var(--accent-amber) 45%, transparent); }
+.tone-danger { border-color: color-mix(in srgb, var(--accent-rose) 45%, transparent); }
 
 .model-formula-expression { padding: 12px; border-radius: 8px; background: var(--bg-surface); color: var(--accent-cyan); text-align: center; font-size: 16px; }
 .model-formula-variables { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; margin: 10px 0 0; font-size: 12px; }
@@ -2744,6 +2685,8 @@ button.flow-box {
 .semantic-tradeoff { --component-accent: var(--accent-amber); }
 .semantic-invariant { --component-accent: var(--primary-light); }
 
+.tradeoff-option { display: grid; gap: 4px; padding: 9px; border-radius: 8px; background: var(--bg-subtle); }
+
 /* Headings identify structure, never decorate it. */
 .framework-model-head,
 .semantic-widget-head {
@@ -2883,7 +2826,9 @@ button.flow-box {
   font-size: 12px;
 }
 
-/* Callout, insight and a guiding question are annotations, not alert cards. */
+/* Callout, insight and a guiding question are annotations, not alert cards.
+   Kept identical across both style packs: the boxed annotation is the
+   canonical look. */
 .semantic-callout,
 .semantic-insight,
 .semantic-key-question {
@@ -2944,6 +2889,154 @@ button.flow-box {
 }
 
 /* ===========================================================================
+   COMPONENT STYLE PACK — manuscript (default)
+   Scoped under [data-style='manuscript']; the un-scoped rules above stay as
+   the shared `classic` base. The pack trades boxes for typographic
+   structure: index stamps, plate frames, margin notes, ledger rows.
+   =========================================================================== */
+
+/* -- Archive records: near-square quiet frame; the category lives in an
+      index tab punched through the top rule. -- */
+[data-style='manuscript'] .semantic-learning-objectives,
+[data-style='manuscript'] .semantic-evidence,
+[data-style='manuscript'] .semantic-invariant,
+[data-style='manuscript'] .semantic-failure-mode,
+[data-style='manuscript'] .semantic-tradeoff {
+  --record-accent: var(--text-accent);
+  position: relative;
+  margin: 20px 0 14px;
+  padding: 17px 16px 14px;
+  border: 1px solid var(--border-subtle);
+  border-top-color: color-mix(in srgb, var(--record-accent) 40%, transparent);
+  border-radius: 2px;
+  background: var(--bg-surface);
+  box-shadow: none;
+}
+
+[data-style='manuscript'] .semantic-learning-objectives > .semantic-tag,
+[data-style='manuscript'] .semantic-evidence > .semantic-tag,
+[data-style='manuscript'] .semantic-invariant > .semantic-tag,
+[data-style='manuscript'] .semantic-failure-mode > .semantic-tag,
+[data-style='manuscript'] .semantic-tradeoff > .semantic-tag {
+  position: absolute;
+  top: -10px;
+  left: 12px;
+  padding: 1px 8px;
+  border: 1px solid color-mix(in srgb, var(--record-accent) 55%, transparent);
+  border-radius: 2px;
+  background: var(--bg-surface);
+  color: var(--record-accent);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.55;
+  letter-spacing: 0.02em;
+}
+
+[data-style='manuscript'] .semantic-evidence { --record-accent: var(--accent-emerald); }
+[data-style='manuscript'] .semantic-failure-mode,
+[data-style='manuscript'] .semantic-tradeoff { --record-accent: var(--accent-amber); }
+[data-style='manuscript'] .semantic-invariant { --record-accent: var(--primary-light); }
+
+[data-style='manuscript'] .tradeoff-option { border-radius: 2px; background: var(--bg-canvas); }
+
+/* -- Plates: models, matrices, charts and diagrams read as mounted figures.
+      A double top rule replaces the colored accent bar; heads go serif. -- */
+[data-style='manuscript'] .semantic-framework-model,
+[data-style='manuscript'] .semantic-model-matrix,
+[data-style='manuscript'] .semantic-model-formula,
+[data-style='manuscript'] .semantic-model-pyramid,
+[data-style='manuscript'] .semantic-model-funnel,
+[data-style='manuscript'] .semantic-relation-path,
+[data-style='manuscript'] .semantic-decision-matrix,
+[data-style='manuscript'] .semantic-compare-table,
+[data-style='manuscript'] .semantic-chart,
+[data-style='manuscript'] .semantic-mermaid,
+[data-style='manuscript'] .semantic-relation-map,
+[data-style='manuscript'] .semantic-note-grid {
+  border: 1px solid var(--border-subtle);
+  border-top: 3px double var(--border-strong);
+  border-radius: 2px;
+  background: var(--bg-surface);
+  box-shadow: none;
+}
+
+[data-style='manuscript'] .framework-model-head,
+[data-style='manuscript'] .semantic-widget-head {
+  font-family: 'Lora', 'Noto Serif SC', Georgia, serif;
+  font-weight: 600;
+}
+
+/* -- Margin notes: the box dissolves; a short accent tick leads the title. -- */
+[data-style='manuscript'] .semantic-note {
+  border: 0;
+  border-top: 2px solid color-mix(in srgb, var(--primary) 55%, transparent);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 8px 0 8px 2px;
+}
+
+/* -- Examples, counterexamples and boundaries hang in the margin. -- */
+[data-style='manuscript'] .example-item,
+[data-style='manuscript'] .counterexample-item,
+[data-style='manuscript'] .boundary-card {
+  margin-top: 14px;
+  padding: 6px 0 6px 14px;
+  background: transparent;
+  border: 0;
+  border-left: 2px solid color-mix(in srgb, var(--accent-emerald) 50%, transparent);
+  border-radius: 0;
+}
+
+[data-style='manuscript'] .counterexample-item { border-left-color: color-mix(in srgb, var(--accent-rose) 50%, transparent); }
+[data-style='manuscript'] .boundary-card { border-left-color: color-mix(in srgb, var(--accent-amber) 50%, transparent); }
+
+/* -- Flow: the ribbon loses its chassis; steps are ledgers off a left rule. -- */
+[data-style='manuscript'] .local-flow-ribbon {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 4px 0;
+}
+
+[data-style='manuscript'] .flow-box {
+  background: transparent;
+  border: 0;
+  border-left: 2px solid var(--border-strong);
+  border-radius: 0;
+  padding: 10px 0 10px 14px;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+[data-style='manuscript'] .flow-box.current-focus {
+  background: var(--bg-highlight);
+  border-left-color: var(--primary);
+  box-shadow: none;
+}
+
+[data-style='manuscript'] .flow-box.clickable:hover {
+  background: var(--bg-highlight);
+  border-color: var(--border-strong);
+  border-left-color: var(--primary);
+  transform: none;
+}
+
+/* -- Display math sits on the page like a printed equation, not in a well. -- */
+[data-style='manuscript'] .math-block-expression {
+  margin: 12px 0;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+/* -- Tabs become ledger rows with a serif summary. -- */
+[data-style='manuscript'] .semantic-tabs summary {
+  font-family: 'Lora', 'Noto Serif SC', Georgia, serif;
+  font-weight: 600;
+}
+
+/* ===========================================================================
    CONTINUOUS READING CARRIER
    =========================================================================== */
 .continuous-page {
@@ -2957,10 +3050,13 @@ button.flow-box {
   position: fixed;
   top: 16px;
   right: 18px;
-  z-index: 2;
+  z-index: 60;
 }
 
-.continuous-toolbar button {
+/* Scope the toolbar card look to the two top-level buttons only — the skin
+   picker's dropdown options live inside .skin-picker and must not inherit it. */
+.continuous-toolbar > button,
+.continuous-toolbar .skin-picker-btn {
   display: grid;
   width: 34px;
   height: 34px;
@@ -2972,8 +3068,10 @@ button.flow-box {
   box-shadow: var(--shadow-card);
 }
 
-.continuous-toolbar button:hover { border-color: var(--border-strong); }
-.continuous-toolbar button:active { transform: translateY(1px); }
+.continuous-toolbar > button:hover,
+.continuous-toolbar .skin-picker-btn:hover { border-color: var(--border-strong); }
+.continuous-toolbar > button:active,
+.continuous-toolbar .skin-picker-btn:active { transform: translateY(1px); }
 
 html[data-carrier='scroll'],
 html[data-carrier='scroll'] body,
@@ -3139,7 +3237,7 @@ html[data-carrier='scroll'] #root {
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-3);
   background: var(--bg-card);
-  box-shadow: 2px 3px 0 rgba(15, 23, 42, 0.12);
+  box-shadow: var(--shadow-card);
 }
 
 .semantic-stack:has(> .semantic-definition, > .semantic-mechanism, > .semantic-boundary) > .semantic-definition,
@@ -3611,7 +3709,7 @@ html[data-carrier='scroll'] #root {
   display: grid;
   place-items: center;
   padding: 28px;
-  background: color-mix(in srgb, #05080f 84%, transparent);
+  background: var(--overlay-scrim);
 }
 
 .image-zoom-stage {
@@ -3634,7 +3732,7 @@ html[data-carrier='scroll'] #root {
   max-height: 84vh;
   border-radius: var(--radius-2);
   background: var(--bg-surface);
-  box-shadow: 0 24px 60px -22px rgba(0, 0, 0, 0.75);
+  box-shadow: var(--shadow-modal);
   transition: transform 0.12s ease-out;
   will-change: transform;
   user-select: none;
