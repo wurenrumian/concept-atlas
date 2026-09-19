@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "基于 MDX 的概念缩放式知识讲解模板",
   "type": "module",
+  "private": true,
   "scripts": {
     "dev": "vite",
     "validate": "node scripts/validate-content.mjs",
@@ -32,7 +33,6 @@
     "vite": "^5.4.14",
     "vite-plugin-singlefile": "^2.1.0"
   },
-  "main": "vite.config.js",
   "directories": {
     "doc": "docs"
   },
@@ -40,9 +40,16 @@
     "type": "git",
     "url": "git+https://github.com/wurenrumian/concept-atlas.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "mdx",
+    "concept-map",
+    "knowledge-graph",
+    "dense-explain",
+    "vite",
+    "react"
+  ],
+  "author": "wurenrumian",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/wurenrumian/concept-atlas/issues"
   },
