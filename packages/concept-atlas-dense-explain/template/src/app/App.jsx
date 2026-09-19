@@ -3,10 +3,17 @@ import { Network, Compass, Sun, Moon, Search, X, Link as LinkIcon } from 'lucide
 import { buildGraphModel } from '../model/concept-schema.js';
 import { extractConceptData } from '../model/normalize-content.js';
 import { useAppearance } from './use-appearance.js';
+import { pushNode, stepHistory, syncFromLocation } from './navigation.js';
+import { searchNodes } from './search.js';
 import { SkinPicker } from '../components/SkinPicker.jsx';
 import { NodeExplorer } from '../views/NodeExplorer.jsx';
 import { RelationGraph } from '../views/RelationGraph.jsx';
 import '../styles/concept-explain.css';
+
+function readNodeFromHash() {
+  if (typeof window === 'undefined') return null;
+  return new URLSearchParams(window.location.hash.replace(/^#/, '')).get('node');
+}
 
 export function App({ mdxContent, initialData }) {
   // Extract graph model from MDX JSX Element or raw data
@@ -28,54 +35,41 @@ export function App({ mdxContent, initialData }) {
 
   // Global shared state
   const [currentView, setCurrentView] = useState('explore'); // 'explore' | 'graph'
-  const [currentNodeId, setCurrentNodeId] = useState(() => {
-    const hashNode = new URLSearchParams(window.location.hash.replace(/^#/, '')).get('node');
-    return hashNode && graph.nodes.has(hashNode) ? hashNode : (graph.meta.rootId || '');
-  });
+  const initialHashNode = (() => {
+    const hashNode = readNodeFromHash();
+    return hashNode && graph.nodes.has(hashNode) ? hashNode : null;
+  })();
+
+  const [currentNodeId, setCurrentNodeId] = useState(
+    () => initialHashNode || graph.meta.rootId || '',
+  );
   const [selectedLevel, setSelectedLevel] = useState(null);
-  const [history, setHistory] = useState(() => {
-    const initial = new URLSearchParams(window.location.hash.replace(/^#/, '')).get('node');
-    return initial && graph.nodes.has(initial) ? [initial] : [graph.meta.rootId].filter(Boolean);
-  });
-  const [historyIndex, setHistoryIndex] = useState(0);
+  const [nav, setNav] = useState(() => ({
+    entries: (initialHashNode ? [initialHashNode] : [graph.meta.rootId]).filter(Boolean),
+    index: 0,
+  }));
   const [globalQuery, setGlobalQuery] = useState('');
   const [linkCopied, setLinkCopied] = useState(false);
 
-  const searchResults = useMemo(() => {
-    const query = globalQuery.trim().toLowerCase();
-    if (!query) return [];
-    return Array.from(graph.nodes.values()).map(node => {
-      const searchable = [
-        node.title, node.id, node.summary, node.definition, node.overview,
-        node.mechanism, node.input, node.output,
-        ...(node.examples || []).flatMap(item => [item.title, item.content]),
-        ...(node.glossary || []).flatMap(item => [item.term, item.definition]),
-        ...(node.boundaries || []).flatMap(item => [item.title, item.content]),
-      ].filter(value => typeof value === 'string').join(' ').toLowerCase();
-      return searchable.includes(query) ? node : null;
-    }).filter(Boolean).slice(0, 8);
-  }, [globalQuery, graph.nodes]);
+  const searchResults = useMemo(
+    () => searchNodes(Array.from(graph.nodes.values()), globalQuery),
+    [globalQuery, graph.nodes],
+  );
 
   const navigateToNode = (nodeId, { replace = false } = {}) => {
     if (!nodeId || !graph.nodes.has(nodeId)) return;
     setCurrentNodeId(nodeId);
-    setHistory(previous => {
-      const base = previous.slice(0, historyIndex + 1);
-      if (base[base.length - 1] === nodeId) return previous;
-      const next = [...base, nodeId];
-      setHistoryIndex(next.length - 1);
-      return next;
-    });
+    setNav(previous => pushNode(previous, nodeId));
     const nextHash = `#node=${encodeURIComponent(nodeId)}`;
     if (replace) window.history.replaceState({}, '', nextHash);
     else window.history.pushState({}, '', nextHash);
   };
 
   const moveHistory = (direction) => {
-    const nextIndex = Math.max(0, Math.min(history.length - 1, historyIndex + direction));
-    if (nextIndex === historyIndex) return;
-    setHistoryIndex(nextIndex);
-    const nodeId = history[nextIndex];
+    const next = stepHistory(nav, direction);
+    if (!next) return;
+    setNav(next);
+    const nodeId = next.entries[next.index];
     setCurrentNodeId(nodeId);
     window.history.pushState({}, '', `#node=${encodeURIComponent(nodeId)}`);
   };
@@ -83,10 +77,26 @@ export function App({ mdxContent, initialData }) {
   // Keyboard navigation shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Toggle views with 1 and 2 or 'g' and 'e' if not focused on input
-      if (e.isComposing || e.metaKey || e.ctrlKey || e.altKey || ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName) || document.activeElement?.isContentEditable) {
+      if (e.isComposing) return;
+
+      // Alt + arrows move through browsing history. Handled before the modifier
+      // guard below, otherwise the altKey short-circuit makes them unreachable.
+      if (e.altKey && e.key === 'ArrowLeft') {
+        e.preventDefault();
+        moveHistory(-1);
         return;
       }
+      if (e.altKey && e.key === 'ArrowRight') {
+        e.preventDefault();
+        moveHistory(1);
+        return;
+      }
+
+      // Toggle views with 1 and 2 or 'g' and 'e' if not focused on input.
+      const target = document.activeElement;
+      const typing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(target?.tagName) || target?.isContentEditable;
+      if (e.metaKey || e.ctrlKey || e.altKey || typing) return;
+
       const key = e.key.toLowerCase();
       if (e.key === '1' || key === 'e') {
         setCurrentView('explore');
@@ -95,18 +105,7 @@ export function App({ mdxContent, initialData }) {
       } else if (key === 't') {
         toggleTheme();
       } else if (e.key === 'Escape') {
-        // Alt + arrows move through browsing history.
-        if (e.altKey && e.key === 'ArrowLeft') {
-          e.preventDefault();
-          moveHistory(-1);
-          return;
-        }
-        if (e.altKey && e.key === 'ArrowRight') {
-          e.preventDefault();
-          moveHistory(1);
-          return;
-        }
-        // Return to root or parent
+        // Return to the parent node.
         const curr = graph.nodes.get(currentNodeId);
         if (curr && curr.parent) {
           navigateToNode(curr.parent);
@@ -116,23 +115,14 @@ export function App({ mdxContent, initialData }) {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [graph, currentNodeId, historyIndex, history]);
+  }, [graph, currentNodeId, nav]);
 
   useEffect(() => {
     const handlePopState = () => {
-      const nodeId = new URLSearchParams(window.location.hash.replace(/^#/, '')).get('node');
+      const nodeId = readNodeFromHash();
       if (!nodeId || !graph.nodes.has(nodeId)) return;
       setCurrentNodeId(nodeId);
-      setHistory(previous => {
-        const index = previous.lastIndexOf(nodeId);
-        if (index >= 0) {
-          setHistoryIndex(index);
-          return previous;
-        }
-        const next = [...previous, nodeId];
-        setHistoryIndex(next.length - 1);
-        return next;
-      });
+      setNav(previous => syncFromLocation(previous, nodeId));
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
