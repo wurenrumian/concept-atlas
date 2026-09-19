@@ -90,6 +90,17 @@ Atlas 用概念树承载导航，用 `Relation` 表达不属于树结构的关�
 
 层级建议：`L0` 是全局主题，`L1` 是主要分支，`L2` 是局部机制，`L3` 是实现细节，`L4` 是边界、反例或异常情况。
 
+节点还可以用可选的 `kind` 单独标注知识角色，它与层级正交，用于知识网络页的按类型筛选：
+
+```text
+system     整体系统、产品或问题域      stage      生命周期阶段或子系统
+mechanism  可验证的工作机制           artifact   阶段产出的实体或文件
+failure    失败模式与异常             tool       工具、库或外部依赖
+boundary   约束、前提与非目标         decision   设计取舍与选择点
+```
+
+声明 `kind="mechanism"` 的节点建议至少包含一个 `Invariant` 或 `Evidence`；声明 `kind="failure"` 的节点建议包含 `FailureMode`。这两条契约只在主动写出 `kind` 后生效，`--strict` 会把它升级为错误。
+
 ## 4. Scroll 写法
 
 Scroll 用章节组织阅读顺序。共享组件放在章节中，不需要为了使用 `Flow` 或 `MatrixModel` 改成 Atlas：
@@ -218,6 +229,7 @@ MDX 属性使用 JavaScript 表达式。字符串要加引号，数组和对象�
 
 | 组件 | 属性 | 类型 |
 | --- | --- | --- |
+| `ConceptNode` | `kind` | `'system' \| 'stage' \| 'mechanism' \| 'artifact' \| 'failure' \| 'tool' \| 'boundary' \| 'decision'`（可选，与 `level` 正交） |
 | `Flow` | `steps` | `string[]` 或 `{ title?: string, label?: string, description?: string }[]` |
 | `Timeline` | `events` | `{ label?: string, time?: string, content?: string, desc?: string }[]` |
 | `DecisionMatrix` | `headers` / `rows` | `string[]` / `string[][]` |

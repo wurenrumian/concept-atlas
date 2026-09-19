@@ -184,3 +184,54 @@ test('extractPageTitle decodes JSX entities without double-decoding', () => {
   assert.equal(extractPageTitle('<ExplainPage id="p" title="A &amp; B" summary="S"></ExplainPage>'), 'A & B');
   assert.equal(extractPageTitle('<ExplainPage id="p" title="&amp;lt;" summary="S"></ExplainPage>'), '&lt;');
 });
+
+test('node kind is validated against the registry', () => {
+  const valid = validateMdxSource(atlas(`    <ConceptNode id="root" title="根" level="L0" kind="system" summary="根">
+      <Definition>定义。</Definition>
+    </ConceptNode>`));
+  assert.deepEqual(warningsOf(valid), []);
+
+  const invalid = validateMdxSource(atlas(`    <ConceptNode id="root" title="根" level="L0" kind="bogus" summary="根">
+      <Definition>定义。</Definition>
+    </ConceptNode>`));
+  assert.ok(warningsOf(invalid).includes('UNKNOWN_KIND'));
+});
+
+test('mechanism and failure kinds carry opt-in contracts', () => {
+  const bareMechanism = validateMdxSource(atlas(`    <ConceptNode id="root" title="根" level="L0" kind="mechanism" summary="根">
+      <Mechanism>状态如何变化。</Mechanism>
+    </ConceptNode>`));
+  assert.ok(warningsOf(bareMechanism).includes('MECHANISM_KIND_UNVERIFIED'));
+
+  const verifiedMechanism = validateMdxSource(atlas(`    <ConceptNode id="root" title="根" level="L0" kind="mechanism" summary="根">
+      <Mechanism>状态如何变化。</Mechanism>
+      <Invariant>不变量。</Invariant>
+    </ConceptNode>`));
+  assert.ok(!warningsOf(verifiedMechanism).includes('MECHANISM_KIND_UNVERIFIED'));
+
+  const bareFailure = validateMdxSource(atlas(`    <ConceptNode id="root" title="根" level="L0" kind="failure" summary="根">
+      <Boundary>边界。</Boundary>
+    </ConceptNode>`));
+  assert.ok(warningsOf(bareFailure).includes('FAILURE_KIND_UNSTRUCTURED'));
+
+  const structuredFailure = validateMdxSource(atlas(`    <ConceptNode id="root" title="根" level="L0" kind="failure" summary="根">
+      <FailureMode symptom="崩溃" cause="布局不一致" evidence="崩溃栈" remedy="固定布局" />
+    </ConceptNode>`));
+  assert.ok(!warningsOf(structuredFailure).includes('FAILURE_KIND_UNSTRUCTURED'));
+});
+
+test('an empty self-closing FailureMode is flagged', () => {
+  const empty = validateMdxSource(atlas(`${rootNode}\n    <FailureMode />`));
+  assert.ok(warningsOf(empty).includes('FAILURE_MODE_EMPTY'));
+
+  const filled = validateMdxSource(atlas(`${rootNode}\n    <FailureMode symptom="崩溃" />`));
+  assert.ok(!warningsOf(filled).includes('FAILURE_MODE_EMPTY'));
+});
+
+test('strict mode promotes kind contracts to errors', () => {
+  const source = atlas(`    <ConceptNode id="root" title="根" level="L0" kind="mechanism" summary="根">
+      <Mechanism>状态如何变化。</Mechanism>
+    </ConceptNode>`);
+  const strict = validateMdxSource(source, { strict: true });
+  assert.ok(errorsOf(strict).includes('MECHANISM_KIND_UNVERIFIED'));
+});

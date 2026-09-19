@@ -1,6 +1,6 @@
 <ExplainPage id="compiler-runtime" title="程序如何变成一次可观察的运行" summary="从意图、工具链与操作系统契约出发，追踪程序如何获得身份、地址、时间与副作用。" layout="editorial" density="reading">
   <ConceptGraph root="execution-system">
-    <ConceptNode id="execution-system" title="执行系统：从意图到副作用" level="L0" input="源码、工具链与机器" output="行为、资源变化与退出状态" summary="把编译与运行看成跨层契约，而不是只有编译器参与的流水线。">
+    <ConceptNode id="execution-system" title="执行系统：从意图到副作用" level="L0" kind="system" input="源码、工具链与机器" output="行为、资源变化与退出状态" summary="把编译与运行看成跨层契约，而不是只有编译器参与的流水线。">
       <Definition>“运行起来”同时意味着语义被解释、依赖被绑定、地址被授予、时间被调度、结果被暴露。任何一层契约破裂，都可能表现为构建失败、启动失败、性能退化或悄无声息的错误。</Definition>
       <Prerequisite>先掌握源代码、进程、虚拟地址和文件描述符四个概念。</Prerequisite>
       <LearningObjectives items={['区分构建、装载与执行阶段', '为每个阶段找到可验证证据', '从首个错误点缩小故障边界']} />
@@ -20,7 +20,7 @@
       <Children><ConceptRef id="intent" /><ConceptRef id="toolchain" /><ConceptRef id="identity" /><ConceptRef id="address-space" /><ConceptRef id="effects" /></Children>
     </ConceptNode>
 
-    <ConceptNode id="intent" title="意图与源代码" level="L1" parent="execution-system" input="需求、算法与接口" output="工具链可消费的文本与资源" summary="源代码既是给人看的设计，也是后续每个阶段必须兑现的承诺。">
+    <ConceptNode id="intent" title="意图与源代码" level="L1" kind="stage" parent="execution-system" input="需求、算法与接口" output="工具链可消费的文本与资源" summary="源代码既是给人看的设计，也是后续每个阶段必须兑现的承诺。">
       <Definition>源文件、宏、生成代码和资源文件共同构成输入；真正的边界由构建系统决定，而不是某个文件扩展名。</Definition>
       <Input>版本提交、编译条件、代码生成器输出、环境变量和平台配置。</Input>
       <Output>确定的源快照与可追溯构建元数据。</Output>
@@ -48,12 +48,12 @@
       <Details summary="检查清单">固定编译器 digest、锁定依赖、清理时间与路径噪声、记录 SBOM、签名产物，并在隔离环境中二次构建。</Details>
     </ConceptNode>
 
-    <ConceptNode id="toolchain" title="工具链：从 IR 到可装载文件" level="L1" parent="execution-system" input="IR、库接口与目标三元组" output="目标文件、共享库与可执行映像" summary="前端解释语义，中端减少工作，后端选择 ISA，链接器把名字变成地址。">
+    <ConceptNode id="toolchain" title="工具链：从 IR 到可装载文件" level="L1" kind="stage" parent="execution-system" input="IR、库接口与目标三元组" output="目标文件、共享库与可执行映像" summary="前端解释语义，中端减少工作，后端选择 ISA，链接器把名字变成地址。">
       <Definition>每一步都可能引入契约：调用约定、段权限、异常表、依赖版本和调试信息。</Definition>
       <Example title="查看每层产物">用 `-E` 保留预处理文本、`-S` 查看汇编、`-c` 生成目标文件，再用 `readelf -h -S -r` 或 `dumpbin` 检查头、段和重定位。</Example>
       <Children><ConceptRef id="optimization" /><ConceptRef id="linking" /><ConceptRef id="artifact-format" /></Children>
     </ConceptNode>
-    <ConceptNode id="optimization" title="中间表示与优化" level="L2" parent="toolchain" input="控制流、数据流和别名信息" output="更少指令与更好局部性的计划" summary="优化是在已知前提下重排等价计算；收益和风险都来自这些前提。">
+    <ConceptNode id="optimization" title="中间表示与优化" level="L2" kind="mechanism" parent="toolchain" input="控制流、数据流和别名信息" output="更少指令与更好局部性的计划" summary="优化是在已知前提下重排等价计算；收益和风险都来自这些前提。">
       <Definition>常见变换包括常量折叠、内联、循环变换、死代码删除、向量化和寄存器分配，依据 SSA、别名分析与成本模型。</Definition>
       <Input>优化级别、目标 CPU 特性、调试/剖析开关。</Input><Output>指令序列、栈布局、异常表与优化报告。</Output>
       <Callout type="success" title="性能问题的证据链">先用基准和采样确认热点，再查看优化报告与生成汇编；不要仅凭源代码缩进推断 CPU 路径。</Callout>
@@ -61,8 +61,9 @@
       <Invariant title="优化不变量">在语言规则允许的前提下，优化前后的可观察行为必须等价。</Invariant>
       <Tradeoff title="调试构建还是发布构建" options={[{name:'调试构建', benefit:'符号完整、定位快', cost:'体积和运行开销更大', when:'开发与故障复现'}, {name:'发布构建', benefit:'性能和体积更优', cost:'诊断信息需要单独保存', when:'生产部署'}]} />
     </ConceptNode>
-    <ConceptNode id="linking" title="符号解析与重定位" level="L2" parent="toolchain" input="目标文件、静态库、共享库" output="符号地址已确定的映像" summary="链接器把分散的名字变成地址，并选择哪些代码进入最终文件。">
+    <ConceptNode id="linking" title="符号解析与重定位" level="L2" kind="mechanism" parent="toolchain" input="目标文件、静态库、共享库" output="符号地址已确定的映像" summary="链接器把分散的名字变成地址，并选择哪些代码进入最终文件。">
       <Definition>符号表描述定义与引用；重定位记录此处需要填入哪个地址或偏移。动态链接把部分决定推迟到装载或首次调用。</Definition>
+      <Invariant title="链接不变量">映像是可判定、可复现的产物：每个已解析的符号引用必须指向唯一确定的定义或明确的动态绑定；无法唯一确定时链接器必须报错，而不是静默选择。</Invariant>
       <Details summary="链接失败如何定位">先确认符号存在，再确认名称修饰与 ABI，随后检查库顺序、架构和可见性，最后检查链接脚本与段布局。</Details>
       <FailureMode symptom="undefined reference" cause="符号未定义或 ABI 不匹配" evidence="nm -C、readelf -Ws" remedy="确认库版本、链接顺序与目标架构" />
       <Children><ConceptRef id="relocation" /><ConceptRef id="abi" /></Children>
@@ -76,16 +77,17 @@
       <Glossary term="ODR">One Definition Rule：跨翻译单元的实体定义必须满足语言规则；违反时可能链接成功却产生未定义行为。</Glossary>
       <Children><ConceptRef id="abi-break" /></Children>
     </ConceptNode>
-    <ConceptNode id="abi-break" title="ABI 破坏：能链接，不等于能调用" level="L4" parent="abi" input="不一致的结构体布局或调用约定" output="启动后崩溃、数据错位或静默损坏" summary="最危险的兼容性问题往往绕过链接器，在第一次真实调用后才显现。">
+    <ConceptNode id="abi-break" title="ABI 破坏：能链接，不等于能调用" level="L4" kind="failure" parent="abi" input="不一致的结构体布局或调用约定" output="启动后崩溃、数据错位或静默损坏" summary="最危险的兼容性问题往往绕过链接器，在第一次真实调用后才显现。">
+      <FailureMode symptom="链接成功，首次调用崩溃或读写错位" cause="双方编译器、标准库或字段布局对同一字节的解释不一致" evidence="sizeof/alignof 差异、符号版本、崩溃栈与反汇编入口" remedy="用二进制接口检查工具做发布门禁，固定编译器与结构体布局" />
       <Callout type="danger" title="最小证据">记录双方编译器、目标三元组、sizeof/alignof、符号版本与调用栈；用二进制接口检查工具做发布门禁。</Callout>
       <Example title="字段追加的陷阱">旧库按 16 字节读取，新调用方按 24 字节传递；寄存器可能仍能完成调用，但后续字段会读到未初始化或越界数据。</Example>
     </ConceptNode>
-    <ConceptNode id="artifact-format" title="ELF、PE 与段的形状" level="L2" parent="toolchain" input="代码、常量、可写数据和元信息" output="带入口点与权限的文件格式" summary="文件格式把字节分组为装载器可理解的段。">
+    <ConceptNode id="artifact-format" title="ELF、PE 与段的形状" level="L2" kind="artifact" parent="toolchain" input="代码、常量、可写数据和元信息" output="带入口点与权限的文件格式" summary="文件格式把字节分组为装载器可理解的段。">
       <Definition>节偏向链接与分析，段偏向装载与权限。代码通常可执行且只读，数据可能可读写；权限最终反映到页表。</Definition>
       <Example title="文件很小，内存却很大">.bss 只记录零填充大小，不占同等磁盘空间；装载器在内存中分配并清零它。</Example>
     </ConceptNode>
 
-    <ConceptNode id="identity" title="进程身份与启动协议" level="L1" parent="execution-system" input="映像、argv、环境与权限" output="拥有 PID、凭据、句柄和入口栈的进程" summary="启动是内核与运行时共同建立一个可执行身份。">
+    <ConceptNode id="identity" title="进程身份与启动协议" level="L1" kind="stage" parent="execution-system" input="映像、argv、环境与权限" output="拥有 PID、凭据、句柄和入口栈的进程" summary="启动是内核与运行时共同建立一个可执行身份。">
       <Definition>内核创建地址空间和线程，装载器解析依赖，运行时初始化 TLS、构造器和库，最后跳转到入口函数。</Definition>
       <Input>工作目录、环境变量、标准流、用户/组凭据、能力与沙箱策略。</Input><Output>入口参数、初始栈、TLS 和可继承文件描述符。</Output>
       <Children><ConceptRef id="loader-protocol" /><ConceptRef id="startup-runtime" /></Children>
@@ -100,7 +102,7 @@
       <Example title="mmap 后为何没有立刻读盘">映射是承诺；真正访问某页时才触发 page fault，内核按需填充。</Example>
       <Children><ConceptRef id="fault-storm" /></Children>
     </ConceptNode>
-    <ConceptNode id="fault-storm" title="缺页风暴与抖动" level="L4" parent="page-tables" input="工作集超过内存、随机访问或映射失配" output="大量 fault、低吞吐与尾延迟" summary="地址翻译正确并不代表性能健康；工作集与内存层级失配会让程序在换页上耗尽时间。">
+    <ConceptNode id="fault-storm" title="缺页风暴与抖动" level="L4" kind="boundary" parent="page-tables" input="工作集超过内存、随机访问或映射失配" output="大量 fault、低吞吐与尾延迟" summary="地址翻译正确并不代表性能健康；工作集与内存层级失配会让程序在换页上耗尽时间。">
       <Boundary>当工作集稳定落在内存层级内时，缺页风暴通常不是主要瓶颈；需要结合 fault、I/O 等待和工作集观测判断。</Boundary>
       <Details summary="如何确认是内存层问题">同时观察 major/minor fault、TLB miss、I/O 等待和工作集大小；逐步缩小数据集或改变访问局部性，验证因果关系。</Details>
     </ConceptNode>
@@ -112,7 +114,7 @@
       <Example title="初始化顺序陷阱">跨翻译单元的静态对象初始化顺序通常没有全局保证；把依赖移到显式初始化函数更稳妥。</Example>
     </ConceptNode>
 
-    <ConceptNode id="address-space" title="时间、调度与内存模型" level="L1" parent="execution-system" input="线程、核心、时钟与同步原语" output="按某种顺序提交的指令与可见状态" summary="逻辑顺序要经过调度器、缓存和内存模型，才成为具体时间线。">
+    <ConceptNode id="address-space" title="时间、调度与内存模型" level="L1" kind="stage" parent="execution-system" input="线程、核心、时钟与同步原语" output="按某种顺序提交的指令与可见状态" summary="逻辑顺序要经过调度器、缓存和内存模型，才成为具体时间线。">
       <Definition>调度器分配运行机会；CPU 乱序执行隐藏延迟；缓存一致性传播写入；语言内存模型定义线程能观察到哪些顺序。</Definition>
       <Prerequisite>区分墙上时钟、单调时钟、CPU 周期以及 happens-before。</Prerequisite>
       <Children><ConceptRef id="scheduler" /><ConceptRef id="memory-order" /></Children>
@@ -126,12 +128,12 @@
       <Callout type="danger" title="数据竞争不是偶尔读旧值">未同步的冲突访问可能直接进入未定义行为；应使用原子、锁或消息传递建立 happens-before。</Callout>
       <Children><ConceptRef id="race-window" /></Children>
     </ConceptNode>
-    <ConceptNode id="race-window" title="竞态窗口与不可复现" level="L4" parent="memory-order" input="缺失同步、不同核心速度与调度抖动" output="偶发错误、错误日志或状态回滚" summary="低概率并发错误会被优化、日志和重试机制放大或掩盖。">
+    <ConceptNode id="race-window" title="竞态窗口与不可复现" level="L4" kind="boundary" parent="memory-order" input="缺失同步、不同核心速度与调度抖动" output="偶发错误、错误日志或状态回滚" summary="低概率并发错误会被优化、日志和重试机制放大或掩盖。">
       <Boundary>增加日志或 sleep 可能改变调度时序，只能帮助观察而不能证明竞态已消失。</Boundary>
       <Callout type="warn" title="复现策略">固定线程数和调度扰动，给共享状态加版本号，采集每次读写的因果链；不要用 sleep 当作同步原语。</Callout>
     </ConceptNode>
 
-    <ConceptNode id="effects" title="副作用、故障与证据" level="L1" parent="execution-system" input="系统调用、外部服务与资源限制" output="I/O、信号、日志、指标、转储与退出码" summary="最终结果是一组外部可观察的状态变化，而不只是 return 值。">
+    <ConceptNode id="effects" title="副作用、故障与证据" level="L1" kind="stage" parent="execution-system" input="系统调用、外部服务与资源限制" output="I/O、信号、日志、指标、转储与退出码" summary="最终结果是一组外部可观察的状态变化，而不只是 return 值。">
       <Definition>文件、网络包、子进程、信号和退出码都属于副作用。诊断要把它们与版本、配置、硬件和时间关联。</Definition>
       <Input>文件系统、网络、时钟、随机源、资源配额和安全策略。</Input><Output>业务响应、审计日志、trace/span、core dump 与退出状态。</Output>
       <Callout type="info" title="从症状反推层级">构建错误多停在语义/链接层；启动即退多看装载/初始化；延迟与偶发崩溃优先检查并发、生命周期和资源耗尽。</Callout>
@@ -147,7 +149,7 @@
       <Glossary term="首个错误点">时间线上最早改变不变量的事件；后续日志往往只是它造成的连锁反应。</Glossary>
       <Children><ConceptRef id="resource-exhaustion" /></Children>
     </ConceptNode>
-    <ConceptNode id="resource-exhaustion" title="资源耗尽：失败发生在 return 之后" level="L4" parent="failure-analysis" input="文件描述符、线程、句柄、配额与连接池" output="ENOMEM、EMFILE、超时、拒绝服务" summary="程序逻辑正确也可能因外部资源账本归零而失败。">
+    <ConceptNode id="resource-exhaustion" title="资源耗尽：失败发生在 return 之后" level="L4" kind="boundary" parent="failure-analysis" input="文件描述符、线程、句柄、配额与连接池" output="ENOMEM、EMFILE、超时、拒绝服务" summary="程序逻辑正确也可能因外部资源账本归零而失败。">
       <Definition>把资源视为有所有者、有上限、有回收路径的状态机；每次分配都应能在指标中找到余额和释放证据。</Definition>
       <Example title="泄漏为何先表现为延迟">连接池逐渐耗尽后，请求先排队变慢，最终才以超时暴露；只监控错误率会错过早期信号。</Example>
     </ConceptNode>

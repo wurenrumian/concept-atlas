@@ -13,6 +13,7 @@
 
 - **语义优先**：内容只描述概念、层级、证据和关系，不直接编写 CSS、布局、坐标或 SVG。
 - **概念缩放**：通过 `L0`–`L4` 组织从全局概览、主要阶段、局部机制到实现细节和边界反例的认知路径。
+- **知识类型**：节点可用可选的 `kind`（`system`/`stage`/`mechanism`/`artifact`/`failure`/`tool`/`boundary`/`decision`）标注知识角色，与层级正交；知识网络页可按类型筛选，校验器可对机制与故障节点执行可选契约。
 - **两种页面模式**：`atlas` 适合概念导航与关系图谱；`scroll` 适合连续阅读的长文档。
 - **共享信息组件**：支持 `Insight`、`Flow`、`FrameworkModel`、`MatrixModel`、`Mermaid`、`RelationMap`、`NoteGrid`、`Callout`、`Details`、`Columns`、`Grid`、`Stack` 和 `Tabs` 等组件。
 - **扩展能力**：`Math`/`MathBlock`（KaTeX 公式）、`Chart`（bar/line/pie 图表）、`Figure`（构建时内联图片）、`Cite`/`References`（引用与文献）。
@@ -83,8 +84,9 @@ npx concept-atlas-dense-explain article.mdx --mode scroll --inline-mermaid
       </Children>
     </ConceptNode>
 
-    <ConceptNode id="mechanism" title="核心机制" level="L1" parent="root">
+    <ConceptNode id="mechanism" title="核心机制" level="L1" kind="mechanism" parent="root">
       <Mechanism>输入 → 处理 → 输出</Mechanism>
+      <Invariant title="不变量">处理前后必须保持的约束。</Invariant>
     </ConceptNode>
 
     <Relation from="root" to="mechanism" type="precedes" label="先于" />

@@ -49,3 +49,29 @@ test('collectText flattens arrays, prop objects and nested children', () => {
   assert.equal(collectText(undefined), '');
   assert.equal(collectText(true), '');
 });
+
+test('nodeSearchText indexes structured evidence fields and the kind label', () => {
+  const structured = {
+    id: 'abi-break',
+    title: 'ABI 破坏',
+    kind: 'failure',
+    level: 'L4',
+    invariants: [{ title: '链接不变量', content: '符号引用必须唯一确定' }],
+    evidence: [{ command: 'readelf -Ws', observes: '查看符号版本' }],
+    failureModes: [{ symptom: '首次调用崩溃', cause: '布局不一致', evidence: 'sizeof 差异', remedy: '固定布局' }],
+    tradeoffs: [{ title: '兼容性', options: [{ name: '重新编译', benefit: '简单', cost: '需重新发布' }] }],
+    learningObjectives: ['识别 ABI 边界'],
+    keyQuestions: [{ content: '为什么能链接却不能调用？' }],
+    customSections: [],
+  };
+  const text = nodeSearchText(structured);
+  assert.match(text, /符号引用必须唯一确定/);
+  assert.match(text, /readelf -ws/);
+  assert.match(text, /首次调用崩溃/);
+  assert.match(text, /重新发布/);
+  assert.match(text, /识别 abi 边界/);
+  assert.match(text, /为什么能链接却不能调用/);
+  assert.match(text, /failure/);
+  assert.match(text, /故障/);
+  assert.deepEqual(searchNodes([structured], '故障').map(n => n.id), ['abi-break']);
+});

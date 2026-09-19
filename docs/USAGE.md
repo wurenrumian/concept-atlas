@@ -215,6 +215,32 @@ import ComponentsDemoDoc from '../content/components-demo.mdx';
 | `L3` | 实现细节 |
 | `L4` | 边界、反例和异常情况 |
 
+### 知识类型 `kind`
+
+`level` 描述「在缩放的哪一层」，`kind` 描述「这个节点在讲解里扮演什么角色」。两者互相独立：一个 `L2` 节点既可以是机制，也可以是边界。`kind` 完全可选，不写时不影响任何行为。
+
+```mdx
+<ConceptNode id="linking" title="符号解析与重定位" level="L2" kind="mechanism" parent="toolchain" summary="链接器把名字变成地址。">
+  <Definition>符号表描述定义与引用；重定位记录需要填入的地址或偏移。</Definition>
+  <Invariant title="链接不变量">每个已解析的符号引用必须指向唯一确定的定义。</Invariant>
+</ConceptNode>
+```
+
+可选值：
+
+| `kind` | 含义 |
+| --- | --- |
+| `system` | 整体系统、产品或问题域 |
+| `stage` | 生命周期阶段、处理步骤或子系统 |
+| `mechanism` | 可解释、可验证的工作机制 |
+| `artifact` | 阶段产出的实体、数据或文件 |
+| `failure` | 失败模式、异常与边界情况 |
+| `tool` | 使用的工具、库或外部依赖 |
+| `boundary` | 约束、前提、限制与非目标 |
+| `decision` | 设计取舍与选择点 |
+
+声明后有两项可选契约：`kind="mechanism"` 建议至少包含一个 `Invariant` 或 `Evidence`，`kind="failure"` 建议使用 `FailureMode`。它们让「知识网络」页可以按知识类型筛选，而不只是按 `L0`–`L4` 筛选。
+
 ### 概念关系
 
 `Relation` 不改变树结构，只表示跨节点关系。常用类型包括：

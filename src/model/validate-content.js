@@ -1,4 +1,5 @@
 import { RELATION_TYPES, LEVEL_DEFS } from './relation-types.js';
+import { NODE_KIND_NAMES, NODE_KIND_SET } from './node-kinds.js';
 
 /**
  * Single source of truth for the semantic component registry.
@@ -365,6 +366,7 @@ export function validateMdxSource(source, options = {}) {
         id: attrValue(map, 'id'),
         title: attrValue(map, 'title'),
         level: attrValue(map, 'level') || 'L2',
+        kind: attrValue(map, 'kind'),
         parent: attrValue(map, 'parent'),
         summary: attrValue(map, 'summary'),
         offset: tag.start,
@@ -489,11 +491,22 @@ export function validateMdxSource(source, options = {}) {
     if (!LEVEL_SET.has(node.level)) {
       add('warning', 'UNKNOWN_LEVEL', `节点 ${label} 的 level 无效：${node.level}`, node.offset, node.id);
     }
+    if (node.kind && !NODE_KIND_SET.has(node.kind)) {
+      add('warning', 'UNKNOWN_KIND', `节点 ${label} 的 kind 无效：${node.kind}（可选：${NODE_KIND_NAMES.join('、')}）`, node.offset, node.id);
+    }
     if (node.parent && !nodesById.has(node.parent)) {
       add('error', 'MISSING_PARENT', `节点 ${label} 的 parent 不存在：${node.parent}`, node.offset, node.id);
     }
     if (node.body && ![...CORE_CONTENT_COMPONENTS].some(name => new RegExp(`<${name}\\b`).test(node.body))) {
       add('warning', 'NODE_NO_CORE_CONTENT', `节点 ${label} 缺少核心内容组件（Definition/Mechanism/Example/Boundary 等）`, node.offset, node.id);
+    }
+    // Opt-in knowledge-kind contracts. They only fire once an author declares
+    // `kind`, so the existing corpus keeps validating clean.
+    if (node.kind === 'mechanism' && node.body && !/<(Invariant|Evidence)\b/.test(node.body)) {
+      add(strict ? 'error' : 'warning', 'MECHANISM_KIND_UNVERIFIED', `机制节点 ${label} 建议至少包含一个 <Invariant> 或 <Evidence>`, node.offset, node.id);
+    }
+    if (node.kind === 'failure' && node.body && !/<FailureMode\b/.test(node.body)) {
+      add(strict ? 'error' : 'warning', 'FAILURE_KIND_UNSTRUCTURED', `故障节点 ${label} 建议使用 <FailureMode> 描述现象、原因、证据与建议`, node.offset, node.id);
     }
   }
 
@@ -539,6 +552,17 @@ export function validateMdxSource(source, options = {}) {
     }
     if (relation.from && relation.to && relation.from === relation.to) {
       add('warning', 'RELATION_SELF', `关系 ${relation.from} 指向自身`, relation.offset, relation.from);
+    }
+  }
+
+  // A self-closing <FailureMode /> with no fields carries no information; an
+  // open tag with children is left to the author.
+  for (const tag of tags) {
+    if (tag.name !== 'FailureMode' || tag.kind !== 'self') continue;
+    const map = attrsToMap(tag.attrs);
+    const hasField = ['symptom', 'cause', 'evidence', 'remedy'].some(field => attrValue(map, field));
+    if (!hasField) {
+      add('warning', 'FAILURE_MODE_EMPTY', 'FailureMode 缺少 symptom/cause/evidence/remedy，也没有子内容', tag.start, 'FailureMode');
     }
   }
 

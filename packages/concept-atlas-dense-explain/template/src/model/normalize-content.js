@@ -103,6 +103,7 @@ function parseConceptNode(nodeElement) {
     id: props.id,
     title: props.title || props.id,
     level: props.level || 'L2',
+    kind: props.kind || null,
     parent: props.parent !== undefined ? props.parent : null,
     children: [],
     summary: props.summary || '',
@@ -117,7 +118,13 @@ function parseConceptNode(nodeElement) {
     counterexamples: [],
     boundaries: [],
     glossary: [],
-    customSections: []
+    customSections: [],
+    learningObjectives: [],
+    keyQuestions: [],
+    evidence: [],
+    invariants: [],
+    failureModes: [],
+    tradeoffs: [],
   };
 
   Children.forEach(props.children, child => {
@@ -194,6 +201,51 @@ function parseConceptNode(nodeElement) {
         if (child.props.id) {
           node.children.push(child.props.id);
         }
+        break;
+      // Argument / evidence components are stored twice on purpose: as
+      // structured data for the graph, search and validator, and as the
+      // original element in customSections so existing rendering is unchanged.
+      case 'LearningObjectives':
+        node.learningObjectives.push(
+          ...(Array.isArray(child.props.items) ? child.props.items.filter(Boolean) : []),
+        );
+        node.customSections.push(child);
+        break;
+      case 'KeyQuestion':
+        node.keyQuestions.push({ content: child.props.children });
+        node.customSections.push(child);
+        break;
+      case 'Evidence':
+        node.evidence.push({
+          command: child.props.command || '',
+          observes: child.props.observes || '',
+          content: child.props.children,
+        });
+        node.customSections.push(child);
+        break;
+      case 'Invariant':
+        node.invariants.push({
+          title: child.props.title || '不变量',
+          content: child.props.children,
+        });
+        node.customSections.push(child);
+        break;
+      case 'FailureMode':
+        node.failureModes.push({
+          symptom: child.props.symptom || '',
+          cause: child.props.cause || '',
+          evidence: child.props.evidence || '',
+          remedy: child.props.remedy || '',
+          content: child.props.children,
+        });
+        node.customSections.push(child);
+        break;
+      case 'Tradeoff':
+        node.tradeoffs.push({
+          title: child.props.title || '工程权衡',
+          options: Array.isArray(child.props.options) ? child.props.options : [],
+        });
+        node.customSections.push(child);
         break;
       default:
         // Semantic presentation components inside node

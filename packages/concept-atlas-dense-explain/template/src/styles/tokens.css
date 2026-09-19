@@ -105,6 +105,17 @@
   --level-l3: #fbbf24;
   --level-l4: #f87171;
 
+  /* Knowledge kind accents (orthogonal to level; consumed by kind badges,
+     graph rings and legends). Keep in sync with model/node-kinds.js */
+  --kind-system: #818cf8;
+  --kind-stage: #38bdf8;
+  --kind-mechanism: #34d399;
+  --kind-artifact: #fbbf24;
+  --kind-failure: #f87171;
+  --kind-tool: #c084fc;
+  --kind-boundary: #94a3b8;
+  --kind-decision: #2dd4bf;
+
   /* Graph background grids */
   --graph-grid: radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
   --explorer-grid:
@@ -214,6 +225,16 @@
   --level-l2: #059669;
   --level-l3: #d97706;
   --level-l4: #dc2626;
+
+  /* Knowledge kind accents (see dark block above) */
+  --kind-system: #6366f1;
+  --kind-stage: #0284c7;
+  --kind-mechanism: #059669;
+  --kind-artifact: #d97706;
+  --kind-failure: #dc2626;
+  --kind-tool: #9333ea;
+  --kind-boundary: #64748b;
+  --kind-decision: #0d9488;
 
   /* Graph background grids */
   --graph-grid: radial-gradient(circle, rgba(0, 0, 0, 0.07) 1px, transparent 1px);

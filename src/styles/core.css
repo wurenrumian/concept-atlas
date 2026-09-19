@@ -478,6 +478,9 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
   cursor: pointer;
   color: var(--text-secondary);
   font-size: 13px;
+  font-family: inherit;
+  text-align: left;
+  width: 100%;
   transition: all 0.15s ease;
   background: transparent;
   border: 1px solid transparent;
@@ -785,6 +788,20 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
   padding: 4px 10px;
   border-radius: 6px;
   border: 1px solid var(--border-accent);
+}
+
+/* Knowledge kind: orthogonal to level, so it reads as a small pill next to it.
+   Color comes from --kind-* via the registry and is applied inline. */
+.kind-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  opacity: 0.92;
 }
 
 .hero-title {
@@ -1377,7 +1394,10 @@ button.flow-box {
   left: 20px;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 14px;
+  row-gap: 6px;
+  max-width: min(80%, 980px);
   background: var(--bg-surface);
   backdrop-filter: blur(12px);
   border: 1px solid var(--border-medium);
@@ -1410,6 +1430,17 @@ button.flow-box {
   width: 8px;
   height: 8px;
   border-radius: 50%;
+}
+
+/* Kind uses a ring (matching the graph's kind ring) instead of a fill. */
+.legend-ring {
+  background: transparent;
+  border: 2px solid var(--rel-default);
+}
+
+.legend-kinds {
+  padding-left: 14px;
+  border-left: 1px solid var(--border-medium);
 }
 
 .graph-svg {
@@ -2170,11 +2201,33 @@ button.flow-box {
   gap: 16px;
 }
 
+.panel-badges {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .panel-badge {
   font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+
+/* Structured argument/evidence counts, derived from the node model. */
+.panel-verified {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.panel-verified span {
+  border: 1px solid var(--border-medium);
+  border-radius: 999px;
+  padding: 2px 8px;
 }
 
 .panel-node-title {

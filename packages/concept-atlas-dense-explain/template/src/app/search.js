@@ -1,4 +1,5 @@
 import React from 'react';
+import { NODE_KINDS } from '../model/node-kinds.js';
 
 const MAX_DEPTH = 6;
 const MAX_LENGTH = 4000;
@@ -33,15 +34,20 @@ export function collectText(value, depth = 0) {
 }
 
 /**
- * Build one lowercase haystack per node. Includes the semantic content fields
- * plus the free-form `customSections` (Evidence, FailureMode, Invariant,
- * Tradeoff, …) that previously fell outside the search index entirely.
+ * Build one lowercase haystack per node. Includes the semantic content fields,
+ * the structured argument/evidence records (Evidence, Invariant, FailureMode,
+ * Tradeoff, …) and the free-form `customSections` that the same components also
+ * render through. The kind id and its label are indexed too, so "故障" finds
+ * `kind="failure"` nodes.
  */
 export function nodeSearchText(node) {
   if (!node) return '';
+  const kind = node.kind ? NODE_KINDS[node.kind] : null;
   const parts = [
     node.title,
     node.id,
+    node.kind,
+    kind ? kind.label : '',
     node.summary,
     node.overview,
     node.definition,
@@ -54,6 +60,12 @@ export function nodeSearchText(node) {
     node.counterexamples,
     node.boundaries,
     node.glossary,
+    node.learningObjectives,
+    node.keyQuestions,
+    node.evidence,
+    node.invariants,
+    node.failureModes,
+    node.tradeoffs,
     node.customSections,
   ];
   return parts.map(part => collectText(part)).join(' ').slice(0, MAX_LENGTH).toLowerCase();

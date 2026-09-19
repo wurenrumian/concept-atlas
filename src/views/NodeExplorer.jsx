@@ -2,6 +2,7 @@ import React from 'react';
 import { ChevronRight, ArrowUpRight, CornerDownRight, ArrowLeft, Network, CornerLeftUp, ZoomIn, ZoomOut, RotateCcw, Link as LinkIcon } from 'lucide-react';
 import { getAncestorPath, getSiblingNodes } from '../model/concept-schema.js';
 import { LEVEL_DEFS } from '../model/relation-types.js';
+import { NODE_KINDS } from '../model/node-kinds.js';
 
 export function NodeExplorer({
   graph,
@@ -133,6 +134,7 @@ export function NodeExplorer({
 
   // Level definition
   const levelInfo = LEVEL_DEFS[currentNode.level] || { name: currentNode.level, tag: currentNode.level, color: 'var(--level-l0)' };
+  const kindDef = currentNode.kind ? NODE_KINDS[currentNode.kind] || null : null;
 
   return (
     <div className="node-explorer-layout">
@@ -144,18 +146,20 @@ export function NodeExplorer({
             {ancestorPath.map((node, index) => {
               const isCurrent = node.id === currentNode.id;
               return (
-                <div
+                <button
+                  type="button"
                   key={node.id}
                   className={`breadcrumb-node ${isCurrent ? 'active' : ''}`}
                   onClick={() => onSelectNode(node.id)}
                   title={node.title}
+                  aria-current={isCurrent ? 'page' : undefined}
                 >
                   <span className="bc-level-pill" style={{ borderColor: LEVEL_DEFS[node.level]?.color }}>
                     {node.level}
                   </span>
                   <span className="bc-title">{node.title}</span>
                   {index < ancestorPath.length - 1 && <ChevronRight size={14} className="bc-arrow" />}
-                </div>
+                </button>
               );
             })}
           </div>
@@ -263,6 +267,15 @@ export function NodeExplorer({
           <article className="concept-hero-card">
             <div className="hero-level-banner" style={{ color: levelInfo.color }}>
               <span className="badge">{levelInfo.tag}</span>
+              {kindDef && (
+                <span
+                  className="kind-badge"
+                  style={{ color: kindDef.tone, borderColor: kindDef.tone }}
+                  title={kindDef.description}
+                >
+                  {kindDef.label}
+                </span>
+              )}
               <span className="desc">{levelInfo.desc}</span>
             </div>
 
@@ -284,6 +297,24 @@ export function NodeExplorer({
                 <div className="meta-chip">
                   <span className="chip-label">输出</span>
                   <span className="chip-value">{currentNode.output}</span>
+                </div>
+              )}
+              {currentNode.invariants.length > 0 && (
+                <div className="meta-chip">
+                  <span className="chip-label">不变量</span>
+                  <span className="chip-value">{currentNode.invariants.length}</span>
+                </div>
+              )}
+              {currentNode.evidence.length > 0 && (
+                <div className="meta-chip">
+                  <span className="chip-label">证据</span>
+                  <span className="chip-value">{currentNode.evidence.length}</span>
+                </div>
+              )}
+              {currentNode.failureModes.length > 0 && (
+                <div className="meta-chip">
+                  <span className="chip-label">故障模式</span>
+                  <span className="chip-value">{currentNode.failureModes.length}</span>
                 </div>
               )}
               <div className="meta-chip">

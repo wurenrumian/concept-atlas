@@ -1,5 +1,6 @@
 import React from 'react';
 import { RELATION_TYPES, LEVEL_DEFS } from './relation-types.js';
+import { NODE_KIND_SET, normalizeKind } from './node-kinds.js';
 
 /**
  * Creates an empty Concept Knowledge Graph structure
@@ -26,6 +27,7 @@ export function normalizeNode(raw) {
     id,
     title: raw.title || id,
     level: raw.level || 'L2',
+    kind: normalizeKind(raw.kind),
     parent: raw.parent || null,
     children: Array.isArray(raw.children) ? raw.children : [],
     
@@ -43,6 +45,16 @@ export function normalizeNode(raw) {
     boundaries: raw.boundaries || [],
     glossary: raw.glossary || [],
     customSections: raw.customSections || [],
+
+    // Structured argument / evidence content. These mirror the matching
+    // customSections (which still render), but as data the graph, search and
+    // validator can reason about.
+    learningObjectives: Array.isArray(raw.learningObjectives) ? raw.learningObjectives : [],
+    keyQuestions: Array.isArray(raw.keyQuestions) ? raw.keyQuestions : [],
+    evidence: Array.isArray(raw.evidence) ? raw.evidence : [],
+    invariants: Array.isArray(raw.invariants) ? raw.invariants : [],
+    failureModes: Array.isArray(raw.failureModes) ? raw.failureModes : [],
+    tradeoffs: Array.isArray(raw.tradeoffs) ? raw.tradeoffs : [],
   };
 }
 
@@ -58,6 +70,9 @@ export function buildGraphModel(rawGraph) {
   // Register all nodes
   rawNodes.forEach(n => {
     const node = normalizeNode(n);
+    if (n.kind && !NODE_KIND_SET.has(n.kind)) {
+      diagnostics.push({ level: 'warning', code: 'UNKNOWN_KIND', nodeId: node.id, kind: n.kind });
+    }
     if (nodes.has(node.id)) diagnostics.push({ level: 'error', code: 'DUPLICATE_NODE_ID', nodeId: node.id });
     nodes.set(node.id, node);
   });

@@ -5,6 +5,7 @@ import { extractConceptData } from '../model/normalize-content.js';
 import { useAppearance } from './use-appearance.js';
 import { pushNode, stepHistory, syncFromLocation } from './navigation.js';
 import { searchNodes } from './search.js';
+import { NODE_KINDS } from '../model/node-kinds.js';
 import { SkinPicker } from '../components/SkinPicker.jsx';
 import { NodeExplorer } from '../views/NodeExplorer.jsx';
 import { RelationGraph } from '../views/RelationGraph.jsx';
@@ -166,7 +167,7 @@ export function App({ mdxContent, initialData }) {
               <div className="global-search-results" role="listbox">
                 {searchResults.map(node => (
                   <button type="button" key={node.id} onClick={() => { navigateToNode(node.id); setGlobalQuery(''); }} role="option">
-                    <span>{node.title}</span><small>{node.level} · {node.summary || node.id}</small>
+                    <span>{node.title}</span><small>{node.level}{node.kind && NODE_KINDS[node.kind] ? ` · ${NODE_KINDS[node.kind].label}` : ''} · {node.summary || node.id}</small>
                   </button>
                 ))}
               </div>

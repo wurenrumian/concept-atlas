@@ -12,8 +12,9 @@ import {
   hierarchy,
   tree as treeLayout,
 } from 'd3';
-import { Search, Filter, ZoomIn, ZoomOut, RotateCcw, ArrowRight, Layers, Eye } from 'lucide-react';
+import { Search, ArrowRight, Eye } from 'lucide-react';
 import { RELATION_TYPES, LEVEL_DEFS } from '../model/relation-types.js';
+import { NODE_KINDS, NODE_KIND_NAMES } from '../model/node-kinds.js';
 
 export function RelationGraph({
   graph,
@@ -24,20 +25,36 @@ export function RelationGraph({
   const { nodes, relations } = graph;
   const svgRef = useRef(null);
   const containerRef = useRef(null);
+  // The D3 layout owns the simulation; selection styling is applied by a
+  // separate effect so changing the focused node never rebuilds the layout.
+  const nodesSelectionRef = useRef(null);
+  const nodeHaloRef = useRef(null);
+  const nodeLabelRef = useRef(null);
+  const zoomBehaviorRef = useRef(null);
+  const positionedNodesRef = useRef([]);
+  const selectedNodeIdRef = useRef(null);
 
   // States
   const [selectedNodeId, setSelectedNodeId] = useState(currentNodeId || graph.meta.rootId);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterLevel, setFilterLevel] = useState('ALL');
+  const [filterKind, setFilterKind] = useState('ALL');
   const [filterRelationType, setFilterRelationType] = useState('ALL');
-  const [highlightNeighbors, setHighlightNeighbors] = useState(true);
   const [graphMode, setGraphMode] = useState('hierarchy');
+  selectedNodeIdRef.current = selectedNodeId;
 
   // Convert nodes map to array
   const allNodes = useMemo(() => Array.from(nodes.values()), [nodes]);
 
+  // Kinds actually present in this document, for the filter and the legend.
+  const presentKinds = useMemo(
+    () => NODE_KIND_NAMES.filter(kind => allNodes.some(node => node.kind === kind)),
+    [allNodes],
+  );
+
   // Active focused node details
   const focusedNode = nodes.get(selectedNodeId) || null;
+  const focusedKind = focusedNode?.kind ? NODE_KINDS[focusedNode.kind] || null : null;
 
   useEffect(() => {
     if (currentNodeId && nodes.has(currentNodeId)) {
@@ -51,6 +68,12 @@ export function RelationGraph({
 
     if (filterLevel !== 'ALL') {
       filteredNodes = filteredNodes.filter(n => n.level === filterLevel);
+    }
+
+    if (filterKind !== 'ALL') {
+      filteredNodes = filterKind === 'NONE'
+        ? filteredNodes.filter(n => !n.kind)
+        : filteredNodes.filter(n => n.kind === filterKind);
     }
 
     if (searchQuery.trim()) {
@@ -115,7 +138,7 @@ export function RelationGraph({
       graphNodes: filteredNodes.map(n => ({ ...n })),
       graphLinks: links
     };
-  }, [allNodes, nodes, relations, filterLevel, filterRelationType, searchQuery]);
+  }, [allNodes, nodes, relations, filterLevel, filterKind, filterRelationType, searchQuery]);
 
   // Neighbors of focused node
   const { connectedNodeIds, directRelations } = useMemo(() => {
@@ -143,6 +166,10 @@ export function RelationGraph({
 
   // Setup D3 Force Simulation
   useEffect(() => {
+    nodesSelectionRef.current = null;
+    nodeHaloRef.current = null;
+    nodeLabelRef.current = null;
+    positionedNodesRef.current = [];
     if (!svgRef.current || !containerRef.current) return;
 
     const width = containerRef.current.clientWidth || 900;
@@ -183,6 +210,7 @@ export function RelationGraph({
       });
 
     svg.call(zoomBehavior);
+    zoomBehaviorRef.current = zoomBehavior;
 
     // Plain wheel scrolls the canvas vertically; Ctrl/Cmd + wheel zooms.
     const handleWheelPan = (event) => {
@@ -212,6 +240,7 @@ export function RelationGraph({
         }))
       : layoutTree(graphNodes, width, height);
     const nodeById = new Map(positionedNodes.map(node => [node.id, node]));
+    positionedNodesRef.current = positionedNodes;
     const positionedLinks = decorateParallelLinks(visibleGraphLinks
       .map(link => ({
         ...link,
@@ -278,11 +307,19 @@ export function RelationGraph({
       .data(positionedNodes)
       .enter()
       .append('g')
-      .attr('class', d => `node-item ${d.id === selectedNodeId ? 'selected' : ''}`)
+      .attr('class', d => `node-item ${d.id === selectedNodeIdRef.current ? 'selected' : ''}`)
       .on('click', (event, d) => {
         event.stopPropagation();
         setSelectedNodeId(d.id);
         onSelectNode(d.id);
+      });
+    nodesSelectionRef.current = nodesSelection;
+
+    // Native SVG tooltip: level is always shown; kind is appended when set.
+    nodesSelection.append('title')
+      .text(d => {
+        const kind = d.kind && NODE_KINDS[d.kind] ? ` · ${NODE_KINDS[d.kind].label}` : '';
+        return `${d.title} · ${d.level}${kind}`;
       });
 
     if (isConceptMode) {
@@ -304,13 +341,16 @@ export function RelationGraph({
       );
     }
 
-    // Outer glow for selected or level
-    nodesSelection.append('circle')
+    // Outer glow for selected or level. When a knowledge kind is declared its
+    // tone recolours the ring, so level (fill) and kind (ring) read together.
+    nodeHaloRef.current = nodesSelection.append('circle')
       .attr('r', d => (d.level === 'L0' ? 24 : d.level === 'L1' ? 20 : 16))
       .style('fill', d => LEVEL_DEFS[d.level]?.color || 'var(--level-l0)')
       .attr('fill-opacity', 0.2)
-      .style('stroke', d => LEVEL_DEFS[d.level]?.color || 'var(--level-l0)')
-      .attr('stroke-width', d => d.id === selectedNodeId ? 3 : 1.5);
+      .style('stroke', d => (d.kind && NODE_KINDS[d.kind]
+        ? NODE_KINDS[d.kind].tone
+        : (LEVEL_DEFS[d.level]?.color || 'var(--level-l0)')))
+      .attr('stroke-width', d => d.id === selectedNodeIdRef.current ? 3 : 1.5);
 
     // Inner center dot
     nodesSelection.append('circle')
@@ -318,13 +358,13 @@ export function RelationGraph({
       .style('fill', d => LEVEL_DEFS[d.level]?.color || 'var(--level-l0)');
 
     // Node Title Label
-    nodesSelection.append('text')
+    nodeLabelRef.current = nodesSelection.append('text')
       .attr('dy', d => (d.level === 'L0' ? 38 : 30))
       .attr('text-anchor', 'middle')
       .style('fill', 'var(--text-primary)')
       .attr('font-size', '12px')
       .attr('font-family', labelFont)
-      .attr('font-weight', d => d.id === selectedNodeId ? '700' : '500')
+      .attr('font-weight', d => d.id === selectedNodeIdRef.current ? '700' : '500')
       .text(d => d.title);
 
     // Node Level Pill
@@ -351,23 +391,34 @@ export function RelationGraph({
       renderPositions();
     }
 
-    // Auto-focus selected node center
-    if (!isConceptMode && selectedNodeId) {
-      const targetNode = positionedNodes.find(n => n.id === selectedNodeId);
-      if (targetNode) {
-        const transform = zoomIdentity
-          .translate(width / 2 - targetNode.x, height / 2 - targetNode.y)
-          .scale(1.1);
-        svg.transition().duration(500).call(zoomBehavior.transform, transform);
-      }
-    }
-
     return () => {
       simulation?.stop();
       svg.on('wheel.pan', null);
       svg.on('.zoom', null);
     };
-  }, [graphNodes, graphLinks, selectedNodeId, graphMode]);
+  }, [graphNodes, graphLinks, graphMode]);
+
+  // Selection styling lives outside the layout effect: clicking a node updates
+  // its class/stroke and re-centres the canvas without rebuilding the
+  // simulation or resetting drag positions.
+  useEffect(() => {
+    const nodesSelection = nodesSelectionRef.current;
+    if (!nodesSelection) return;
+
+    nodesSelection.attr('class', d => `node-item ${d.id === selectedNodeId ? 'selected' : ''}`);
+    nodeHaloRef.current?.attr('stroke-width', d => (d.id === selectedNodeId ? 3 : 1.5));
+    nodeLabelRef.current?.attr('font-weight', d => (d.id === selectedNodeId ? '700' : '500'));
+
+    if (graphMode === 'concept' || !selectedNodeId || !svgRef.current || !containerRef.current || !zoomBehaviorRef.current) return;
+    const targetNode = positionedNodesRef.current.find(node => node.id === selectedNodeId);
+    if (!targetNode) return;
+    const width = containerRef.current.clientWidth || 900;
+    const height = containerRef.current.clientHeight || 650;
+    const transform = zoomIdentity
+      .translate(width / 2 - targetNode.x, height / 2 - targetNode.y)
+      .scale(1.1);
+    select(svgRef.current).transition().duration(500).call(zoomBehaviorRef.current.transform, transform);
+  }, [selectedNodeId, graphNodes, graphMode]);
 
   return (
     <div className="relation-graph-layout">
@@ -413,6 +464,19 @@ export function RelationGraph({
             </select>
           </div>
 
+          {presentKinds.length > 0 && (
+            <div className="filter-group">
+              <span className="filter-label">知识类型:</span>
+              <select value={filterKind} onChange={e => setFilterKind(e.target.value)}>
+                <option value="ALL">全部类型</option>
+                {presentKinds.map(kindId => (
+                  <option key={kindId} value={kindId}>{NODE_KINDS[kindId].label} ({kindId})</option>
+                ))}
+                {allNodes.some(node => !node.kind) && <option value="NONE">未分类</option>}
+              </select>
+            </div>
+          )}
+
           <div className="filter-group">
             <span className="filter-label">关系类型:</span>
             <select value={filterRelationType} onChange={e => setFilterRelationType(e.target.value)}>
@@ -435,6 +499,17 @@ export function RelationGraph({
               </div>
             ))}
           </div>
+          {presentKinds.length > 0 && (
+            <div className="legend-items legend-kinds">
+              <div className="legend-title">知识类型:</div>
+              {presentKinds.map(kindId => (
+                <div key={kindId} className="legend-item">
+                  <span className="legend-dot legend-ring" style={{ borderColor: NODE_KINDS[kindId].tone }} />
+                  <span>{NODE_KINDS[kindId].label}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* SVG Container */}
@@ -445,11 +520,30 @@ export function RelationGraph({
       <aside className="graph-side-panel">
         {focusedNode ? (
           <div className="graph-inspector">
-            <div className="panel-badge" style={{ color: LEVEL_DEFS[focusedNode.level]?.color }}>
-              {LEVEL_DEFS[focusedNode.level]?.tag || focusedNode.level}
+            <div className="panel-badges">
+              <div className="panel-badge" style={{ color: LEVEL_DEFS[focusedNode.level]?.color }}>
+                {LEVEL_DEFS[focusedNode.level]?.tag || focusedNode.level}
+              </div>
+              {focusedKind && (
+                <span
+                  className="kind-badge"
+                  style={{ color: focusedKind.tone, borderColor: focusedKind.tone }}
+                  title={focusedKind.description}
+                >
+                  {focusedKind.label}
+                </span>
+              )}
             </div>
             <h2 className="panel-node-title">{focusedNode.title}</h2>
             <p className="panel-summary">{focusedNode.summary || '暂无一句话概览'}</p>
+
+            {(focusedNode.invariants.length > 0 || focusedNode.failureModes.length > 0 || focusedNode.evidence.length > 0) && (
+              <div className="panel-verified">
+                {focusedNode.invariants.length > 0 && <span>不变量 {focusedNode.invariants.length}</span>}
+                {focusedNode.evidence.length > 0 && <span>证据 {focusedNode.evidence.length}</span>}
+                {focusedNode.failureModes.length > 0 && <span>故障模式 {focusedNode.failureModes.length}</span>}
+              </div>
+            )}
 
             {/* Jump to Node Explorer Button */}
             <button
