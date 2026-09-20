@@ -515,3 +515,60 @@
 [data-style='elastic'] .semantic-compare-table tbody tr {
   transition: background-color var(--elastic-motion);
 }
+
+/* -- Code as a panel: a 6px bordered surface under a subdued header strip,
+      the well set flush inside and inset like a terminal. The whole panel
+      answers on the pack's 250ms curve with the same 1px lift as every other
+      elastic surface, and the caption closes as a dim mono footer. -- */
+[data-style='elastic'] .semantic-code,
+[data-style='elastic'] .semantic-implementation {
+  gap: 0;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-2);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  transition: border-color var(--elastic-motion), transform var(--elastic-motion);
+}
+
+[data-style='elastic'] .semantic-code:hover,
+[data-style='elastic'] .semantic-implementation:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+[data-style='elastic'] .semantic-code-head {
+  padding: 9px 12px;
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+[data-style='elastic'] .semantic-code-title {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+[data-style='elastic'] .lang-badge {
+  padding: 2px 6px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-1);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  letter-spacing: 0.03em;
+}
+
+[data-style='elastic'] .semantic-code > .code-block,
+[data-style='elastic'] .semantic-implementation > .code-block {
+  border: 0;
+  border-radius: 0;
+  box-shadow: var(--shadow-inset);
+}
+
+[data-style='elastic'] .semantic-code-caption {
+  padding: 8px 12px 10px;
+  border-top: 1px solid var(--border-subtle);
+  font-family: var(--font-sans);
+}

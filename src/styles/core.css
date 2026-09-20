@@ -1026,26 +1026,37 @@ button.flow-box {
   border-radius: 10px;
   overflow-x: auto;
   font-family: var(--font-data);
-  font-size: 13px;
-  line-height: 1.6;
+  /* A comfortable, taller setting for a mono face; ligatures stay off so
+     operators render exactly as they were typed. */
+  font-size: 14px;
+  line-height: 1.7;
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'calt' 0;
   color: var(--code-text);
   border: 1px solid var(--code-border);
   box-shadow: var(--shadow-inset);
 }
 
-/* Generic CodeBlock. It reuses `.code-block` so every skin and style pack
-   keeps one code surface, and only adds an optional title bar, wrap and
-   line numbers on top. */
-.semantic-code {
-  margin: 0;
+/* -- Code family: `.code-block` is the one shared dark inset used by the
+      explorer, `Implementation` and `CodeBlock`. Both components wrap it with
+      an optional head, caption and numbered lines, and they share the head +
+      surface classes so every style pack only has to re-voice one grammar. -- */
+.semantic-code,
+.semantic-implementation {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin: 0;
+}
+
+.semantic-code > pre,
+.semantic-implementation > pre {
+  margin: 0;
 }
 
 .semantic-code-head {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
   gap: 10px;
 }
@@ -1055,6 +1066,17 @@ button.flow-box {
   font-weight: 700;
   font-size: 13px;
   color: var(--text-secondary);
+}
+
+/* The language tag rides every code head; a pack may dress it as a badge. */
+.lang-badge {
+  font-family: var(--font-data);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .semantic-code-caption {
@@ -1078,18 +1100,22 @@ button.flow-box {
 .code-block-numbered .code-line {
   position: relative;
   display: block;
-  min-height: 1.6em;
-  padding-left: 3em;
+  min-height: 1.7em;
+  padding-left: 3.6em;
   counter-increment: code-line;
 }
 
 .code-block-numbered .code-line::before {
   content: counter(code-line);
   position: absolute;
+  top: 0;
+  bottom: 0;
   left: 0;
-  width: 2em;
+  width: 2.5em;
+  padding-right: 0.85em;
   text-align: right;
-  color: rgba(148, 163, 184, 0.55);
+  color: color-mix(in srgb, var(--code-text) 50%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--code-text) 18%, transparent);
   user-select: none;
 }
 
@@ -2093,10 +2119,10 @@ button.flow-box {
 .relation-path-node.tone-warning { border-top-color: var(--accent-amber); }
 .relation-path-node.tone-danger { border-top-color: var(--accent-rose); }
 .relation-path-kicker, .relation-path-node strong, .relation-path-node small { display: block; }
-.relation-path-kicker { color: var(--text-dim); font: 700 10px 'Fira Code', monospace; margin-bottom: 4px; }
+.relation-path-kicker { color: var(--text-dim); font: 700 10px var(--font-data); margin-bottom: 4px; }
 .relation-path-node strong { color: var(--text-primary); font-size: 13px; }
 .relation-path-node small { margin-top: 4px; color: var(--text-muted); font-size: 11px; }
-.relation-path-edge { flex: 0 0 72px; display: grid; place-items: center; position: relative; color: var(--text-accent); font: 700 10px 'Fira Code', monospace; }
+.relation-path-edge { flex: 0 0 72px; display: grid; place-items: center; position: relative; color: var(--text-accent); font: 700 10px var(--font-data); }
 .relation-path-edge::before { content: ''; position: absolute; left: 4px; right: 4px; top: 50%; border-top: 1px dashed var(--border-strong); }
 .relation-path-edge span { z-index: 1; padding: 2px 4px; background: var(--bg-surface); }
 
@@ -3439,7 +3465,8 @@ html[data-carrier='scroll'] #root {
 .continuous-document .model-matrix-cell span,
 .continuous-document .model-pyramid-level span,
 .continuous-document .model-funnel-step span,
-.continuous-document .tradeoff-option span {
+.continuous-document .tradeoff-option span,
+.continuous-document .code-block {
   font-size: calc(14px * var(--reading-ui-scale));
 }
 

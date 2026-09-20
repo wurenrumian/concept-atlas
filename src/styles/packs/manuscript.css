@@ -424,3 +424,41 @@
   border-color: var(--primary);
   color: var(--primary);
 }
+
+/* -- Listings: the code well keeps its ink, but the frame drops to a
+      near-square ruled inset under a heavier top rule. The head reads as a
+      printed listing caption in the heading face, the language tag as a quiet
+      mono folio, and the caption closes as an italic printer's note. Paper
+      answers the pointer through rule weight only — no nudging. -- */
+[data-style='manuscript'] .code-block {
+  padding: 16px 18px;
+  border-radius: 2px;
+  border-top: 2px solid color-mix(in srgb, var(--code-text) 42%, transparent);
+  box-shadow: none;
+  transition: border-top-color var(--motion-base) var(--ease-standard);
+}
+
+[data-style='manuscript'] .code-block:hover {
+  border-top-color: color-mix(in srgb, var(--code-text) 62%, transparent);
+}
+
+[data-style='manuscript'] .semantic-code-title {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+[data-style='manuscript'] .lang-badge {
+  color: var(--text-dim);
+  letter-spacing: 0.12em;
+}
+
+[data-style='manuscript'] .semantic-code-caption {
+  font-style: italic;
+}
+
+[data-style='manuscript'] .code-block-numbered .code-line::before {
+  color: color-mix(in srgb, var(--code-text) 40%, transparent);
+  border-right-color: color-mix(in srgb, var(--code-text) 16%, transparent);
+}

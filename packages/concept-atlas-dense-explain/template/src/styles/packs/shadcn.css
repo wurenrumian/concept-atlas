@@ -515,3 +515,57 @@
 [data-style='shadcn'] .semantic-compare-table tbody tr {
   transition: background-color var(--shadcn-motion);
 }
+
+/* -- Code as a card: hairline chassis, a muted divided header and the well set
+      flush inside it, closed by a caption footer. The language tag is an
+      outline badge, and the surface only answers on the shared 150ms curve. -- */
+[data-style='shadcn'] .semantic-code,
+[data-style='shadcn'] .semantic-implementation {
+  gap: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-3);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: border-color var(--shadcn-motion);
+}
+
+[data-style='shadcn'] .semantic-code:hover,
+[data-style='shadcn'] .semantic-implementation:hover {
+  border-color: var(--border-medium);
+}
+
+[data-style='shadcn'] .semantic-code-head {
+  padding: 10px 14px;
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+[data-style='shadcn'] .semantic-code-title {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+[data-style='shadcn'] .lang-badge {
+  padding: 2px 7px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-1);
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+[data-style='shadcn'] .semantic-code > .code-block,
+[data-style='shadcn'] .semantic-implementation > .code-block {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+[data-style='shadcn'] .semantic-code-caption {
+  padding: 8px 14px 10px;
+  border-top: 1px solid var(--border-subtle);
+}

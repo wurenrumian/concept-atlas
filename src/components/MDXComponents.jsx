@@ -173,8 +173,13 @@ Mechanism.displayName = 'Mechanism';
 export function Implementation({ language = 'text', title = '实现代码', children }) {
   return (
     <div className="semantic-implementation" data-language={language}>
-      {title && <div className="impl-header">{title} <span className="lang-badge">{language}</span></div>}
-      <pre><code>{typeof children === 'string' ? children.trim() : children}</code></pre>
+      {title && (
+        <div className="semantic-code-head impl-header">
+          <span className="semantic-code-title">{title}</span>
+          {language && <span className="lang-badge">{language}</span>}
+        </div>
+      )}
+      <pre className="code-block"><code>{typeof children === 'string' ? children.trim() : children}</code></pre>
     </div>
   );
 }
