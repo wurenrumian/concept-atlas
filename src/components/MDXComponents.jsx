@@ -726,13 +726,48 @@ export function Tabs({ items = [], children }) {
 }
 Tabs.displayName = 'Tabs';
 
+/**
+ * Enlarged reader for a diagram. It re-renders the chart under a fresh id so
+ * the full-size copy never collides with the inline SVG, then hands the result
+ * to the shared zoom overlay (wheel zoom, drag to pan, Esc to close).
+ */
+function MermaidZoom({ chart, title, onClose }) {
+  const ref = React.useRef(null);
+  const appearanceKey = useAppearanceKey();
+  const [error, setError] = React.useState('');
+
+  React.useEffect(() => {
+    let cancelled = false;
+    async function renderZoom() {
+      if (!ref.current || !chart.trim()) return;
+      try {
+        configureMermaid();
+        const renderId = `mermaid-zoom-${Math.random().toString(36).slice(2, 10)}`;
+        const { svg } = await mermaid.render(renderId, chart.trim());
+        if (!cancelled && ref.current) ref.current.innerHTML = svg;
+      } catch (err) {
+        if (!cancelled) setError(err.message || 'Mermaid 图表语法错误');
+      }
+    }
+    renderZoom();
+    return () => { cancelled = true; };
+  }, [chart, appearanceKey]);
+
+  return (
+    <ZoomOverlay title={title || '关系草图'} caption={title} onClose={onClose}>
+      {error
+        ? <pre className="mermaid-error">{error}</pre>
+        : <div className="mermaid-zoom-canvas" ref={ref} />}
+    </ZoomOverlay>
+  );
+}
+
 export function Mermaid({ chart = '', title = '关系草图', width = 'auto', height = 'auto', x = 0, y = 0, position = 'flow' }) {
   const ref = React.useRef(null);
   const id = React.useId().replace(/:/g, '');
   const appearanceKey = useAppearanceKey();
   const [error, setError] = React.useState('');
-  const [scale, setScale] = React.useState(1);
-  const [pan, setPan] = React.useState({ x: 0, y: 0 });
+  const [zoomed, setZoomed] = React.useState(false);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -754,15 +789,41 @@ export function Mermaid({ chart = '', title = '关系草图', width = 'auto', he
     return () => { cancelled = true; };
   }, [chart, id, appearanceKey]);
 
-  const zoom = (delta) => setScale(value => Math.max(0.5, Math.min(3, +(value + delta).toFixed(2))));
-  const reset = () => { setScale(1); setPan({ x: 0, y: 0 }); };
+  const canZoom = Boolean(chart.trim()) && !error;
+  const openZoom = () => { if (canZoom) setZoomed(true); };
+  const onKeyDown = event => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openZoom();
+    }
+  };
+
   return (
     <div className={`semantic-mermaid ${widgetClass(position)}`} style={widgetStyle({ width, height, x, y, position })}>
       <div className="semantic-widget-head">
         <span>{title}</span>
-        <div className="mermaid-tools"><code>MERMAID</code><button type="button" onClick={() => zoom(-0.1)} aria-label="缩小图表">−</button><span>{Math.round(scale * 100)}%</span><button type="button" onClick={() => zoom(0.1)} aria-label="放大图表">＋</button><button type="button" onClick={reset} aria-label="重置图表">↺</button></div>
+        <div className="mermaid-tools">
+          <code>MERMAID</code>
+          <button type="button" onClick={openZoom} disabled={!canZoom} aria-label={`放大阅读：${title}`}>
+            <ZoomIn size={12} />放大阅读
+          </button>
+        </div>
       </div>
-      {error ? <pre className="mermaid-error">{error}</pre> : <div className="mermaid-canvas" onWheel={(event) => { event.preventDefault(); zoom(event.deltaY < 0 ? 0.1 : -0.1); }}><div className="mermaid-canvas-inner" style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})` }} ref={ref} /></div>}
+      {error ? (
+        <pre className="mermaid-error">{error}</pre>
+      ) : (
+        <div
+          className="mermaid-canvas"
+          role="button"
+          tabIndex={0}
+          aria-label={`放大阅读：${title}`}
+          onClick={openZoom}
+          onKeyDown={onKeyDown}
+        >
+          <div className="mermaid-canvas-inner" ref={ref} />
+        </div>
+      )}
+      {zoomed && <MermaidZoom chart={chart} title={title} onClose={() => setZoomed(false)} />}
     </div>
   );
 }
@@ -1047,12 +1108,12 @@ const ZOOM_MIN = 0.5;
 const ZOOM_MAX = 6;
 
 /**
- * Full-viewport image viewer. Rendered through a portal so it escapes the
- * transformed/rotated ancestor surfaces (`position: fixed` would otherwise be
- * contained by them). Supports wheel zoom, drag to pan, double-click to toggle
- * 1x/2x, and Escape to close.
+ * Full-viewport zoom viewer shared by images and diagrams. Rendered through a
+ * portal so it escapes the transformed/rotated ancestor surfaces (`position:
+ * fixed` would otherwise be contained by them). Supports wheel zoom, drag to
+ * pan, double-click to toggle 1x/2x, and Escape to close.
  */
-function ImageZoom({ src, alt, caption, label, onClose }) {
+function ZoomOverlay({ title, caption, label, onClose, children }) {
   const [scale, setScale] = React.useState(1);
   const [offset, setOffset] = React.useState({ x: 0, y: 0 });
   const [dragging, setDragging] = React.useState(false);
@@ -1126,8 +1187,6 @@ function ImageZoom({ src, alt, caption, label, onClose }) {
     }
   };
 
-  const title = alt || caption || '图片';
-
   return createPortal(
     <div
       className="image-zoom-overlay"
@@ -1146,14 +1205,11 @@ function ImageZoom({ src, alt, caption, label, onClose }) {
         onDoubleClick={() => { const next = scaleRef.current > 1 ? 1 : 2; setScale(next); settle(next); }}
         onClick={event => { if (movedRef.current) { event.stopPropagation(); movedRef.current = false; } }}
       >
-        <img
-          src={src}
-          alt={alt || ''}
-          draggable="false"
-          style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})` }}
-        />
+        <div className="image-zoom-target" style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})` }}>
+          {children}
+        </div>
       </div>
-      {title && <p className="image-zoom-caption">{label && <b>{label}</b>}{caption || alt}</p>}
+      {title && <p className="image-zoom-caption">{label && <b>{label}</b>}{caption}</p>}
       <div className="image-zoom-toolbar">
         <button type="button" onClick={() => zoomBy(-0.25)} aria-label="缩小" title="缩小（−）">−</button>
         <span aria-live="polite">{Math.round(scale * 100)}%</span>
@@ -1163,6 +1219,15 @@ function ImageZoom({ src, alt, caption, label, onClose }) {
       </div>
     </div>,
     document.body,
+  );
+}
+
+function ImageZoom({ src, alt, caption, label, onClose }) {
+  const title = alt || caption || '图片';
+  return (
+    <ZoomOverlay title={title} caption={caption || alt} label={label} onClose={onClose}>
+      <img src={src} alt={alt || ''} draggable="false" />
+    </ZoomOverlay>
   );
 }
 

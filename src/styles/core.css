@@ -94,11 +94,45 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
 .gap-sm { gap: 8px; } .gap-md { gap: 16px; } .gap-lg { gap: 28px; }
 .semantic-tabs details { border-bottom: 1px solid var(--border-subtle); padding: 8px 0; }
 .semantic-tabs summary { cursor: pointer; font-weight: 700; color: var(--text-primary); }
-.mermaid-tools { display: inline-flex; align-items: center; gap: 5px; }
-.mermaid-tools button { width: 22px; height: 22px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--bg-subtle); font-weight: 700; }
+.mermaid-tools { display: inline-flex; align-items: center; gap: 6px; }
+.mermaid-tools button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 8px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-1);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+}
 .mermaid-tools button:hover { color: var(--primary); border-color: var(--primary); }
-.mermaid-canvas { overflow: hidden; min-height: 120px; display: grid; place-items: center; cursor: grab; }
-.mermaid-canvas-inner { display: inline-block; min-width: 100%; transform-origin: center center; transition: transform .15s ease; }
+.mermaid-tools button:disabled { opacity: .5; cursor: not-allowed; }
+
+/* The diagram frame is a bounded viewport, not a loose box: the head keeps its
+   own height and the canvas takes the rest, so a fixed `height` prop contains
+   the drawing instead of letting it paint past the border. The SVG is scaled to
+   fit with its own preserveAspectRatio; clicking opens the full-size viewer. */
+.mermaid-canvas {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 4px;
+  cursor: zoom-in;
+}
+.mermaid-canvas-inner {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  transform-origin: center center;
+}
+.mermaid-canvas svg { display: block; width: 100%; height: 100%; max-width: 100%; max-height: 100%; }
 
 /* Scrollbar beautification */
 ::-webkit-scrollbar {
@@ -2070,6 +2104,16 @@ button.flow-box {
   min-width: 0;
 }
 
+/* The diagram frame clips and hands its remaining height to the canvas, so a
+   fixed `height` prop can never let the drawing escape the border. */
+.semantic-mermaid {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.semantic-mermaid > .semantic-widget-head { flex: 0 0 auto; }
+
 .draft-board .custom-section {
   padding: 12px 14px;
 }
@@ -2130,8 +2174,9 @@ button.flow-box {
 .draft-board .semantic-relation-map {
   width: fit-content;
   max-width: 100%;
-  overflow: visible;
 }
+
+.draft-board .semantic-relation-map { overflow: visible; }
 
 .draft-board .semantic-insight,
 .draft-board .semantic-note-grid {
@@ -2156,22 +2201,18 @@ button.flow-box {
   font-size: 9px;
 }
 
-.mermaid-canvas {
-  min-height: 100px;
-  overflow: auto;
-  padding: 4px;
-  max-width: 100%;
-  min-width: 0;
-}
-
-.mermaid-canvas svg {
-  max-width: none;
-  min-width: 100%;
-  height: auto;
+/* The inline diagram is a preview: clicking it, or the head button, opens the
+   full-size viewer. The cursor is the only affordance on the drawing itself, so
+   nothing competes with the diagram for attention. */
+.mermaid-canvas:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
 }
 
 .mermaid-error {
   margin: 0;
+  min-height: 0;
+  overflow: auto;
   color: var(--accent-rose);
   font-size: 11px;
   white-space: pre-wrap;
@@ -3760,6 +3801,10 @@ html[data-carrier='scroll'] #root {
   place-items: center;
   padding: 28px;
   background: var(--overlay-scrim);
+  /* Clip at the viewport, not at the media box: the zoom transform does not
+     change layout size, so a stage-sized clip would only ever reveal what the
+     un-zoomed element already covered. */
+  overflow: hidden;
 }
 
 .image-zoom-stage {
@@ -3767,12 +3812,21 @@ html[data-carrier='scroll'] #root {
   place-items: center;
   max-width: 100%;
   max-height: 100%;
-  overflow: hidden;
+  overflow: visible;
   cursor: grab;
   touch-action: none;
 }
 
 .image-zoom-stage.is-dragging { cursor: grabbing; }
+
+/* The pan/zoom transform rides a wrapper so the viewer can hold an <img> or a
+   rendered diagram without duplicating the gesture logic. */
+.image-zoom-target {
+  display: block;
+  transition: transform 0.12s ease-out;
+  will-change: transform;
+  user-select: none;
+}
 
 .image-zoom-stage img {
   display: block;
@@ -3783,12 +3837,22 @@ html[data-carrier='scroll'] #root {
   border-radius: var(--radius-2);
   background: var(--bg-surface);
   box-shadow: var(--shadow-modal);
-  transition: transform 0.12s ease-out;
-  will-change: transform;
   user-select: none;
 }
 
-.image-zoom-stage.is-dragging img { transition: none; }
+.image-zoom-stage.is-dragging .image-zoom-target { transition: none; }
+
+/* A diagram keeps its natural aspect inside the viewer and paints on the
+   Mermaid canvas tone, so labels stay legible over the dark scrim. */
+.mermaid-zoom-canvas svg {
+  display: block;
+  width: min(94vw, 1800px);
+  height: auto;
+  max-height: 84vh;
+  border-radius: var(--radius-3);
+  background: var(--mermaid-canvas);
+  box-shadow: var(--shadow-modal);
+}
 
 .image-zoom-caption {
   position: absolute;
@@ -3847,14 +3911,14 @@ html[data-carrier='scroll'] #root {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .image-zoom-stage img { transition: none; }
+  .image-zoom-target { transition: none; }
 }
 
 @media (max-width: 760px) {
   .image-zoom-overlay { padding: 12px; }
   .image-zoom-stage img { max-height: 74vh; }
+  .mermaid-zoom-canvas svg { max-height: 74vh; }
   .image-zoom-caption { top: 10px; font-size: 12px; }
-  .image-zoom-hint { opacity: 0.9; }
 }
 
 .semantic-figure figcaption {
