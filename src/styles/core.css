@@ -1033,6 +1033,66 @@ button.flow-box {
   box-shadow: var(--shadow-inset);
 }
 
+/* Generic CodeBlock. It reuses `.code-block` so every skin and style pack
+   keeps one code surface, and only adds an optional title bar, wrap and
+   line numbers on top. */
+.semantic-code {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.semantic-code-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.semantic-code-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.semantic-code-caption {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.code-block-wrap {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.code-block-numbered {
+  counter-reset: code-line;
+}
+
+.code-block-numbered code {
+  display: block;
+}
+
+.code-block-numbered .code-line {
+  position: relative;
+  display: block;
+  min-height: 1.6em;
+  padding-left: 3em;
+  counter-increment: code-line;
+}
+
+.code-block-numbered .code-line::before {
+  content: counter(code-line);
+  position: absolute;
+  left: 0;
+  width: 2em;
+  text-align: right;
+  color: rgba(148, 163, 184, 0.55);
+  user-select: none;
+}
+
 .example-item, .counterexample-item {
   margin-top: 12px;
   padding: 14px 18px;

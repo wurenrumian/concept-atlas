@@ -114,9 +114,9 @@
       <RelationMap title="可视化摘要" items={[{from:'MDX',type:'produces',to:'Graph',note:'生成关系图'},{from:'Node',type:'uses',to:'Mermaid',note:'展示局部流程'}]} />
     </ConceptNode>
 
-    <ConceptNode id="extension-family" title="扩展能力：公式、图表、图片与引用" level="L1" parent="showroom" summary="数学公式、数据图表、配图题注和参考文献四项能力，让讲解可以带上推导、数据与出处。">
-      <Definition>扩展组件把文本之外的证据接进页面：Math/MathBlock 渲染数学、Chart 绘制数据、Figure 承载配图、Cite/References 保留出处。</Definition>
-      <Children><ConceptRef id="math-demo" /><ConceptRef id="chart-demo" /><ConceptRef id="figure-demo" /><ConceptRef id="citation-demo" /></Children>
+    <ConceptNode id="extension-family" title="扩展能力：公式、图表、图片、代码与引用" level="L1" parent="showroom" summary="数学公式、数据图表、配图题注、代码块和参考文献五项能力，让讲解可以带上推导、数据、实现与出处。">
+      <Definition>扩展组件把文本之外的证据接进页面：Math/MathBlock 渲染数学、Chart 绘制数据、Figure 承载配图、CodeBlock 展示代码或命令、Cite/References 保留出处。</Definition>
+      <Children><ConceptRef id="math-demo" /><ConceptRef id="chart-demo" /><ConceptRef id="figure-demo" /><ConceptRef id="code-demo" /><ConceptRef id="citation-demo" /></Children>
     </ConceptNode>
 
     <ConceptNode id="math-demo" title="Math 与 MathBlock：把推导写进正文" level="L2" parent="extension-family" summary="Math 用于行内符号，MathBlock 用于独立公式并支持变量说明。">
@@ -136,6 +136,15 @@
       <Definition>相对路径的图片会在构建时转成 base64 内联，远程 URL 保持不变；label 提供“图 1”这样的编号。</Definition>
       <Figure src="./assets/sample-diagram.svg" alt="概念缩放示意" label="图 1" caption="概念缩放：同一主题可以从 L0 全局逐层下钻到 L4 边界反例。" />
       <Boundary>大图会显著增大单文件 HTML；截图类内容建议控制尺寸。</Boundary>
+    </ConceptNode>
+
+    <ConceptNode id="code-demo" title="CodeBlock：把命令、配置或伪代码放进正文" level="L2" parent="extension-family" summary="与绑定节点的 Implementation 不同，CodeBlock 可以出现在任何位置，并支持标题、题注、换行和行号。">
+      <Definition>CodeBlock 通过 code（或子内容）接收字符串，language 决定语言标记，title 与 caption 提供说明，lineNumbers 和 wrap 控制逐行讲解与长行折行。</Definition>
+      <CodeBlock language="bash" title="校验与构建" caption="命令行、伪代码或配置都可以用它承载，不依附于某个概念节点。" lineNumbers>{`npm run validate
+npm run sync
+npm run build`}</CodeBlock>
+      <CodeBlock language="javascript" title="语义优先" wrap>{`const explain = concept => concept.mechanism ?? concept.definition ?? concept.overview;`}</CodeBlock>
+      <Boundary>代码里的反引号、花括号请放在模板字符串中传入，避免被 MDX 当作表达式解析。</Boundary>
     </ConceptNode>
 
     <ConceptNode id="citation-demo" title="Cite 与 References：让结论可以追溯" level="L2" parent="extension-family" summary="行内用 Cite 标记引用，文末用 References 列出完整出处，编号自动对应。">

@@ -180,6 +180,38 @@ export function Implementation({ language = 'text', title = '实现代码', chil
 }
 Implementation.displayName = 'Implementation';
 
+/**
+ * Generic code block for any carrier. `Implementation` is bound to a node's
+ * implementation section; `CodeBlock` is meant for shell commands, config,
+ * output, prompts and pseudocode that live anywhere in a document.
+ * Pass the code as a string through `code` (or as children) so MDX parsing and
+ * the validator never confuse code with markup.
+ */
+export function CodeBlock({ code, language = 'text', title, caption, lineNumbers = false, wrap = false, children }) {
+  const raw = typeof code === 'string' ? code : childrenToText(children);
+  const text = typeof raw === 'string' ? raw.replace(/^\n+|\s+$/g, '') : '';
+  if (!text) return null;
+  const showLanguage = Boolean(language) && language !== 'text';
+  const showHead = Boolean(title) || showLanguage;
+  return (
+    <figure className="semantic-code" data-language={language}>
+      {showHead && (
+        <div className="semantic-code-head">
+          {title && <span className="semantic-code-title">{title}</span>}
+          {showLanguage && <span className="lang-badge">{language}</span>}
+        </div>
+      )}
+      <pre className={`code-block${lineNumbers ? ' code-block-numbered' : ''}${wrap ? ' code-block-wrap' : ''}`}>
+        {lineNumbers
+          ? <code>{text.split('\n').map((line, index) => <span className="code-line" key={index}>{line}</span>)}</code>
+          : <code>{text}</code>}
+      </pre>
+      {caption && <figcaption className="semantic-code-caption">{caption}</figcaption>}
+    </figure>
+  );
+}
+CodeBlock.displayName = 'CodeBlock';
+
 export function Boundary({ title = '边界与约束', children }) {
   return (
     <div className="semantic-boundary">

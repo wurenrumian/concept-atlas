@@ -42,6 +42,14 @@
     <Chart title="四周留存趋势" type="line" labels={['第1周','第2周','第3周','第4周']} series={[{name:'留存率',values:[100,72,58,49]},{name:'活跃度',values:[100,64,52,40]}]} />
   </ScrollSection>
 
+  <ScrollSection title="把命令与代码放进正文">
+    <ScrollProse>CodeBlock 承载命令行、配置或伪代码。它不依附于某个概念节点，可以出现在任何章节；需要逐行讲解时打开行号，长行过多时可以折行。</ScrollProse>
+    <CodeBlock language="bash" title="本地校验与预览" caption="CodeBlock 复用模板的代码表面，因此自动跟随当前皮肤与组件风格。" lineNumbers>{`npm run validate
+npm run sync
+npm run dev`}</CodeBlock>
+    <CodeBlock language="javascript" title="语义优先" wrap>{`const explain = concept => concept.mechanism ?? concept.definition ?? concept.overview;`}</CodeBlock>
+  </ScrollSection>
+
   <ScrollSection title="组织证据，再收敛到行动">
     <ScrollGrid columns="3">
       <PyramidModel title="论证层级" levels={[{title:'结论',description:'读者需要带走的判断'},{title:'理由',description:'支撑判断的关键分组'},{title:'证据',description:'事实、数据与案例'}]} />

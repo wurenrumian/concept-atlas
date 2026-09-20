@@ -156,12 +156,13 @@ if (command === 'create' || command === 'new') {
       <Children><ConceptRef id="first-branch" /><ConceptRef id="second-branch" /></Children>
     </ConceptNode>
 
-    <ConceptNode id="first-branch" title="第一条关键分支" level="L1" parent="root-node">
+    <ConceptNode id="first-branch" title="第一条关键分支" level="L1" parent="root-node" summary="第一条关键分支解决什么问题，以及它为什么值得先理解。">
       <Overview>解释第一个重要组成部分。</Overview>
       <Example title="典型例子">填写一个具体例子，帮助读者验证理解。</Example>
+      <CodeBlock language="bash" title="验证方式" code="npm run validate" lineNumbers />
     </ConceptNode>
 
-    <ConceptNode id="second-branch" title="第二条关键分支" level="L1" parent="root-node">
+    <ConceptNode id="second-branch" title="第二条关键分支" level="L1" parent="root-node" summary="第二条关键分支解决什么问题，以及它和第一条分支如何配合。">
       <Overview>解释第二个重要组成部分。</Overview>
       <Boundary>填写它的边界、代价或常见误区。</Boundary>
     </ConceptNode>
@@ -182,6 +183,7 @@ if (command === 'create' || command === 'new') {
   <ScrollSection title="解释关键机制">
     <ScrollProse>按输入、步骤、输出的顺序解释过程，不要只罗列名词。</ScrollProse>
     <Flow title="处理流程" steps={[{title:'输入',description:'原始条件或数据'},{title:'处理',description:'关键变化或判断'},{title:'输出',description:'结果与可观察证据'}]} />
+    <CodeBlock language="bash" title="实践命令" code="npm run validate" caption="通用代码块可以放在任意章节；需要逐行讲解时加 lineNumbers。" />
   </ScrollSection>
 
   <ScrollSection title="边界与实践">

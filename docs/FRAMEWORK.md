@@ -46,7 +46,7 @@ CLI 不会初始化项目，不会复制 MDX，也不会要求用户维护 `pack
 | `atlas` | 概念有层级，需要下钻、回溯和关系图 | `ExplainPage`、`ConceptGraph`、`ConceptNode` |
 | `scroll` | 内容按章节连续阅读，重点是论证、比较和总结 | `ScrollDocument`、`ScrollSection`、`ScrollProse` |
 
-共享的信息组件可以放进合适的位置。比如 `Insight`、`Flow`、`Mermaid`、`Callout`、`FrameworkModel`、`MatrixModel`、`FormulaModel`、`DecisionMatrix`、`FailureMode`、`NoteGrid`、`Tabs` 和 `Details` 并不属于某个外壳。扩展组件 `Math`/`MathBlock`、`Chart`、`Figure`、`Cite`/`References` 同样两种外壳通用。
+共享的信息组件可以放进合适的位置。比如 `Insight`、`Flow`、`Mermaid`、`Callout`、`FrameworkModel`、`MatrixModel`、`FormulaModel`、`DecisionMatrix`、`FailureMode`、`NoteGrid`、`Tabs` 和 `Details` 并不属于某个外壳。扩展组件 `Math`/`MathBlock`、`Chart`、`Figure`、`CodeBlock`、`Cite`/`References` 同样两种外壳通用。
 
 外壳决定页面如何组织，组件决定一段信息如何被理解。
 
@@ -245,6 +245,7 @@ MDX 属性使用 JavaScript 表达式。字符串要加引号，数组和对象�
 | `Math` | `formula` | `string`（LaTeX；含 `{` 或反斜杠时用这个 prop，不要写子内容） |
 | `MathBlock` | `formula` / `variables` | `string` / `{ symbol?: string, name?: string, description?: string }[]` |
 | `Chart` | `type` / `data` / `series` / `labels` | `'bar' \| 'line' \| 'pie'` / `{ label?: string, value: number }[]` / `{ name?: string, values: number[] }[]` / `string[]` |
+| `CodeBlock` | `code` / `language` / `title` / `caption` / `lineNumbers` / `wrap` | `string` / `string` / `string` / `string` / `boolean` / `boolean` |
 | `Figure` | `src` / `alt` / `caption` / `label` | `string`（相对路径构建时内联）/ `string` / `string` / `string` |
 | `References` | `items` | `{ id: string, authors?: string, year?: string, title?: string, url?: string, source?: string, note?: string }[]` |
 
@@ -266,6 +267,7 @@ MDX 属性使用 JavaScript 表达式。字符串要加引号，数组和对象�
 ```text
 页面外壳：ExplainPage、ConceptGraph、ConceptNode、ScrollDocument、ScrollSection
 知识语义：Overview、Definition、Mechanism、Prerequisite、Input、Output、Boundary
+代码展示：Implementation、CodeBlock
 论证证据：Example、Counterexample、Evidence、Invariant、FailureMode、Tradeoff
 信息模型：Flow、Timeline、Compare、DecisionMatrix、FrameworkModel、MatrixModel
 阅读组件：Insight、Callout、Details、NoteGrid、Tabs、Columns、Stack、Grid、Split
@@ -292,6 +294,21 @@ MDX 属性使用 JavaScript 表达式。字符串要加引号，数组和对象�
 ```
 
 只有不含大括号的简单 LaTeX 才能写子内容，例如 `<Math>\log_2 N</Math>`。
+
+### 代码块
+
+`Implementation` 绑定在某个概念节点的“实现”语义上；`CodeBlock` 是通用代码块，可以出现在任何章节或节点里，用来承载命令行、配置、输出或伪代码：
+
+```mdx
+<CodeBlock language="bash" title="校验与构建" lineNumbers>{`npm run validate
+npm run sync`}</CodeBlock>
+
+<CodeBlock language="javascript" wrap>const fn = x => x + 1;</CodeBlock>
+```
+
+- `code` 也可以作为 prop 传入（与子内容二选一），字符串请用模板字符串包裹，避免 MDX 把花括号当表达式。
+- `language` 决定语言标记，`title` 显示标题栏，`caption` 显示题注。
+- `lineNumbers` 打开行号，`wrap` 让长行折行。
 
 ### 数据图表
 

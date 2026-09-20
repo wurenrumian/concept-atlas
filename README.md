@@ -15,7 +15,7 @@
 - **概念缩放**：通过 `L0`–`L4` 组织从全局概览、主要阶段、局部机制到实现细节和边界反例的认知路径。
 - **知识类型**：节点可用可选的 `kind`（`system`/`stage`/`mechanism`/`artifact`/`failure`/`tool`/`boundary`/`decision`）标注知识角色，与层级正交；知识网络页可按类型筛选，校验器可对机制与故障节点执行可选契约。
 - **两种页面模式**：`atlas` 适合概念导航与关系图谱；`scroll` 适合连续阅读的长文档。
-- **共享信息组件**：支持 `Insight`、`Flow`、`FrameworkModel`、`MatrixModel`、`Mermaid`、`RelationMap`、`NoteGrid`、`Callout`、`Details`、`Columns`、`Grid`、`Stack` 和 `Tabs` 等组件。
+- **共享信息组件**：支持 `CodeBlock`（代码、命令与伪代码）、`Insight`、`Flow`、`FrameworkModel`、`MatrixModel`、`Mermaid`、`RelationMap`、`NoteGrid`、`Callout`、`Details`、`Columns`、`Grid`、`Stack` 和 `Tabs` 等组件。
 - **扩展能力**：`Math`/`MathBlock`（KaTeX 公式）、`Chart`（bar/line/pie 图表）、`Figure`（构建时内联图片）、`Cite`/`References`（引用与文献）。
 - **阅读体验可配置**：`scroll` 自动生成侧栏目录和阅读进度，并支持 `fontSize`/`scale`/`lineHeight` 调整正文大小。
 - **外观系统**：读者可随时切换配色皮肤（`aurora` 极光冷调 / `ember` 炉火暖调 / `verdant` 苔原森林 / `sakura` 樱雾粉紫 / `noir` 墨白单色）× 明暗模式 × 组件风格（`manuscript` 手稿排版 / `classic` 经典卡片 / `shadcn` 极简界面 / `elastic` 观测面板），选择在 localStorage 持久化；CLI/环境变量可把默认外观烘焙进产物。
@@ -36,7 +36,7 @@ npx skills add wurenrumian/concept-atlas --skill concept-atlas-dense-explain
 npx skills use wurenrumian/concept-atlas --skill concept-atlas-dense-explain
 ```
 
-skill 使用本项目提供的 CLI（npm 包 `concept-atlas-dense-explain`，当前 `0.7.0`）：
+skill 使用本项目提供的 CLI（npm 包 `concept-atlas-dense-explain`，当前 `0.9.0`）：
 
 ```bash
 # 先取一份可编译的组件参考（中文，含各组件与 LaTeX 用法示例），学习组件与 prop 写法
