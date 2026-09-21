@@ -26,8 +26,19 @@ const MANIFEST = [
   { from: 'content/components-demo.mdx', to: 'guides/atlas-guide.mdx' },
   { from: 'content/scroll-reading-demo.mdx', to: 'guides/scroll-guide.mdx' },
   { from: 'content/assets', to: 'guides/assets' },
+  // The installed skill ships its own copy of the guides plus the sample asset
+  // they reference, so an agent can learn every component with no CLI call and
+  // no network. Generated from content/ like the package guides above.
+  { from: 'content/components-demo.mdx', to: 'skills/concept-atlas-dense-explain/references/atlas-guide.mdx', base: 'repo' },
+  { from: 'content/scroll-reading-demo.mdx', to: 'skills/concept-atlas-dense-explain/references/scroll-guide.mdx', base: 'repo' },
+  { from: 'content/assets', to: 'skills/concept-atlas-dense-explain/references/assets', base: 'repo' },
   { from: 'skills/concept-atlas-dense-explain/SKILL.md', to: 'skill/SKILL.md', base: 'package' },
+  { from: 'skills/concept-atlas-dense-explain/references', to: 'skill/references', base: 'package' },
 ];
+
+// Entry targets: the npm template by default, the package root for the shipped
+// skill, or the repository root for generated skill resources.
+const TARGET_ROOTS = { template: templateRoot, package: packageRoot, repo: repoRoot };
 
 const normalize = text => text.replace(/\r\n/g, '\n');
 
@@ -57,7 +68,7 @@ const drift = [];
 let copied = 0;
 
 for (const entry of MANIFEST) {
-  const targetRoot = entry.base === 'package' ? packageRoot : templateRoot;
+  const targetRoot = TARGET_ROOTS[entry.base || 'template'];
   for (const relative of await collectFiles(entry.from)) {
     const suffix = path.relative(entry.from, relative);
     const source = path.join(repoRoot, relative);
@@ -68,7 +79,8 @@ for (const entry of MANIFEST) {
     if (sourceText === targetText) continue;
 
     if (check) {
-      drift.push(path.relative(packageRoot, target).split(path.sep).join('/'));
+      const relRoot = entry.base === 'repo' ? repoRoot : packageRoot;
+      drift.push(path.relative(relRoot, target).split(path.sep).join('/'));
       continue;
     }
 
