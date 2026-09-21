@@ -11,7 +11,6 @@
     "sync": "node scripts/sync-template.mjs",
     "check:sync": "node scripts/sync-template.mjs --check",
     "build": "npm run validate && node scripts/build.mjs",
-    "clean:temp": "node scripts/clean-temp.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -33,25 +32,6 @@
     "vite": "^5.4.14",
     "vite-plugin-singlefile": "^2.1.0"
   },
-  "directories": {
-    "doc": "docs"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/wurenrumian/concept-atlas.git"
-  },
-  "keywords": [
-    "mdx",
-    "concept-map",
-    "knowledge-graph",
-    "dense-explain",
-    "vite",
-    "react"
-  ],
   "author": "wurenrumian",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/wurenrumian/concept-atlas/issues"
-  },
-  "homepage": "https://github.com/wurenrumian/concept-atlas#readme"
+  "license": "MIT"
 }

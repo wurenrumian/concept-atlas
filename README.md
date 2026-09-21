@@ -36,7 +36,7 @@ npx skills add wurenrumian/concept-atlas --skill concept-atlas-dense-explain
 npx skills use wurenrumian/concept-atlas --skill concept-atlas-dense-explain
 ```
 
-skill 使用本项目提供的 CLI（npm 包 `concept-atlas-dense-explain`，当前 `1.0.0`）：
+skill 使用本项目提供的 CLI（npm 包 `concept-atlas-dense-explain`）：
 
 ```bash
 # 先取一份可编译的组件参考（中文，含各组件与 LaTeX 用法示例），学习组件与 prop 写法

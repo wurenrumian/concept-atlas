@@ -34,6 +34,18 @@
     "dense-explain",
     "concept-map"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wurenrumian/concept-atlas.git",
+    "directory": "packages/concept-atlas-dense-explain"
+  },
+  "homepage": "https://github.com/wurenrumian/concept-atlas#readme",
+  "bugs": {
+    "url": "https://github.com/wurenrumian/concept-atlas/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
   "publishConfig": {
     "access": "public"
   },
