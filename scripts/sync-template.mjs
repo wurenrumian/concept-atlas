@@ -16,12 +16,12 @@ const check = process.argv.includes('--check');
 // Entries with `base: 'package'` target the package root rather than the
 // template directory (used by the shipped skill copy).
 const ALIAS_ATLAS = [
-  [/\bComponentsDemoDoc\b/g, 'UserDocument'],
-  [/'\.\.\/content\/components-demo\.mdx'/, "'@concept-atlas/content'"],
+  [/\bAtlasGuideDoc\b/g, 'UserDocument'],
+  [/'\.\.\/content\/atlas-guide\.mdx'/, "'@concept-atlas/content'"],
 ];
 const ALIAS_SCROLL = [
-  [/\bScrollReadingDemo\b/g, 'UserDocument'],
-  [/'\.\.\/content\/scroll-reading-demo\.mdx'/, "'@concept-atlas/content'"],
+  [/\bScrollGuideDoc\b/g, 'UserDocument'],
+  [/'\.\.\/content\/scroll-guide\.mdx'/, "'@concept-atlas/content'"],
 ];
 
 const MANIFEST = [
@@ -35,17 +35,21 @@ const MANIFEST = [
   { from: 'src/scroll-main.jsx', to: 'src/scroll-main.jsx', replace: ALIAS_SCROLL },
   { from: 'index.html', to: 'index.html' },
   { from: 'scroll.html', to: 'scroll.html' },
-  { from: 'content/components-demo.mdx', to: 'guides/atlas-guide.mdx' },
-  { from: 'content/scroll-reading-demo.mdx', to: 'guides/scroll-guide.mdx' },
-  { from: 'content/assets', to: 'guides/assets' },
+  // The guide names match their sources under content/, so a generated file is
+  // always traceable back to the document that produced it.
+  { from: 'content/atlas-guide.mdx', to: 'references/atlas-guide.mdx' },
+  { from: 'content/scroll-guide.mdx', to: 'references/scroll-guide.mdx' },
+  { from: 'content/assets', to: 'references/assets' },
   // The installed skill ships its own copy of the guides plus the sample asset
   // they reference, so an agent can learn every component with no CLI call and
   // no network. Generated from content/ like the package guides above.
-  { from: 'content/components-demo.mdx', to: 'skills/concept-atlas-dense-explain/references/atlas-guide.mdx', base: 'repo' },
-  { from: 'content/scroll-reading-demo.mdx', to: 'skills/concept-atlas-dense-explain/references/scroll-guide.mdx', base: 'repo' },
+  { from: 'content/atlas-guide.mdx', to: 'skills/concept-atlas-dense-explain/references/atlas-guide.mdx', base: 'repo' },
+  { from: 'content/scroll-guide.mdx', to: 'skills/concept-atlas-dense-explain/references/scroll-guide.mdx', base: 'repo' },
   { from: 'content/assets', to: 'skills/concept-atlas-dense-explain/references/assets', base: 'repo' },
-  { from: 'skills/concept-atlas-dense-explain/SKILL.md', to: 'skill/SKILL.md', base: 'package' },
-  { from: 'skills/concept-atlas-dense-explain/references', to: 'skill/references', base: 'package' },
+  // prepack-only copy for the npm tarball; the name states it is generated so it
+  // cannot be confused with the `skills/` source. Ignored by git.
+  { from: 'skills/concept-atlas-dense-explain/SKILL.md', to: 'packaged-skill/SKILL.md', base: 'package' },
+  { from: 'skills/concept-atlas-dense-explain/references', to: 'packaged-skill/references', base: 'package' },
 ];
 
 // Entry targets: the npm template by default, the package root for the shipped

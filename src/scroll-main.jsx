@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Moon, Sun } from 'lucide-react';
 import * as Components from './components/index.js';
-import ScrollReadingDemo from '../content/scroll-reading-demo.mdx';
+import ScrollGuideDoc from '../content/scroll-guide.mdx';
 import { useAppearance } from './app/use-appearance.js';
 import { SkinPicker } from './components/SkinPicker.jsx';
 import './styles/concept-explain.css';
@@ -27,7 +27,7 @@ function ScrollApp() {
           {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </button>
       </div>
-      <ScrollReadingDemo components={Components} />
+      <ScrollGuideDoc components={Components} />
     </main>
   );
 }

@@ -42,8 +42,8 @@ function appearanceDefines() {
  */
 function demoSourceFor(entry) {
   const demos = entry === 'scroll.html'
-    ? ['content/scroll-reading-demo.mdx']
-    : ['content/components-demo.mdx', 'content/compile-runtime.mdx'];
+    ? ['content/scroll-guide.mdx']
+    : ['content/atlas-guide.mdx', 'content/compile-runtime.mdx'];
   const demo = demos.map(name => path.resolve(rootDir, name)).find(file => fs.existsSync(file));
   return demo ? { demo, source: fs.readFileSync(demo, 'utf8') } : null;
 }

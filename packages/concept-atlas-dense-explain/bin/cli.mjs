@@ -114,14 +114,14 @@ if (command === 'guide') {
     console.error(`Refusing to overwrite ${output}; pass --force to replace it.`);
     process.exit(1);
   }
-  const source = path.join(templateRoot, 'guides', `${mode}-guide.mdx`);
+  const source = path.join(templateRoot, 'references', `${mode}-guide.mdx`);
   if (!(await exists(source))) {
     console.error(`Guide for mode "${mode}" is missing from the package.`);
     process.exit(1);
   }
   await mkdir(path.dirname(output), { recursive: true });
   await copyFile(source, output);
-  const assetsSource = path.join(templateRoot, 'guides', 'assets');
+  const assetsSource = path.join(templateRoot, 'references', 'assets');
   const assetsTarget = path.join(path.dirname(output), 'assets');
   if (await exists(assetsSource) && path.resolve(assetsSource) !== path.resolve(assetsTarget) && (args.includes('--force') || !(await exists(assetsTarget)))) {
     await cp(assetsSource, assetsTarget, { recursive: true, force: true });

@@ -28,7 +28,7 @@ async function render(relativePath) {
 }
 
 test('atlas example renders its concept tree, charts and math', async () => {
-  const html = await render('content/components-demo.mdx');
+  const html = await render('content/atlas-guide.mdx');
   assert.ok(html.length > 5000);
   assert.match(html, /data-component="ConceptNode"/);
   assert.match(html, /chart-canvas/);
@@ -42,7 +42,7 @@ test('atlas example renders its concept tree, charts and math', async () => {
 });
 
 test('scroll example renders prose, charts, math and citations', async () => {
-  const html = await render('content/scroll-reading-demo.mdx');
+  const html = await render('content/scroll-guide.mdx');
   assert.ok(html.length > 5000);
   assert.match(html, /continuous-document/);
   assert.match(html, /chart-canvas/);

@@ -11,7 +11,7 @@ const explicit = args.filter(arg => !arg.startsWith('--'));
 
 const files = explicit.length
   ? explicit.map(file => path.resolve(file))
-  : ['content/components-demo.mdx', 'content/compile-runtime.mdx', 'content/scroll-reading-demo.mdx']
+  : ['content/atlas-guide.mdx', 'content/compile-runtime.mdx', 'content/scroll-guide.mdx']
     .map(file => path.join(rootDir, file));
 
 let errors = 0;
