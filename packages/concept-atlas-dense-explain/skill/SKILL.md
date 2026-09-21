@@ -5,36 +5,36 @@ description: Turn a topic or an existing document into an interactive Concept At
 
 # Concept Atlas Dense Explain
 
-Drive everything through the `concept-atlas-dense-explain` CLI. This skill is intentionally lightweight: do not copy implementation files from the skill directory or recreate the React/Vite app. If a command name is unclear, run `help` through the resolved CLI (see "Running the CLI"). If the user only wants the prompt/methodology and not files, still choose a shell and emit valid MDX; the CLI is needed only to validate and compile.
+Drive everything through the `concept-atlas-dense-explain` CLI, always via `npx`. Everything you need is in this file and the bundled `references/`; do not read the framework repository or installed package files, do not copy implementation files from the skill directory, and do not recreate the React/Vite app. If a command name is unclear, run `npx concept-atlas-dense-explain help`. If the user only wants the prompt/methodology and not files, still choose a shell and emit valid MDX; the CLI is needed only to validate and compile.
 
 ## Running the CLI
 
-Resolve the CLI before you fetch one, and stay local when you can. Use the first that exists:
+Always invoke the CLI through `npx`, from any directory:
 
-1. **This repository is the framework source.** At its root run `npm run validate [-- <file>.mdx]`, `npm run build`, or `npm run dev`. For any single file the CLI is already runnable offline as `node packages/concept-atlas-dense-explain/bin/cli.mjs <args>`; its dependencies resolve from the repo's `node_modules`.
-2. **A project that already depends on the framework** has it installed: run `node node_modules/concept-atlas-dense-explain/bin/cli.mjs <args>`, or `npx --no-install concept-atlas-dense-explain <args>`.
-3. **Only when no local copy exists**, fall back to `npx concept-atlas-dense-explain <args>`, which may download from the npm registry — say so before you run it. Install once, then go back to the local paths above.
+```bash
+npx concept-atlas-dense-explain <args>
+```
 
-Commands below are written as `<cli> <args>`; substitute the command you resolved. Do not reach for `npx` while a local runner exists.
+This is the only runner — there is nothing to look for. Do not search for a local binary, a repository checkout, or an installed copy, and do not run the framework's own `npm` scripts. The first call downloads the package from the npm registry; say so once, then continue.
 
 ## Workflow
 
 1. Choose one page shell: `atlas` (concept graph with node navigation) or `scroll` (continuous document). Recommend `atlas` when the reader drills into concepts or follows relations, `scroll` for linear argument, tutorials, and reports. The library is shared. If an `.mdx` already exists, detect its shell and work with it.
-2. **Learn the components from the bundled reference before authoring.** Read the guide that ships inside this skill directory:
+2. **Learn the components from the bundled reference before authoring.** The only reference you need is the guide that ships with this skill:
    - `references/atlas-guide.mdx` (atlas) or `references/scroll-guide.mdx` (scroll)
-   It is real, compilable MDX showing that shell's components and their exact props; search it for a component name instead of guessing. Do not run `guide` for this.
-   Run `<cli> guide --mode <mode> -o <file>` only when you specifically need a project-local copy to compile beside the page, and delete that copy when done.
-3. Start from a skeleton when useful: `<cli> create <file>.mdx --mode atlas|scroll`. `create` and `guide` refuse to overwrite an existing file unless `--force` is passed.
+   It is real, compilable MDX showing that shell's components and their exact props; search it for a component name instead of guessing, and do not look for component documentation anywhere else. Do not run `guide` for this.
+   Run `npx concept-atlas-dense-explain guide --mode <mode> -o <file>` only when you specifically need a project-local copy to compile beside the page, and delete that copy when done.
+3. Start from a skeleton when useful: `npx concept-atlas-dense-explain create <file>.mdx --mode atlas|scroll`. `create` and `guide` refuse to overwrite an existing file unless `--force` is passed.
 4. Write the semantic MDX into the user's `.mdx` file (see Authoring rules).
 5. Validate before rendering:
    ```bash
-   <cli> validate <file>.mdx --mode atlas|scroll
-   <cli> validate <file>.mdx --json
+   npx concept-atlas-dense-explain validate <file>.mdx --mode atlas|scroll
+   npx concept-atlas-dense-explain validate <file>.mdx --json
    ```
    Diagnostics are `CODE line:column message`. Fix all `error`s and re-run; address warnings when cheap.
-6. Compile: `<cli> <file>.mdx --mode atlas|scroll [-o out.html] [--skin <id>] [--default-mode dark|light|system] [--style <id>] [--inline-mermaid] [--mermaid-cdn <url>]`. Output is a standalone HTML beside the MDX unless `-o` is given. Validation errors abort the build (`--no-validate` forces a knowingly broken build). Mermaid loads from a CDN at runtime by default (needs network); pass `--inline-mermaid` for a fully offline single file.
+6. Compile: `npx concept-atlas-dense-explain <file>.mdx --mode atlas|scroll [-o out.html] [--skin <id>] [--default-mode dark|light|system] [--style <id>] [--inline-mermaid] [--mermaid-cdn <url>]`. Output is a standalone HTML beside the MDX unless `-o` is given. Validation errors abort the build (`--no-validate` forces a knowingly broken build). Mermaid loads from a CDN at runtime by default (needs network); pass `--inline-mermaid` for a fully offline single file.
 7. **Appearance (optional)**: pages ship a reader-facing appearance menu — palette (`aurora` indigo, `ember` gold, `verdant` forest, `sakura` pink-plum, `noir` ink), a dark/light toggle, and a component style pack (`manuscript` editorial marginalia, `classic` boxed cards, `shadcn` hairline-bordered minimal UI, `elastic` bordered observability panels). The shipped default is aurora × manuscript × light; choices persist in localStorage across both carriers. Bake different compile-time defaults with `--skin ember --default-mode dark --style classic` (or `CONCEPT_ATLAS_SKIN` / `CONCEPT_ATLAS_DEFAULT_MODE` / `CONCEPT_ATLAS_STYLE` on the repo build); `--default-mode` honors `dark`/`light` and resolves `system` to the carrier default (`light`). Bake a default only when the user asks for one — content MDX never sets appearance.
-8. For several documents, pass them all in one call: `<cli> a.mdx b.mdx c.mdx -o dist --force [--concurrency 3]` (`-o` is then a directory; everything validates first, then builds in parallel). Builds bundle only the heavy renderers the content uses: no `<Math>` skips KaTeX's ~1.4MB inlined fonts, and Mermaid stays on a CDN. Never add dummy `<Math>`/`<Mermaid>` nodes to "enable" them.
+8. For several documents, pass them all in one call: `npx concept-atlas-dense-explain a.mdx b.mdx c.mdx -o dist --force [--concurrency 3]` (`-o` is then a directory; everything validates first, then builds in parallel). Builds bundle only the heavy renderers the content uses: no `<Math>` skips KaTeX's ~1.4MB inlined fonts, and Mermaid stays on a CDN. Never add dummy `<Math>`/`<Mermaid>` nodes to "enable" them.
 9. Report the shell, output path, validation result (errors/warnings), and limitations. Do not claim interactions you did not verify.
 
 ## Carriers
@@ -78,4 +78,4 @@ Commands below are written as `<cli> <args>`; substitute the command you resolve
 - Every node has `title` + `summary`; every `Relation` has a `label`.
 - The HTML file exists at the reported path.
 
-If no local runner exists and the registry is unreachable, report the blocker. Never copy implementation files into the skill directory.
+If `npx` cannot reach the registry, report the blocker. Never copy implementation files into the skill directory.
