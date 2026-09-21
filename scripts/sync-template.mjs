@@ -8,11 +8,22 @@ const templateRoot = path.join(packageRoot, 'template');
 const check = process.argv.includes('--check');
 
 // `src/` at the repository root is the single source of truth for the shared
-// renderer. The npm template is generated from it. Entry files (main.jsx,
-// scroll-main.jsx) are intentionally excluded because the template imports the
-// user's MDX through the `@concept-atlas/content` alias instead of a concrete
-// demo file. Entries with `base: 'package'` target the package root rather than
-// the template directory (used by the shipped skill copy).
+// renderer. The npm template is generated from it, including the two carrier
+// entry files: they are the repository demos with the concrete `../content/*.mdx`
+// import rewritten to the `@concept-atlas/content` alias the CLI injects, so a
+// packaged build mounts the user's MDX instead of a demo. The `replace` list
+// runs in order, so the identifier is renamed before the import path is swapped.
+// Entries with `base: 'package'` target the package root rather than the
+// template directory (used by the shipped skill copy).
+const ALIAS_ATLAS = [
+  [/\bComponentsDemoDoc\b/g, 'UserDocument'],
+  [/'\.\.\/content\/components-demo\.mdx'/, "'@concept-atlas/content'"],
+];
+const ALIAS_SCROLL = [
+  [/\bScrollReadingDemo\b/g, 'UserDocument'],
+  [/'\.\.\/content\/scroll-reading-demo\.mdx'/, "'@concept-atlas/content'"],
+];
+
 const MANIFEST = [
   { from: 'vite.config.js', to: 'vite.config.js' },
   { from: 'src/app', to: 'src/app' },
@@ -20,9 +31,10 @@ const MANIFEST = [
   { from: 'src/model', to: 'src/model' },
   { from: 'src/views', to: 'src/views' },
   { from: 'src/styles', to: 'src/styles' },
-  { from: 'scripts/build.mjs', to: 'scripts/build.mjs' },
-  { from: 'scripts/clean-temp.mjs', to: 'scripts/clean-temp.mjs' },
-  { from: 'scripts/validate-content.mjs', to: 'scripts/validate-content.mjs' },
+  { from: 'src/main.jsx', to: 'src/main.jsx', replace: ALIAS_ATLAS },
+  { from: 'src/scroll-main.jsx', to: 'src/scroll-main.jsx', replace: ALIAS_SCROLL },
+  { from: 'index.html', to: 'index.html' },
+  { from: 'scroll.html', to: 'scroll.html' },
   { from: 'content/components-demo.mdx', to: 'guides/atlas-guide.mdx' },
   { from: 'content/scroll-reading-demo.mdx', to: 'guides/scroll-guide.mdx' },
   { from: 'content/assets', to: 'guides/assets' },
@@ -74,18 +86,23 @@ for (const entry of MANIFEST) {
     const source = path.join(repoRoot, relative);
     const target = path.join(targetRoot, entry.to, suffix);
     const sourceText = await readNormalized(source);
+    let outputText = sourceText;
+    for (const [pattern, replacement] of entry.replace || []) {
+      outputText = outputText.replace(pattern, replacement);
+    }
     const targetText = await readNormalized(target);
 
-    if (sourceText === targetText) continue;
+    if (outputText === targetText) continue;
 
     if (check) {
-      const relRoot = entry.base === 'repo' ? repoRoot : packageRoot;
-      drift.push(path.relative(relRoot, target).split(path.sep).join('/'));
+      // Report every target relative to the repository root so template,
+      // package-root and repo-wide outputs all print a path the reader can use.
+      drift.push(path.relative(repoRoot, target).split(path.sep).join('/'));
       continue;
     }
 
     await fs.mkdir(path.dirname(target), { recursive: true });
-    await fs.writeFile(target, sourceText, 'utf8');
+    await fs.writeFile(target, outputText, 'utf8');
     copied += 1;
   }
 }
@@ -93,7 +110,7 @@ for (const entry of MANIFEST) {
 if (check) {
   if (drift.length) {
     console.error('Package is out of sync with src/. Run "npm run sync".');
-    for (const file of drift) console.error(`  - packages/concept-atlas-dense-explain/${file}`);
+    for (const file of drift) console.error(`  - ${file}`);
     process.exit(1);
   }
   console.log('Package is in sync with src/.');
