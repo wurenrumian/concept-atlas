@@ -9,7 +9,7 @@ import { SKINS, normalizeSkin, COMPONENT_STYLES, normalizeStyle } from '../templ
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const templateRoot = path.join(packageRoot, 'template');
-const args = process.argv.slice(2);
+let args = process.argv.slice(2);
 let buildCounter = 0;
 
 function usage() {
@@ -20,6 +20,7 @@ function usage() {
   console.log('  npx concept-atlas-dense-explain create <output.mdx> [--mode atlas|scroll] [--force]');
   console.log('  npx concept-atlas-dense-explain guide [--mode atlas|scroll] [-o output.mdx] [--force]');
   console.log('');
+  console.log('  --help shows this text; --version prints the package version.');
   console.log('  Multiple inputs build in parallel (default 2 at a time, cap 4); -o is then a directory.');
   console.log('  --link-assets keeps figures as relative links instead of inlining them as base64.');
   console.log('  Mermaid diagrams load from a CDN at runtime by default (fast builds, needs network); --inline-mermaid bakes Mermaid into the HTML for a fully offline single file; --mermaid-cdn overrides the CDN URL.');
@@ -45,6 +46,8 @@ function fail(message) {
 }
 
 const VALUE_FLAGS = new Set(['--mode', '-o', '--output', '--concurrency', '--skin', '--default-mode', '--style', '--mermaid-cdn']);
+const BOOLEAN_FLAGS = new Set(['--force', '--json', '--strict', '--no-validate', '--link-assets', '--inline-mermaid', '--help', '-h', '--version', '-v']);
+const COMMAND_NAMES = ['help', 'create', 'new', 'render', 'validate', 'guide'];
 
 /** Splits argv into flags, flag values and positional arguments. */
 function parseFlags(argv) {
@@ -63,6 +66,26 @@ function parseFlags(argv) {
     }
   }
   return { flags, values, positional };
+}
+
+/**
+ * Finds the subcommand even when flags precede it (`--force create x.mdx`),
+ * skipping flag values so a value like `create` isn't mistaken for a command.
+ * The first non-flag token that isn't a command means `render` with inputs.
+ */
+function extractCommand(argv) {
+  const rest = [...argv];
+  for (let i = 0; i < rest.length; i += 1) {
+    const arg = rest[i];
+    if (VALUE_FLAGS.has(arg)) { i += 1; continue; }
+    if (arg.startsWith('-') && arg.length > 1) continue;
+    if (COMMAND_NAMES.includes(arg)) {
+      rest.splice(i, 1);
+      return { command: arg, rest };
+    }
+    return { command: 'render', rest };
+  }
+  return { command: 'render', rest };
 }
 
 /**
@@ -102,7 +125,30 @@ function printDiagnostics(source, options, { json, label = null, quiet = false }
   return result;
 }
 
-const command = ['help', 'create', 'new', 'render', 'validate', 'guide'].includes(args[0]) ? args.shift() : 'render';
+const { command, rest } = extractCommand(args);
+args = rest;
+
+if (args.includes('--help') || args.includes('-h')) { usage(); process.exit(0); }
+if (args.includes('--version') || args.includes('-v')) {
+  const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+  console.log(pkg.version);
+  process.exit(0);
+}
+
+// Typos like `--mdoe atlas` used to be accepted silently; fail fast instead.
+for (let i = 0; i < args.length; i += 1) {
+  const arg = args[i];
+  if (VALUE_FLAGS.has(arg)) {
+    if (i + 1 >= args.length || (args[i + 1].startsWith('-') && args[i + 1].length > 1)) {
+      fail(`Missing value for ${arg}`);
+    }
+    i += 1;
+    continue;
+  }
+  if (arg.startsWith('-') && arg.length > 1 && !BOOLEAN_FLAGS.has(arg)) {
+    fail(`Unknown flag: ${arg}`);
+  }
+}
 
 if (command === 'help') { usage(); process.exit(0); }
 
@@ -353,8 +399,31 @@ async function buildOne(job) {
         rollupOptions: { input: path.join(templateRoot, templateEntry) },
       },
     });
-    await rm(output, { force: true });
-    await rename(path.join(scratch, templateEntry), output);
+    // Swap the new build in without a window where no output exists: on
+    // POSIX rename replaces atomically; the fallback path (Windows can refuse
+    // to overwrite a locked file) moves the old output aside first and
+    // restores it if the swap fails, instead of rm-ing it up front.
+    const built = path.join(scratch, templateEntry);
+    try {
+      await rename(built, output);
+    } catch (error) {
+      if (error.code !== 'EEXIST' && error.code !== 'EPERM' && error.code !== 'EACCES') throw error;
+      const backup = `${output}.bak-${process.pid}-${Date.now()}`;
+      let hasBackup = false;
+      try {
+        await rename(output, backup);
+        hasBackup = true;
+      } catch (backupError) {
+        if (backupError.code !== 'ENOENT') throw backupError; // old output kept, swap aborted
+      }
+      try {
+        await rename(built, output);
+      } catch (swapError) {
+        if (hasBackup) await rename(backup, output);
+        throw swapError;
+      }
+      if (hasBackup) await rm(backup, { force: true });
+    }
     console.log(`Built ${mode} HTML: ${output}${title ? `  [tab: ${title}]` : ''}${describeFeatures(features)}${link ? '  [figures linked]' : ''}`);
     return { ok: true, input, output };
   } catch (error) {

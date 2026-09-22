@@ -50,3 +50,22 @@ test('the Alt+arrow history shortcut is reachable (guard regression)', async () 
   assert.ok(altBranch > 0, 'expected an Alt+ArrowLeft branch');
   assert.ok(modifierGuard > altBranch, 'the modifier guard must come after the Alt+arrow branch');
 });
+
+test('moveHistory steps the real browser history instead of pushState (guard regression)', async () => {
+  // pushState inside moveHistory forked the in-app history from the browser
+  // stack and grew browser history on every Alt+arrow press. The Alt+arrow
+  // shortcut must go through history.go so popstate stays the single writer.
+  const source = await import('node:fs/promises').then(fs =>
+    fs.readFile(new URL('../src/app/App.jsx', import.meta.url), 'utf8'));
+  const start = source.indexOf('const moveHistory');
+  const end = source.indexOf('Keyboard navigation');
+  assert.ok(start > 0 && end > start, 'expected a moveHistory body in App.jsx');
+  // Strip comments so the explanatory text can mention pushState without
+  // tripping the guard.
+  const body = source.slice(start, end)
+    .split('\n')
+    .filter(line => !line.trim().startsWith('//'))
+    .join('\n');
+  assert.match(body, /window\.history\.go\(/);
+  assert.doesNotMatch(body, /pushState/);
+});

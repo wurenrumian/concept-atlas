@@ -457,122 +457,6 @@ export function NodeExplorer({
           </div>
         </div>
       </main>
-
-      {/* 3. Right Column: Inspector and Local Relations */}
-      <aside className="explorer-side right-side">
-        <div className="inspector-container">
-          <div className="inspector-head">
-            <div className="insp-title">局部细节与知识网络</div>
-            <div className="insp-sub">随当前节点动态聚焦</div>
-          </div>
-
-          {/* Prerequisites */}
-          {currentNode.prerequisites.length > 0 && (
-            <div className="insp-group">
-              <div className="insp-label">前置知识 (Prerequisites)</div>
-              <ul className="insp-pill-list">
-                {currentNode.prerequisites.map((p, i) => (
-                  <li key={i} className="insp-pill prereq-pill">{p}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Boundaries */}
-          {currentNode.boundaries.length > 0 && (
-            <div className="insp-group">
-              <div className="insp-label">边界条件与约束 (Boundaries)</div>
-              <div className="boundary-list">
-                {currentNode.boundaries.map((b, i) => (
-                  <div key={i} className="boundary-card">
-                    <div className="b-title">{b.title}</div>
-                    <div className="b-content">{b.content}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Outgoing Relations (当前节点 → 其他节点) */}
-          <div className="insp-group">
-            <div className="insp-label">延伸关联 (Outgoing Relations)</div>
-            {outgoingRelations.length > 0 ? (
-              <div className="relation-links">
-                {outgoingRelations.map((rel, i) => {
-                  const targetNode = nodes.get(rel.to);
-                  return (
-                    <button
-                      key={i}
-                      className="relation-link-card"
-                      onClick={() => targetNode && onSelectNode(targetNode.id)}
-                    >
-                      <div className="rel-type-tag" style={{ color: rel.typeInfo.color, borderColor: rel.typeInfo.color }}>
-                        {rel.typeLabel}
-                      </div>
-                      <div className="rel-target">
-                        <span className="target-name">{targetNode ? targetNode.title : rel.to}</span>
-                        <CornerDownRight size={13} />
-                      </div>
-                      {rel.description && (
-                        <div className="rel-desc">{rel.description}</div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="empty-subtext">暂无向外关联</div>
-            )}
-          </div>
-
-          {/* Incoming Relations (其他节点 → 当前节点) */}
-          <div className="insp-group">
-            <div className="insp-label">前驱来源 (Incoming Relations)</div>
-            {incomingRelations.length > 0 ? (
-              <div className="relation-links">
-                {incomingRelations.map((rel, i) => {
-                  const sourceNode = nodes.get(rel.from);
-                  return (
-                    <button
-                      key={i}
-                      className="relation-link-card"
-                      onClick={() => sourceNode && onSelectNode(sourceNode.id)}
-                    >
-                      <div className="rel-type-tag" style={{ color: rel.typeInfo.color, borderColor: rel.typeInfo.color }}>
-                        {rel.typeLabel}
-                      </div>
-                      <div className="rel-target">
-                        <span className="target-name">{sourceNode ? sourceNode.title : rel.from}</span>
-                        <ArrowLeft size={13} />
-                      </div>
-                      {rel.description && (
-                        <div className="rel-desc">{rel.description}</div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="empty-subtext">暂无前驱来源</div>
-            )}
-          </div>
-
-          {/* Glossary terms */}
-          {currentNode.glossary.length > 0 && (
-            <div className="insp-group">
-              <div className="insp-label">关键术语表</div>
-              <dl className="glossary-dl">
-                {currentNode.glossary.map((g, i) => (
-                  <React.Fragment key={i}>
-                    <dt>{g.term}</dt>
-                    <dd>{g.definition}</dd>
-                  </React.Fragment>
-                ))}
-              </dl>
-            </div>
-          )}
-        </div>
-      </aside>
     </div>
   );
 }
@@ -659,6 +543,19 @@ function NodeInspector({ currentNode, nodes, outgoingRelations, incomingRelation
           <span className="insp-label">前驱关系 · 入</span>
           {incomingRelations.length > 0 ? incomingRelations.map(rel => relationCard(rel, rel.from, 'in')) : <span className="empty-subtext">暂无前驱来源</span>}
         </div>
+        {currentNode.glossary.length > 0 && (
+          <div className="inline-note-block">
+            <span className="insp-label">关键术语表</span>
+            <dl className="glossary-dl">
+              {currentNode.glossary.map((term, index) => (
+                <React.Fragment key={index}>
+                  <dt>{term.term}</dt>
+                  <dd>{term.definition}</dd>
+                </React.Fragment>
+              ))}
+            </dl>
+          </div>
+        )}
       </div>
     </section>
   );

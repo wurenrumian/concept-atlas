@@ -235,3 +235,20 @@ test('strict mode promotes kind contracts to errors', () => {
   const strict = validateMdxSource(source, { strict: true });
   assert.ok(errorsOf(strict).includes('MECHANISM_KIND_UNVERIFIED'));
 });
+
+test('ScrollToc is registered (it is exported and documented as authorable)', () => {
+  assert.ok(KNOWN_COMPONENT_SET.has('ScrollToc'));
+  const result = validateMdxSource(`<ScrollDocument>\n  <ScrollToc />\n  <ScrollHeader title="T">intro</ScrollHeader>\n  <ScrollSection title="A"><ScrollProse>p</ScrollProse></ScrollSection>\n</ScrollDocument>`);
+  assert.ok(!errorsOf(result).includes('UNKNOWN_COMPONENT'));
+});
+
+test('RelationMap item types are checked against the relation whitelist', () => {
+  const bad = validateMdxSource(atlas(`${rootNode}\n    <RelationMap items={[{from:'A',type:'supports',to:'B'}]} />`));
+  assert.ok(warningsOf(bad).includes('UNKNOWN_RELATION_TYPE'));
+
+  const good = validateMdxSource(atlas(`${rootNode}\n    <RelationMap items={[{from:'A',type:'implements',to:'B'}]} />`));
+  assert.ok(!warningsOf(good).includes('UNKNOWN_RELATION_TYPE'));
+
+  const viaRelation = validateMdxSource(atlas(`${rootNode}\n    <Relation from="root" to="root" type="supports" label="x" />`));
+  assert.ok(warningsOf(viaRelation).includes('UNKNOWN_RELATION_TYPE'));
+});

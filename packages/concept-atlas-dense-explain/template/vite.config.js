@@ -182,7 +182,7 @@ function optionalFeatures() {
  *
  * The anti-flash inline script in index.html/scroll.html carries the literal
  * placeholders `__ATLAS_DEFAULT_SKIN__` / `__ATLAS_DEFAULT_MODE__` plus a
- * per-carrier runtime fallback (atlas: dark, scroll: system). When a default
+ * per-carrier runtime fallback (both carriers fall back to light). When a default
  * IS configured — `CONCEPT_ATLAS_SKIN` / `CONCEPT_ATLAS_DEFAULT_MODE` env vars
  * or the CLI's `--skin` / `--default-mode` flags, forwarded through `define` —
  * the placeholders are replaced in the emitted HTML so first paint already

@@ -28,7 +28,11 @@ export function SkinPicker({ skin, style, onSkinChange, onStyleChange }) {
       if (!rootRef.current?.contains(event.target)) setOpen(false);
     };
     const handleKey = (event) => {
-      if (event.key === 'Escape') setOpen(false);
+      if (event.key !== 'Escape') return;
+      setOpen(false);
+      // Stop Escape from also reaching the window-level handler in App.jsx,
+      // which navigates to the parent node.
+      event.stopPropagation();
     };
     document.addEventListener('pointerdown', handlePointer);
     document.addEventListener('keydown', handleKey);

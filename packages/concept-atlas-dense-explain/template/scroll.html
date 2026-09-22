@@ -9,8 +9,13 @@
       (function () {
         var doc = document.documentElement;
         var stored = null;
-        try { stored = JSON.parse(localStorage.getItem('concept_atlas_appearance') || 'null'); } catch (e) {}
-        var legacy = localStorage.getItem('concept_atlas_scroll_theme');
+        var legacy = null;
+        // Storage access itself can throw (private mode); never let the
+        // anti-flash script crash before first paint.
+        try {
+          stored = JSON.parse(localStorage.getItem('concept_atlas_appearance') || 'null');
+          legacy = localStorage.getItem('concept_atlas_scroll_theme');
+        } catch (e) {}
         // Placeholders are replaced at build time when --skin/--default-mode
         // (or CONCEPT_ATLAS_* env vars) are configured; otherwise the runtime
         // fallbacks below keep the carrier defaults.
@@ -20,16 +25,26 @@
         if (/^__.+__$/.test(mode)) mode = 'light';
         var style = '__ATLAS_DEFAULT_STYLE__';
         if (/^__.+__$/.test(style)) style = 'manuscript';
+        // Stored values are whitelisted so a corrupt payload can't paint a
+        // frame with an unknown skin/style before React corrects it.
+        var skins = ['aurora', 'ember', 'verdant', 'sakura', 'noir'];
+        var styles = ['manuscript', 'classic', 'shadcn', 'elastic'];
         if (stored && (stored.mode === 'light' || stored.mode === 'dark')) {
           mode = stored.mode;
         } else if (mode !== 'light' && mode !== 'dark') {
           mode = legacy === 'light' || legacy === 'dark' ? legacy : 'light';
         }
-        doc.setAttribute('data-skin', stored && stored.skin ? stored.skin : skin);
+        if (stored && skins.indexOf(stored.skin) >= 0) skin = stored.skin;
+        if (stored && styles.indexOf(stored.style) >= 0) style = stored.style;
+        doc.setAttribute('data-skin', skin);
         doc.setAttribute('data-theme', mode);
-        doc.setAttribute('data-style', stored && stored.style ? stored.style : style);
+        doc.setAttribute('data-style', style);
       })();
     </script>
+    <!-- Google Fonts for the scroll carrier's type stack (same set as index.html) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Lora:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@500;600;700;900&display=swap" rel="stylesheet">
   </head>
   <body>
     <div id="root"></div>

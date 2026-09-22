@@ -62,6 +62,7 @@ export const KNOWN_COMPONENTS = [
   'Stack',
   'Grid',
   'Split',
+  'ScrollToc',
   // Graphics and extension blocks
   'Mermaid',
   'RelationMap',
@@ -554,6 +555,20 @@ export function validateMdxSource(source, options = {}) {
     }
     if (relation.from && relation.to && relation.from === relation.to) {
       add('warning', 'RELATION_SELF', `关系 ${relation.from} 指向自身`, relation.offset, relation.from);
+    }
+  }
+
+  // RelationMap items carry their own `type`; check them against the same
+  // whitelist as <Relation type> so example maps can't invent types silently.
+  for (const tag of tags) {
+    if (tag.name !== 'RelationMap' || tag.kind === 'close') continue;
+    const map = attrsToMap(tag.attrs);
+    const items = map.items;
+    if (!items || !items.hasValue || items.quoted || !items.expr) continue;
+    for (const match of items.expr.matchAll(/\btype\s*:\s*(['"])([^'"]+)\1/g)) {
+      if (!RELATION_TYPE_SET.has(match[2])) {
+        add('warning', 'UNKNOWN_RELATION_TYPE', `RelationMap 含未知关系类型：${match[2]}（可选：${RELATION_TYPE_NAMES.join('、')}）`, tag.start, match[2]);
+      }
     }
   }
 

@@ -4,8 +4,9 @@ import { DEFAULT_SKIN, normalizeSkin, DEFAULT_STYLE, normalizeStyle } from '../m
 const STORAGE_KEY = 'concept_atlas_appearance';
 const LEGACY_KEYS = ['concept_atlas_theme', 'concept_atlas_scroll_theme'];
 
-function normalizeMode(value) {
-  return value === 'light' ? 'light' : 'dark';
+function normalizeMode(value, fallback = 'dark') {
+  if (value === 'dark' || value === 'light') return value;
+  return fallback;
 }
 
 /**
@@ -23,27 +24,41 @@ const BUILD_DEFAULT_STYLE = typeof __ATLAS_DEFAULT_STYLE__ === 'string'
   : DEFAULT_STYLE;
 
 function readStoredAppearance(fallbackMode) {
+  const fallback = normalizeMode(fallbackMode, 'dark');
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       return {
         skin: normalizeSkin(parsed?.skin) || BUILD_DEFAULT_SKIN,
-        mode: normalizeMode(parsed?.mode),
+        // Corrupt/missing mode falls back to the carrier default instead of
+        // silently coercing to dark.
+        mode: normalizeMode(parsed?.mode, fallback),
         style: normalizeStyle(parsed?.style) || BUILD_DEFAULT_STYLE,
       };
     }
   } catch {
-    // Corrupted payload falls through to legacy/default handling.
+    // Storage unavailable or corrupted payload: fall through to the legacy
+    // keys below. Every localStorage access is inside a try/catch because
+    // reading it can itself throw (private mode), which used to crash the
+    // useState initializer.
   }
-  for (const key of LEGACY_KEYS) {
-    const legacy = localStorage.getItem(key);
-    if (legacy === 'dark' || legacy === 'light') {
-      return { skin: BUILD_DEFAULT_SKIN, mode: legacy, style: BUILD_DEFAULT_STYLE };
+  try {
+    for (const key of LEGACY_KEYS) {
+      const legacy = localStorage.getItem(key);
+      if (legacy === 'dark' || legacy === 'light') {
+        return { skin: BUILD_DEFAULT_SKIN, mode: legacy, style: BUILD_DEFAULT_STYLE };
+      }
     }
+  } catch {
+    // Storage unavailable: fall through to the defaults.
   }
-  return { skin: BUILD_DEFAULT_SKIN, mode: normalizeMode(fallbackMode), style: BUILD_DEFAULT_STYLE };
+  return { skin: BUILD_DEFAULT_SKIN, mode: fallback, style: BUILD_DEFAULT_STYLE };
 }
+
+// Exported for tests: the storage-hardening behaviour (throwing localStorage,
+// corrupt payloads) has no React surface to observe through.
+export { readStoredAppearance, normalizeMode };
 
 /**
  * Shared appearance state for both carriers (atlas & scroll): palette
@@ -69,7 +84,7 @@ export function useAppearance({ defaultMode = 'dark' } = {}) {
     setAppearance(prev => ({ ...prev, skin: normalizeSkin(skin) || prev.skin }));
   }, []);
   const setMode = useCallback((mode) => {
-    setAppearance(prev => ({ ...prev, mode: normalizeMode(mode) }));
+    setAppearance(prev => ({ ...prev, mode: normalizeMode(mode, prev.mode) }));
   }, []);
   const toggleMode = useCallback(() => {
     setAppearance(prev => ({ ...prev, mode: prev.mode === 'dark' ? 'light' : 'dark' }));

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Network, Compass, Sun, Moon, Search, X, Link as LinkIcon } from 'lucide-react';
 import { buildGraphModel } from '../model/concept-schema.js';
 import { extractConceptData } from '../model/normalize-content.js';
@@ -49,6 +49,10 @@ export function App({ mdxContent, initialData }) {
     entries: (initialHashNode ? [initialHashNode] : [graph.meta.rootId]).filter(Boolean),
     index: 0,
   }));
+  // Popstate handlers must read the *current* history state, not the closure
+  // captured when the effect was created.
+  const navRef = useRef(nav);
+  navRef.current = nav;
   const [globalQuery, setGlobalQuery] = useState('');
   const [linkCopied, setLinkCopied] = useState(false);
 
@@ -59,20 +63,25 @@ export function App({ mdxContent, initialData }) {
 
   const navigateToNode = (nodeId, { replace = false } = {}) => {
     if (!nodeId || !graph.nodes.has(nodeId)) return;
+    const next = pushNode(nav, nodeId);
     setCurrentNodeId(nodeId);
-    setNav(previous => pushNode(previous, nodeId));
+    setNav(next);
     const nextHash = `#node=${encodeURIComponent(nodeId)}`;
-    if (replace) window.history.replaceState({}, '', nextHash);
-    else window.history.pushState({}, '', nextHash);
+    // Each browser entry remembers which in-app history index it maps to, so
+    // popstate can restore the exact entry even when hashes repeat.
+    const historyState = { atlasIndex: next.index };
+    if (next === nav && !replace) return; // re-selecting the current node: don't grow browser history
+    if (replace) window.history.replaceState(historyState, '', nextHash);
+    else window.history.pushState(historyState, '', nextHash);
   };
 
   const moveHistory = (direction) => {
-    const next = stepHistory(nav, direction);
-    if (!next) return;
-    setNav(next);
-    const nodeId = next.entries[next.index];
-    setCurrentNodeId(nodeId);
-    window.history.pushState({}, '', `#node=${encodeURIComponent(nodeId)}`);
+    // Browser history mirrors the in-app entries one-for-one (every navigation
+    // pushState'd the matching { atlasIndex }), so step through the real
+    // browser history. pushState here used to fork the two stacks and grow
+    // browser history unboundedly; the popstate handler applies the result.
+    if (!stepHistory(nav, direction)) return;
+    window.history.go(direction);
   };
 
   // Keyboard navigation shortcuts
@@ -119,15 +128,39 @@ export function App({ mdxContent, initialData }) {
   }, [graph, currentNodeId, nav]);
 
   useEffect(() => {
-    const handlePopState = () => {
+    const handlePopState = (event) => {
+      const current = navRef.current;
       const nodeId = readNodeFromHash();
-      if (!nodeId || !graph.nodes.has(nodeId)) return;
-      setCurrentNodeId(nodeId);
-      setNav(previous => syncFromLocation(previous, nodeId));
+      if (nodeId && !graph.nodes.has(nodeId)) return; // stale/foreign hash: ignore
+      const tagged = event.state && Number.isInteger(event.state.atlasIndex)
+        ? event.state.atlasIndex
+        : null;
+      const taggedValid = tagged !== null && tagged >= 0 && tagged < current.entries.length;
+      let next = null;
+      if (nodeId) {
+        // Prefer the index stamped on the entry: entries may contain the same
+        // node twice, and lastIndexOf alone would resolve backwards steps to a
+        // later duplicate.
+        next = taggedValid && current.entries[tagged] === nodeId
+          ? { entries: current.entries, index: tagged }
+          : syncFromLocation(current, nodeId);
+      } else if (taggedValid) {
+        // Back to the hash-less entry the page loaded on: restore it by index.
+        next = { entries: current.entries, index: tagged };
+      }
+      if (!next) return;
+      setCurrentNodeId(next.entries[next.index]);
+      setNav(next);
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, [graph]);
+
+  // Tag the entry the page loaded on so browser Back to it can restore the
+  // in-app history even when the URL carries no #node hash.
+  useEffect(() => {
+    window.history.replaceState({ atlasIndex: 0 }, '', window.location.href);
+  }, []);
 
   return (
     <div className="app-container">

@@ -41,11 +41,12 @@ function appearanceDefines() {
  * of optional renderers actually needed.
  */
 function demoSourceFor(entry) {
-  const demos = entry === 'scroll.html'
-    ? ['content/scroll-guide.mdx']
-    : ['content/atlas-guide.mdx', 'content/compile-runtime.mdx'];
-  const demo = demos.map(name => path.resolve(rootDir, name)).find(file => fs.existsSync(file));
-  return demo ? { demo, source: fs.readFileSync(demo, 'utf8') } : null;
+  // Only the MDX actually imported by the carrier counts: main.jsx mounts
+  // atlas-guide.mdx and scroll-main.jsx mounts scroll-guide.mdx.
+  // content/compile-runtime.mdx is a test-only reference and never reaches
+  // this build, so it must not feed feature detection.
+  const demo = path.resolve(rootDir, entry === 'scroll.html' ? 'content/scroll-guide.mdx' : 'content/atlas-guide.mdx');
+  return fs.existsSync(demo) ? { demo, source: fs.readFileSync(demo, 'utf8') } : null;
 }
 
 /**
