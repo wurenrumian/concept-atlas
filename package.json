@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite",
     "validate": "node scripts/validate-content.mjs",
+    "audit:css": "node scripts/css-usage-audit.mjs",
     "test": "node --test \"test/**/*.test.mjs\"",
     "sync": "node scripts/sync-template.mjs",
     "check:sync": "node scripts/sync-template.mjs --check",
