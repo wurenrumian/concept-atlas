@@ -38,6 +38,15 @@
 [data-style='elastic'] .semantic-relation-path,
 [data-style='elastic'] .semantic-decision-matrix,
 [data-style='elastic'] .semantic-compare-table,
+[data-style='elastic'] .semantic-worked-example,
+[data-style='elastic'] .semantic-data-table,
+[data-style='elastic'] .semantic-state-machine,
+[data-style='elastic'] .semantic-quiz,
+[data-style='elastic'] .semantic-key-takeaways,
+[data-style='elastic'] .semantic-metric,
+[data-style='elastic'] .semantic-code-diff,
+[data-style='elastic'] .semantic-decision-tree,
+[data-style='elastic'] .semantic-feedback-loop,
 [data-style='elastic'] .semantic-chart,
 [data-style='elastic'] .semantic-mermaid,
 [data-style='elastic'] .semantic-relation-map,
@@ -258,7 +267,8 @@
 }
 
 [data-style='elastic'] .semantic-decision-matrix th,
-[data-style='elastic'] .semantic-compare-table th {
+[data-style='elastic'] .semantic-compare-table th,
+[data-style='elastic'] .semantic-data-table th {
   padding: 10px 16px;
   border: 0;
   border-bottom: 1px solid var(--border-medium);
@@ -271,7 +281,8 @@
 }
 
 [data-style='elastic'] .semantic-decision-matrix td,
-[data-style='elastic'] .semantic-compare-table td {
+[data-style='elastic'] .semantic-compare-table td,
+[data-style='elastic'] .semantic-data-table td {
   padding: 10px 16px;
   border: 0;
   border-bottom: 1px solid var(--border-subtle);
@@ -281,12 +292,14 @@
 }
 
 [data-style='elastic'] .semantic-decision-matrix tbody tr:hover td,
-[data-style='elastic'] .semantic-compare-table tbody tr:hover td {
+[data-style='elastic'] .semantic-compare-table tbody tr:hover td,
+[data-style='elastic'] .semantic-data-table tbody tr:hover td {
   background: var(--bg-hover-soft);
 }
 
 [data-style='elastic'] .semantic-decision-matrix tr:last-child td,
-[data-style='elastic'] .semantic-compare-table tr:last-child td {
+[data-style='elastic'] .semantic-compare-table tr:last-child td,
+[data-style='elastic'] .semantic-data-table tr:last-child td {
   border-bottom: 0;
 }
 
@@ -446,6 +459,15 @@
 [data-style='elastic'] .semantic-relation-path,
 [data-style='elastic'] .semantic-decision-matrix,
 [data-style='elastic'] .semantic-compare-table,
+[data-style='elastic'] .semantic-worked-example,
+[data-style='elastic'] .semantic-data-table,
+[data-style='elastic'] .semantic-state-machine,
+[data-style='elastic'] .semantic-quiz,
+[data-style='elastic'] .semantic-key-takeaways,
+[data-style='elastic'] .semantic-metric,
+[data-style='elastic'] .semantic-code-diff,
+[data-style='elastic'] .semantic-decision-tree,
+[data-style='elastic'] .semantic-feedback-loop,
 [data-style='elastic'] .semantic-chart,
 [data-style='elastic'] .semantic-mermaid,
 [data-style='elastic'] .semantic-relation-map,
@@ -458,11 +480,20 @@
 [data-style='elastic'] .semantic-invariant:hover,
 [data-style='elastic'] .semantic-failure-mode:hover,
 [data-style='elastic'] .semantic-tradeoff:hover,
+[data-style='elastic'] .semantic-quiz:hover,
+[data-style='elastic'] .semantic-key-takeaways:hover,
 [data-style='elastic'] .semantic-framework-model:hover,
 [data-style='elastic'] .semantic-model-matrix:hover,
 [data-style='elastic'] .semantic-model-formula:hover,
 [data-style='elastic'] .semantic-decision-matrix:hover,
 [data-style='elastic'] .semantic-compare-table:hover,
+[data-style='elastic'] .semantic-worked-example:hover,
+[data-style='elastic'] .semantic-data-table:hover,
+[data-style='elastic'] .semantic-state-machine:hover,
+[data-style='elastic'] .semantic-metric:hover,
+[data-style='elastic'] .semantic-code-diff:hover,
+[data-style='elastic'] .semantic-decision-tree:hover,
+[data-style='elastic'] .semantic-feedback-loop:hover,
 [data-style='elastic'] .semantic-chart:hover,
 [data-style='elastic'] .semantic-figure:hover {
   border-color: var(--border-strong);
@@ -571,4 +602,103 @@
   padding: 8px 12px 10px;
   border-top: 1px solid var(--border-subtle);
   font-family: var(--font-sans);
+}
+
+/* ===========================================================================
+   LEARNING / PROVENANCE / DATA — elastic grammar.
+   Bordered 4px inner chips on 6px panels, tonal 4px tone bars, a filled
+   action button, and a data-dense table with row hover. Surfaces lift one
+   pixel on the pack's 250ms curve.
+   =========================================================================== */
+
+/* Worked example: tonal index chip, subdivided rows. */
+[data-style='elastic'] .worked-problem {
+  border-radius: var(--radius-1);
+  background: var(--bg-subtle);
+}
+[data-style='elastic'] .worked-step { border-top-color: var(--border-subtle); }
+[data-style='elastic'] .worked-step-marker {
+  border: 0;
+  border-radius: var(--radius-1);
+  background: color-mix(in srgb, var(--primary) 14%, var(--bg-surface));
+  color: var(--primary);
+  font-family: var(--font-mono);
+}
+[data-style='elastic'] .worked-step-title { font-family: var(--font-sans); font-weight: 600; }
+[data-style='elastic'] .worked-step-reason { border-left-color: var(--border-medium); }
+
+/* Data table: subdued header, hoverable dense rows. */
+[data-style='elastic'] .semantic-data-table .data-table th { font-weight: 600; }
+[data-style='elastic'] .data-table-caption { font-family: var(--font-sans); }
+
+/* Behaviour models: 4px chips with a 4px tonal edge. */
+[data-style='elastic'] .state-node,
+[data-style='elastic'] .decision-node,
+[data-style='elastic'] .feedback-node {
+  border: 1px solid var(--border-medium);
+  border-inline-start-width: 4px;
+  border-radius: var(--radius-1);
+  background: var(--bg-subtle);
+  transition: background-color var(--elastic-motion), border-color var(--elastic-motion), transform var(--elastic-motion);
+}
+[data-style='elastic'] .state-node.is-initial { border-inline-start-color: var(--accent-emerald); }
+[data-style='elastic'] .state-node.is-terminal { border-inline-start-color: var(--accent-rose); }
+[data-style='elastic'] .decision-branch.tone-success > .decision-node { border-inline-start-color: var(--accent-emerald); }
+[data-style='elastic'] .decision-branch.tone-warn > .decision-node { border-inline-start-color: var(--accent-amber); }
+[data-style='elastic'] .decision-branch.tone-danger > .decision-node { border-inline-start-color: var(--accent-rose); }
+[data-style='elastic'] .state-node:hover,
+[data-style='elastic'] .decision-node:hover,
+[data-style='elastic'] .feedback-node:hover { background: var(--bg-surface); }
+[data-style='elastic'] .decision-question { border-radius: var(--radius-1); background: var(--bg-subtle); }
+[data-style='elastic'] .decision-children { border-left-style: solid; border-left-color: var(--border-subtle); }
+[data-style='elastic'] .state-machine-transitions li { border-bottom-color: var(--border-subtle); }
+
+/* Quiz: a filled action button with the elastic lift. */
+[data-style='elastic'] .quiz-question { font-family: var(--font-sans); font-weight: 600; }
+[data-style='elastic'] .quiz-toggle {
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-2);
+  background: var(--primary);
+  color: var(--on-accent);
+  font-weight: 600;
+  transition: background-color var(--elastic-motion), transform var(--elastic-motion);
+}
+[data-style='elastic'] .quiz-toggle:hover { background: var(--primary-light); transform: translateY(-1px); }
+[data-style='elastic'] .quiz-answer {
+  border: 1px solid var(--border-subtle);
+  border-inline-start-width: 4px;
+  border-radius: var(--radius-1);
+  background: color-mix(in srgb, var(--accent-emerald) 8%, var(--bg-surface));
+}
+
+/* Provenance: EuiBadge-style bordered chips; confidence tints by level. */
+[data-style='elastic'] .semantic-source { border-radius: var(--radius-1); background: var(--bg-subtle); }
+[data-style='elastic'] .semantic-confidence {
+  border-radius: var(--radius-2);
+  border-inline-start-width: 4px;
+  background: color-mix(in srgb, var(--annotation-accent, var(--border-medium)) 6%, var(--bg-surface));
+}
+[data-style='elastic'] .confidence-badge { border-radius: var(--radius-1); background: var(--bg-subtle); }
+[data-style='elastic'] .confidence-high { border-inline-start-color: var(--accent-emerald); }
+[data-style='elastic'] .confidence-medium { border-inline-start-color: var(--accent-amber); }
+[data-style='elastic'] .confidence-low { border-inline-start-color: var(--accent-rose); }
+
+/* Metric: a stat panel that lifts on hover. */
+[data-style='elastic'] .metric-value { font-family: var(--font-sans); font-weight: 600; letter-spacing: -0.02em; }
+[data-style='elastic'] .semantic-metric { transition: border-color var(--elastic-motion), transform var(--elastic-motion); }
+[data-style='elastic'] .semantic-metric:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+
+/* Term popover and code diff. */
+[data-style='elastic'] .semantic-term { border-bottom-style: solid; border-bottom-color: var(--border-strong); }
+[data-style='elastic'] .term-popover { border-radius: var(--radius-2); box-shadow: var(--shadow-pop); }
+[data-style='elastic'] .code-diff-label { font-family: var(--font-sans); }
+
+/* New inner units join the shared fade-in beat. */
+[data-style='elastic'] .worked-step,
+[data-style='elastic'] .state-node,
+[data-style='elastic'] .decision-node,
+[data-style='elastic'] .feedback-node,
+[data-style='elastic'] .state-machine-transitions li,
+[data-style='elastic'] .data-table tbody tr {
+  animation: ca-fade var(--elastic-motion) backwards;
 }

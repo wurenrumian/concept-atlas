@@ -12,6 +12,8 @@
 [data-style='manuscript'] .semantic-invariant,
 [data-style='manuscript'] .semantic-failure-mode,
 [data-style='manuscript'] .semantic-tradeoff,
+[data-style='manuscript'] .semantic-quiz,
+[data-style='manuscript'] .semantic-key-takeaways,
 [data-style='manuscript'] .semantic-example,
 [data-style='manuscript'] .semantic-boundary,
 [data-style='manuscript'] .semantic-counterexample {
@@ -31,6 +33,8 @@
 [data-style='manuscript'] .semantic-invariant > .semantic-tag,
 [data-style='manuscript'] .semantic-failure-mode > .semantic-tag,
 [data-style='manuscript'] .semantic-tradeoff > .semantic-tag,
+[data-style='manuscript'] .semantic-quiz > .semantic-tag,
+[data-style='manuscript'] .semantic-key-takeaways > .semantic-tag,
 [data-style='manuscript'] .semantic-example > .semantic-tag,
 [data-style='manuscript'] .semantic-boundary > .semantic-tag,
 [data-style='manuscript'] .semantic-counterexample > .semantic-tag {
@@ -55,6 +59,8 @@
 [data-style='manuscript'] .semantic-boundary { --record-accent: var(--accent-amber); }
 [data-style='manuscript'] .semantic-counterexample { --record-accent: var(--accent-rose); }
 [data-style='manuscript'] .semantic-invariant { --record-accent: var(--primary-light); }
+[data-style='manuscript'] .semantic-quiz { --record-accent: var(--accent-cyan); }
+[data-style='manuscript'] .semantic-key-takeaways { --record-accent: var(--accent-emerald); }
 
 [data-style='manuscript'] .tradeoff-option { border-radius: 2px; background: var(--bg-canvas); }
 
@@ -68,6 +74,13 @@
 [data-style='manuscript'] .semantic-relation-path,
 [data-style='manuscript'] .semantic-decision-matrix,
 [data-style='manuscript'] .semantic-compare-table,
+[data-style='manuscript'] .semantic-worked-example,
+[data-style='manuscript'] .semantic-data-table,
+[data-style='manuscript'] .semantic-state-machine,
+[data-style='manuscript'] .semantic-metric,
+[data-style='manuscript'] .semantic-code-diff,
+[data-style='manuscript'] .semantic-decision-tree,
+[data-style='manuscript'] .semantic-feedback-loop,
 [data-style='manuscript'] .semantic-chart,
 [data-style='manuscript'] .semantic-mermaid,
 [data-style='manuscript'] .semantic-relation-map,
@@ -117,6 +130,15 @@
 [data-style='manuscript'] .continuous-grid > .semantic-model-funnel,
 [data-style='manuscript'] .continuous-grid > .semantic-decision-matrix,
 [data-style='manuscript'] .continuous-grid > .semantic-compare-table,
+[data-style='manuscript'] .continuous-grid > .semantic-worked-example,
+[data-style='manuscript'] .continuous-grid > .semantic-data-table,
+[data-style='manuscript'] .continuous-grid > .semantic-state-machine,
+[data-style='manuscript'] .continuous-grid > .semantic-quiz,
+[data-style='manuscript'] .continuous-grid > .semantic-key-takeaways,
+[data-style='manuscript'] .continuous-grid > .semantic-metric,
+[data-style='manuscript'] .continuous-grid > .semantic-code-diff,
+[data-style='manuscript'] .continuous-grid > .semantic-decision-tree,
+[data-style='manuscript'] .continuous-grid > .semantic-feedback-loop,
 [data-style='manuscript'] .continuous-grid > .semantic-chart,
 [data-style='manuscript'] .continuous-grid > .semantic-mermaid,
 [data-style='manuscript'] .continuous-grid > .semantic-relation-map,
@@ -371,6 +393,13 @@
 [data-style='manuscript'] .semantic-model-funnel,
 [data-style='manuscript'] .semantic-decision-matrix,
 [data-style='manuscript'] .semantic-compare-table,
+[data-style='manuscript'] .semantic-worked-example,
+[data-style='manuscript'] .semantic-data-table,
+[data-style='manuscript'] .semantic-state-machine,
+[data-style='manuscript'] .semantic-metric,
+[data-style='manuscript'] .semantic-code-diff,
+[data-style='manuscript'] .semantic-decision-tree,
+[data-style='manuscript'] .semantic-feedback-loop,
 [data-style='manuscript'] .semantic-chart,
 [data-style='manuscript'] .semantic-mermaid,
 [data-style='manuscript'] .semantic-relation-map,
@@ -384,6 +413,8 @@
 [data-style='manuscript'] .semantic-invariant:hover,
 [data-style='manuscript'] .semantic-failure-mode:hover,
 [data-style='manuscript'] .semantic-tradeoff:hover,
+[data-style='manuscript'] .semantic-quiz:hover,
+[data-style='manuscript'] .semantic-key-takeaways:hover,
 [data-style='manuscript'] .semantic-framework-model:hover,
 [data-style='manuscript'] .semantic-model-matrix:hover,
 [data-style='manuscript'] .semantic-model-formula:hover,
@@ -462,3 +493,80 @@
   color: color-mix(in srgb, var(--code-text) 40%, transparent);
   border-right-color: color-mix(in srgb, var(--code-text) 16%, transparent);
 }
+
+/* ===========================================================================
+   LEARNING / PROVENANCE / DATA — manuscript grammar.
+   Steps read as a ruled ledger, stamps replace chips, and numerals sit in the
+   serif heading face; nothing gains a rounded "app card" edge.
+   =========================================================================== */
+
+/* Worked example: each step is a ledger row under the running rule. */
+[data-style='manuscript'] .worked-problem {
+  border-radius: 0;
+  border-left: 2px solid color-mix(in srgb, var(--border-strong) 70%, transparent);
+  background: transparent;
+  padding: 4px 0 4px 12px;
+}
+[data-style='manuscript'] .worked-step { border-top-color: var(--border-subtle); }
+[data-style='manuscript'] .worked-step-marker {
+  border-radius: 2px;
+  font-family: var(--font-data);
+}
+[data-style='manuscript'] .worked-step-title { font-family: var(--font-heading); font-weight: 600; }
+[data-style='manuscript'] .worked-step-reason { border-left-width: 1px; }
+[data-style='manuscript'] .worked-step-reason span { font-family: var(--font-label); }
+
+/* Data table: a ruled ledger, no fill. */
+[data-style='manuscript'] .semantic-data-table .data-table th {
+  border-bottom: 1px solid var(--border-strong);
+  background: transparent;
+  font-family: var(--font-heading);
+  font-weight: 600;
+}
+[data-style='manuscript'] .semantic-data-table .data-table td { font-variant-numeric: tabular-nums; }
+
+/* Behaviour models: near-square inner stamps, no fills. */
+[data-style='manuscript'] .state-node,
+[data-style='manuscript'] .decision-node,
+[data-style='manuscript'] .feedback-node {
+  border-radius: 2px;
+  background: transparent;
+}
+[data-style='manuscript'] .state-node { border-inline-start-width: 3px; }
+[data-style='manuscript'] .state-machine-transitions li { border-bottom: 1px solid var(--border-subtle); }
+[data-style='manuscript'] .decision-question { border-radius: 2px; background: transparent; border-left: 2px solid var(--border-strong); padding-left: 12px; }
+[data-style='manuscript'] .decision-children { border-left-style: solid; border-left-color: var(--border-subtle); }
+[data-style='manuscript'] .decision-outcome { font-family: var(--font-heading); font-weight: 600; }
+
+/* Quiz: a ruled stamp button and a marginal answer. */
+[data-style='manuscript'] .quiz-toggle {
+  border-radius: 2px;
+  background: transparent;
+  font-family: var(--font-label);
+}
+[data-style='manuscript'] .quiz-toggle:hover { background: var(--bg-highlight); }
+[data-style='manuscript'] .quiz-question { font-family: var(--font-heading); font-weight: 600; }
+[data-style='manuscript'] .quiz-answer { border-radius: 2px; border-inline-start-width: 1px; background: transparent; }
+
+/* Provenance: stamps, not pills. */
+[data-style='manuscript'] .semantic-source { border-radius: 2px; background: transparent; }
+[data-style='manuscript'] .confidence-badge {
+  border: 1px solid color-mix(in srgb, currentColor 55%, transparent);
+  border-radius: 2px;
+  background: transparent;
+  font-family: var(--font-label);
+}
+[data-style='manuscript'] .confidence-basis { font-style: italic; }
+[data-style='manuscript'] .semantic-confidence { border-radius: 2px; background: transparent; }
+
+/* Metric: a serif folio number with a tracked label. */
+[data-style='manuscript'] .metric-value { font-family: var(--font-heading); font-weight: 600; }
+[data-style='manuscript'] .metric-label { text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* Term and code diff. */
+[data-style='manuscript'] .semantic-term { border-bottom-style: solid; border-bottom-color: var(--border-strong); }
+[data-style='manuscript'] .term-popover { border-radius: 2px; }
+[data-style='manuscript'] .code-diff-label { font-family: var(--font-label); }
+
+/* Index stamps settle with the page instead of popping. */
+[data-style='manuscript'] .worked-step-marker { animation: none; }

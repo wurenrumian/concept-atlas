@@ -162,6 +162,11 @@ Scroll 用章节组织阅读顺序。共享组件放在章节中，不需要为�
 | 压缩结论 | `Insight`、`Callout`、`NoteGrid` |
 | 说明限制 | `Boundary`、`Counterexample`、`FailureMode` |
 | 保留证据 | `Evidence`、`Invariant`、`Details` |
+| 教学推演 | `WorkedExample`、`Step`、`Quiz`、`KeyTakeaways` |
+| 标注来源 | `Source`、`Confidence`、`Cite` / `References` |
+| 表达状态与分支 | `StateMachine`、`DecisionTree`、`FeedbackLoop` |
+| 呈现数据 | `DataTable`、`Metric`、`Chart` |
+| 解释改动 | `CodeDiff`、`CodeBlock` |
 
 推荐一个基本节奏：
 
@@ -248,6 +253,19 @@ MDX 属性使用 JavaScript 表达式。字符串要加引号，数组和对象�
 | `CodeBlock` | `code` / `language` / `title` / `caption` / `lineNumbers` / `wrap` | `string` / `string` / `string` / `string` / `boolean` / `boolean` |
 | `Figure` | `src` / `alt` / `caption` / `label` | `string`（相对路径构建时内联）/ `string` / `string` / `string` |
 | `References` | `items` | `{ id: string, authors?: string, year?: string, title?: string, url?: string, source?: string, note?: string }[]` |
+| `WorkedExample` | `title` / `problem` | `string` / `string`（子内容为 `Step`） |
+| `Step` | `number` / `title` / `reason` | `string` / `string` / `string`（`reason` 记录该步理由） |
+| `Quiz` | `question` / `answer` / `tone` | `string` / `string` / `'info' \| 'success' \| 'warn' \| 'danger'`（子内容为解析） |
+| `KeyTakeaways` | `items` | `string[]` |
+| `Source` | `kind` / `label` / `href` | `'spec' \| 'rfc' \| 'implementation' \| 'experiment' \| 'experience' \| 'reference'` / `string` / `string` |
+| `Confidence` | `level` / `basis` | `'high' \| 'medium' \| 'low'` / `string` |
+| `Term` | `name` / `definition` | `string` / `string`（也可把定义写成子内容） |
+| `DataTable` | `headers` / `rows` | `string[]` / `string[][]` |
+| `Metric` | `label` / `value` / `unit` / `delta` / `trend` / `note` | `string` / `string \| number` / `string` / `string` / `'up' \| 'down' \| 'flat'` / `string` |
+| `StateMachine` | `states` / `transitions` / `initial` | `{ id: string, label?: string, description?: string, terminal?: boolean }[]` / `{ from: string, to: string, event?: string, guard?: string }[]` / `string` |
+| `DecisionTree` | `question` / `branches` | `string` / `{ condition?: string, outcome?: string, note?: string, tone?: string, branches?: DecisionBranch[] }[]` |
+| `FeedbackLoop` | `type` / `nodes` | `'reinforcing' \| 'balancing'` / `{ label?: string, title?: string, description?: string }[]` |
+| `CodeDiff` | `before` / `after` / `language` / `title` / `caption` | `string` / `string` / `string` / `string` / `string` |
 
 组件也支持 JSX 子内容作为备用写法，例如 `<Flow>...</Flow>`、`<DecisionMatrix>...</DecisionMatrix>`。但带数据属性的写法更适合让 AI 稳定生成和检查。
 
@@ -267,9 +285,12 @@ MDX 属性使用 JavaScript 表达式。字符串要加引号，数组和对象�
 ```text
 页面外壳：ExplainPage、ConceptGraph、ConceptNode、ScrollDocument、ScrollSection
 知识语义：Overview、Definition、Mechanism、Prerequisite、Input、Output、Boundary
-代码展示：Implementation、CodeBlock
+代码展示：Implementation、CodeBlock、CodeDiff
 论证证据：Example、Counterexample、Evidence、Invariant、FailureMode、Tradeoff
+学习闭环：LearningObjectives、KeyQuestion、WorkedExample、Step、Quiz、KeyTakeaways
+来源与术语：Source、Confidence、Term
 信息模型：Flow、Timeline、Compare、DecisionMatrix、FrameworkModel、MatrixModel
+数据与行为：DataTable、Metric、StateMachine、DecisionTree、FeedbackLoop
 阅读组件：Insight、Callout、Details、NoteGrid、Tabs、Columns、Stack、Grid、Split
 图形组件：Mermaid、RelationMap、RelationPath
 扩展能力：Math、MathBlock、Chart、Figure、Cite、References

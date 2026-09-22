@@ -39,6 +39,15 @@ test('atlas example renders its concept tree, charts and math', async () => {
   assert.match(html, /figure-zoom-hint/);
   // The overlay is mounted only on demand, so it must not be in the initial tree.
   assert.doesNotMatch(html, /image-zoom-overlay/);
+  // The learning/provenance/data components must actually render from the guide.
+  for (const cls of [
+    'semantic-worked-example', 'worked-step-reason', 'semantic-data-table',
+    'semantic-state-machine', 'semantic-quiz', 'semantic-key-takeaways',
+    'semantic-metric', 'semantic-code-diff', 'semantic-decision-tree',
+    'semantic-feedback-loop', 'semantic-source', 'semantic-confidence', 'semantic-term',
+  ]) {
+    assert.match(html, new RegExp(cls), `atlas guide missing ${cls}`);
+  }
 });
 
 test('scroll example renders prose, charts, math and citations', async () => {
@@ -50,6 +59,14 @@ test('scroll example renders prose, charts, math and citations', async () => {
   assert.match(html, /semantic-references|reference-list/);
   // Frontmatter must not leak into rendered output.
   assert.doesNotMatch(html, /title: scroll-guide/);
+  for (const cls of [
+    'semantic-worked-example', 'semantic-data-table', 'semantic-state-machine',
+    'semantic-quiz', 'semantic-key-takeaways', 'semantic-metric',
+    'semantic-code-diff', 'semantic-decision-tree', 'semantic-feedback-loop',
+    'semantic-source', 'semantic-confidence', 'semantic-term',
+  ]) {
+    assert.match(html, new RegExp(cls), `scroll guide missing ${cls}`);
+  }
 });
 
 test('the long-form compile-runtime example renders', async () => {

@@ -558,6 +558,343 @@ export function Tradeoff({ title = '工程权衡', options = [], children }) {
 }
 Tradeoff.displayName = 'Tradeoff';
 
+// Learning, provenance and data components --------------------------------
+
+/**
+ * A complete derivation, not just its result. `Example` shows an outcome and
+ * `Flow` shows stages; a worked example shows *why* each step follows from the
+ * last, so it teaches the reasoning rather than reporting the answer.
+ */
+export function WorkedExample({ title = '推演过程', problem, children }) {
+  return (
+    <section className="semantic-worked-example">
+      <div className="framework-model-head">
+        <span className="semantic-tag">✎ {title}</span>
+        <code>WORKED EXAMPLE</code>
+      </div>
+      {problem && <div className="worked-problem">{problem}</div>}
+      <ol className="worked-steps">{children}</ol>
+    </section>
+  );
+}
+WorkedExample.displayName = 'WorkedExample';
+
+/** One step of a WorkedExample. `reason` records the justification. */
+export function Step({ number, title, reason, children }) {
+  return (
+    <li className="worked-step">
+      <div className={`worked-step-marker${number ? '' : ' is-auto'}`}>{number}</div>
+      <div className="worked-step-body">
+        {title && <strong className="worked-step-title">{title}</strong>}
+        {children && <div className="worked-step-content">{children}</div>}
+        {reason && <div className="worked-step-reason"><span>为什么</span>{reason}</div>}
+      </div>
+    </li>
+  );
+}
+Step.displayName = 'Step';
+
+/**
+ * Neutral semantic table. `Compare` and `DecisionMatrix` carry an argument;
+ * this is the plain tabular form for data that has no comparative stance.
+ */
+export function DataTable({ title, caption, headers = [], rows = [], children }) {
+  const head = Array.isArray(headers) ? headers : [];
+  const body = Array.isArray(rows) ? rows : [];
+  const hasData = head.length > 0 || body.length > 0;
+  return (
+    <figure className="semantic-data-table">
+      {title && (
+        <div className="framework-model-head">
+          <span className="semantic-tag">▤ {title}</span>
+          <code>TABLE</code>
+        </div>
+      )}
+      {hasData ? (
+        <div className="data-table-scroll">
+          <table className="data-table">
+            {head.length > 0 && (
+              <thead>
+                <tr>{head.map((cell, index) => <th key={index}>{cell}</th>)}</tr>
+              </thead>
+            )}
+            <tbody>
+              {body.map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  {(Array.isArray(row) ? row : [row]).map((cell, cellIndex) => <td key={cellIndex}>{cell}</td>)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : children}
+      {caption && <figcaption className="data-table-caption">{caption}</figcaption>}
+    </figure>
+  );
+}
+DataTable.displayName = 'DataTable';
+
+/**
+ * States plus transitions. `Flow` is linear and `Timeline` is chronological;
+ * a state machine expresses cycles, guarded transitions and terminal states.
+ */
+export function StateMachine({ title = '状态机', initial, states = [], transitions = [], children }) {
+  const list = Array.isArray(states) ? states.filter(Boolean) : [];
+  const edges = Array.isArray(transitions) ? transitions.filter(Boolean) : [];
+  return (
+    <section className="semantic-state-machine">
+      <div className="framework-model-head">
+        <span className="semantic-tag">⇄ {title}</span>
+        {initial && <code>INITIAL · {initial}</code>}
+      </div>
+      {list.length > 0 ? (
+        <>
+          <div className="state-machine-states">
+            {list.map((state, index) => (
+              <div
+                key={state.id || index}
+                className={`state-node${state.terminal ? ' is-terminal' : ''}${state.id === initial ? ' is-initial' : ''}`}
+              >
+                <strong>{state.label || state.id}</strong>
+                {state.description && <span>{state.description}</span>}
+              </div>
+            ))}
+          </div>
+          {edges.length > 0 && (
+            <ul className="state-machine-transitions">
+              {edges.map((edge, index) => (
+                <li key={index}>
+                  <span className="state-from">{edge.from}</span>
+                  <span className="state-arrow">{edge.event ? `—${edge.event}→` : '→'}</span>
+                  <span className="state-to">{edge.to}</span>
+                  {edge.guard && <small>[{edge.guard}]</small>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      ) : children}
+    </section>
+  );
+}
+StateMachine.displayName = 'StateMachine';
+
+/** Immediate comprehension check with a revealed answer and explanation. */
+export function Quiz({ question, answer, children, tone = 'info' }) {
+  const [shown, setShown] = React.useState(false);
+  const safeTone = ['info', 'success', 'warn', 'danger'].includes(tone) ? tone : 'info';
+  const hasAnswer = answer !== undefined && answer !== null && answer !== '';
+  return (
+    <aside className={`semantic-quiz quiz-${safeTone}`} data-tone={safeTone}>
+      <div className="semantic-tag">? 自测</div>
+      {question && <p className="quiz-question">{question}</p>}
+      {hasAnswer ? (
+        <>
+          <button type="button" className="quiz-toggle" aria-expanded={shown} onClick={() => setShown(value => !value)}>
+            {shown ? '隐藏答案' : '显示答案'}
+          </button>
+          {shown && (
+            <div className="quiz-answer">
+              <strong>{answer}</strong>
+              {children && <div className="quiz-explanation">{children}</div>}
+            </div>
+          )}
+        </>
+      ) : children}
+    </aside>
+  );
+}
+Quiz.displayName = 'Quiz';
+
+const SOURCE_KIND_LABELS = {
+  spec: '规范',
+  rfc: 'RFC',
+  implementation: '实现',
+  experiment: '实测',
+  experience: '经验',
+  reference: '来源',
+};
+
+/**
+ * Inline provenance for a single claim. `References` lists a bibliography;
+ * `Source` marks *this* statement's origin and its kind of authority, which is
+ * what separates a language spec from an ABI convention or an observation.
+ */
+export function Source({ kind = 'reference', label, href, children }) {
+  const safeKind = SOURCE_KIND_LABELS[kind] ? kind : 'reference';
+  const text = children || label || href;
+  if (!text) return null;
+  return (
+    <span className={`semantic-source source-${safeKind}`} data-kind={safeKind}>
+      <span className="source-kind">{SOURCE_KIND_LABELS[safeKind]}</span>
+      {href ? <a href={href} target="_blank" rel="noreferrer">{text}</a> : <span>{text}</span>}
+    </span>
+  );
+}
+Source.displayName = 'Source';
+
+const CONFIDENCE_LABELS = { high: '高置信', medium: '中等置信', low: '低置信' };
+
+/** Wraps a claim with how strongly it is established, and on what basis. */
+export function Confidence({ level = 'medium', basis, children }) {
+  const safeLevel = CONFIDENCE_LABELS[level] ? level : 'medium';
+  return (
+    <div className={`semantic-confidence confidence-${safeLevel}`} data-level={safeLevel}>
+      <span className="confidence-badge">{CONFIDENCE_LABELS[safeLevel]}</span>
+      <div className="confidence-body">
+        {children}
+        {basis && <div className="confidence-basis">依据：{basis}</div>}
+      </div>
+    </div>
+  );
+}
+Confidence.displayName = 'Confidence';
+
+/** Compressed, scannable list of the points a section should leave behind. */
+export function KeyTakeaways({ title = '关键要点', items = [], children }) {
+  const list = Array.isArray(items) ? items.filter(Boolean) : [];
+  return (
+    <section className="semantic-key-takeaways">
+      <div className="semantic-tag">✓ {title}</div>
+      {list.length > 0 ? <ul>{list.map((item, index) => <li key={index}>{item}</li>)}</ul> : children}
+    </section>
+  );
+}
+KeyTakeaways.displayName = 'KeyTakeaways';
+
+/** A headline number with unit, change and source — the conclusion a chart implies. */
+export function Metric({ label, value, unit, delta, trend, note }) {
+  const safeTrend = ['up', 'down', 'flat'].includes(trend)
+    ? trend
+    : (typeof delta === 'string' && delta.trim().startsWith('-') ? 'down' : (delta ? 'up' : null));
+  return (
+    <div className="semantic-metric">
+      {label && <div className="metric-label">{label}</div>}
+      <div className="metric-value">
+        {value}
+        {unit && <span className="metric-unit">{unit}</span>}
+      </div>
+      {delta && <div className={`metric-delta trend-${safeTrend || 'flat'}`}>{delta}</div>}
+      {note && <div className="metric-note">{note}</div>}
+    </div>
+  );
+}
+Metric.displayName = 'Metric';
+
+/** Before/after code comparison, for explaining a fix or a refactor. */
+export function CodeDiff({ title = '代码对比', language = 'text', before, after, beforeLabel = '修改前', afterLabel = '修改后', caption }) {
+  const beforeText = typeof before === 'string' ? before.replace(/^\n+|\s+$/g, '') : '';
+  const afterText = typeof after === 'string' ? after.replace(/^\n+|\s+$/g, '') : '';
+  if (!beforeText && !afterText) return null;
+  const showLanguage = Boolean(language) && language !== 'text';
+  return (
+    <figure className="semantic-code-diff" data-language={language}>
+      <div className="semantic-code-head">
+        {title && <span className="semantic-code-title">{title}</span>}
+        {showLanguage && <span className="lang-badge">{language}</span>}
+      </div>
+      <div className="code-diff-panes">
+        <div className="code-diff-pane pane-before">
+          <div className="code-diff-label">{beforeLabel}</div>
+          <pre className="code-block"><code>{beforeText}</code></pre>
+        </div>
+        <div className="code-diff-pane pane-after">
+          <div className="code-diff-label">{afterLabel}</div>
+          <pre className="code-block"><code>{afterText}</code></pre>
+        </div>
+      </div>
+      {caption && <figcaption className="semantic-code-caption">{caption}</figcaption>}
+    </figure>
+  );
+}
+CodeDiff.displayName = 'CodeDiff';
+
+/**
+ * Inline term with a hover/focus definition, so dense prose does not need to
+ * break into a block-level `Glossary` for every word. Keyboard reachable.
+ */
+export function Term({ name, definition, children }) {
+  const term = name || childrenToText(children);
+  const description = definition || (name ? childrenToText(children) : '');
+  if (!term) return null;
+  return (
+    <span className="semantic-term" tabIndex={0} data-term={term}>
+      {term}
+      {description && <span className="term-popover" role="tooltip">{description}</span>}
+    </span>
+  );
+}
+Term.displayName = 'Term';
+
+function DecisionBranch({ node, depth }) {
+  if (!node) return null;
+  const kids = Array.isArray(node.branches) ? node.branches.filter(Boolean) : [];
+  return (
+    <li className={`decision-branch tone-${node.tone || 'info'}`}>
+      <div className="decision-node">
+        {node.condition && <span className="decision-condition">{node.condition}</span>}
+        {node.outcome && <strong className="decision-outcome">{node.outcome}</strong>}
+        {node.note && <small>{node.note}</small>}
+      </div>
+      {kids.length > 0 && (
+        <ul className="decision-children">
+          {kids.map((child, index) => <DecisionBranch key={index} node={child} depth={depth + 1} />)}
+        </ul>
+      )}
+    </li>
+  );
+}
+
+/** Branching decision paths with conditions — distinct from a linear Flow. */
+export function DecisionTree({ title = '决策路径', question, branches = [], children }) {
+  const list = Array.isArray(branches) ? branches.filter(Boolean) : [];
+  return (
+    <section className="semantic-decision-tree">
+      <div className="framework-model-head">
+        <span className="semantic-tag">⑂ {title}</span>
+        <code>DECISION</code>
+      </div>
+      {question && <div className="decision-question">{question}</div>}
+      {list.length > 0 ? (
+        <ul className="decision-tree-root">
+          {list.map((branch, index) => <DecisionBranch key={index} node={branch} depth={0} />)}
+        </ul>
+      ) : children}
+    </section>
+  );
+}
+DecisionTree.displayName = 'DecisionTree';
+
+/** Reinforcing or balancing feedback loop, closing back on its first node. */
+export function FeedbackLoop({ title = '反馈回路', type = 'reinforcing', nodes = [], children }) {
+  const list = Array.isArray(nodes) ? nodes.filter(Boolean) : [];
+  const safeType = type === 'balancing' ? 'balancing' : 'reinforcing';
+  const polarity = safeType === 'balancing' ? '−' : '+';
+  return (
+    <section className={`semantic-feedback-loop loop-${safeType}`}>
+      <div className="framework-model-head">
+        <span className="semantic-tag">↻ {title}</span>
+        <code>{safeType === 'balancing' ? 'BALANCING' : 'REINFORCING'}</code>
+      </div>
+      {list.length > 0 ? (
+        <div className="feedback-loop-track">
+          {list.map((node, index) => (
+            <React.Fragment key={index}>
+              <div className="feedback-node">
+                <strong>{node.label || node.title}</strong>
+                {node.description && <span>{node.description}</span>}
+              </div>
+              {index < list.length - 1 && <span className="feedback-arrow" aria-hidden="true">{polarity}</span>}
+            </React.Fragment>
+          ))}
+          <span className="feedback-return" aria-hidden="true">{polarity} ↺</span>
+        </div>
+      ) : children}
+    </section>
+  );
+}
+FeedbackLoop.displayName = 'FeedbackLoop';
+
 export function Columns({ children }) {
   return <div className="semantic-columns">{children}</div>;
 }

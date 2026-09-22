@@ -2522,6 +2522,381 @@ button.flow-box {
 .tradeoff-option span { color: var(--text-secondary); font-size: .86rem; }
 .tradeoff-option b { color: var(--text-primary); font-size: .72rem; margin-right: 5px; }
 
+/* ==========================================================================
+   LEARNING, PROVENANCE AND DATA COMPONENTS
+   Worked examples, self-checks, provenance, neutral tables, behaviour models.
+   ========================================================================== */
+
+/* -- Worked example: a numbered derivation with a reason per step. -- */
+.semantic-worked-example { margin: 14px 0; }
+.worked-problem {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-2);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.worked-steps { margin: 0; padding: 0; list-style: none; counter-reset: worked-step; }
+.worked-step {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border-subtle);
+  counter-increment: worked-step;
+}
+.worked-step:first-child { border-top: 0; }
+.worked-step-marker {
+  display: grid;
+  place-items: center;
+  align-self: start;
+  width: 26px;
+  height: 26px;
+  border: 1px solid color-mix(in srgb, var(--primary) 45%, transparent);
+  border-radius: var(--radius-1);
+  background: var(--bg-surface);
+  color: var(--primary-light);
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 700;
+}
+.worked-step-marker.is-auto::before { content: counter(worked-step); }
+.worked-step-body { min-width: 0; }
+.worked-step-title { display: block; color: var(--text-primary); font-size: 13px; font-weight: 700; line-height: 1.5; }
+.worked-step-content { margin-top: 4px; color: var(--text-secondary); font-size: 13px; line-height: 1.6; }
+.worked-step-content > :first-child { margin-top: 0; }
+.worked-step-content > :last-child { margin-bottom: 0; }
+.worked-step-reason {
+  margin-top: 6px;
+  padding-left: 10px;
+  border-left: 2px solid color-mix(in srgb, var(--accent-emerald) 45%, transparent);
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.worked-step-reason span {
+  margin-right: 6px;
+  color: var(--accent-emerald);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* -- Data table: neutral tabular form, edge-to-edge inside its frame. -- */
+.semantic-data-table { margin: 14px 0; }
+.data-table-scroll { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-medium);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+}
+.data-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-variant-numeric: var(--numeric-variant);
+}
+.data-table tr:last-child td { border-bottom: 0; }
+.data-table-caption { margin-top: 8px; color: var(--text-muted); font-size: 12px; }
+
+/* -- State machine: states as nodes, transitions as a readable edge list. -- */
+.semantic-state-machine { margin: 14px 0; }
+.state-machine-states {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+}
+.state-node {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-inline-start: 2px solid var(--border-strong);
+  border-radius: var(--radius-2);
+  background: var(--bg-card);
+}
+.state-node strong { color: var(--text-primary); font-size: 13px; }
+.state-node span { color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
+.state-node.is-initial { border-inline-start-color: var(--accent-emerald); }
+.state-node.is-terminal { border-inline-start-color: var(--accent-rose); }
+.state-machine-transitions { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.state-machine-transitions li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 12px;
+}
+.state-from { color: var(--text-secondary); }
+.state-arrow { color: var(--accent-amber); font-family: var(--font-data); font-size: 11px; }
+.state-to { color: var(--text-accent); font-weight: 700; }
+.state-machine-transitions small { color: var(--text-dim); }
+
+/* -- Quiz: question with a revealed answer. -- */
+.semantic-quiz { margin: 14px 0; }
+.quiz-question { margin: 8px 0 10px; color: var(--text-primary); font-size: 14px; font-weight: 600; line-height: 1.6; }
+.quiz-toggle {
+  padding: 5px 12px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-2);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.quiz-toggle:hover { border-color: var(--primary); background: var(--bg-highlight); }
+.quiz-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.quiz-answer {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-inline-start: 2px solid var(--accent-emerald);
+  border-radius: var(--radius-2);
+  background: var(--bg-subtle);
+}
+.quiz-answer strong { color: var(--text-primary); font-size: 13px; }
+.quiz-explanation { margin-top: 6px; color: var(--text-secondary); font-size: 13px; line-height: 1.6; }
+.quiz-warn { border-color: color-mix(in srgb, var(--accent-amber) 38%, transparent); }
+.quiz-danger { border-color: color-mix(in srgb, var(--accent-rose) 38%, transparent); }
+.quiz-success { border-color: color-mix(in srgb, var(--accent-emerald) 38%, transparent); }
+
+/* -- Source: inline provenance chip keyed to the kind of authority. -- */
+.semantic-source {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  margin: 0 2px;
+  padding: 1px 6px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-1);
+  background: var(--bg-subtle);
+  font-size: 0.82em;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.semantic-source .source-kind {
+  color: var(--text-muted);
+  font-size: 0.78em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.semantic-source a { color: var(--text-accent); text-decoration: none; }
+.semantic-source a:hover { text-decoration: underline; }
+.source-spec { border-color: color-mix(in srgb, var(--accent-cyan) 40%, transparent); }
+.source-rfc { border-color: color-mix(in srgb, var(--primary-light) 40%, transparent); }
+.source-implementation { border-color: color-mix(in srgb, var(--accent-emerald) 40%, transparent); }
+.source-experiment { border-color: color-mix(in srgb, var(--accent-amber) 40%, transparent); }
+.source-experience { border-color: color-mix(in srgb, var(--border-strong) 60%, transparent); }
+
+/* -- Confidence: wraps a claim with how strongly it is established. -- */
+.semantic-confidence {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-surface);
+}
+.confidence-badge {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.confidence-body { color: var(--text-secondary); font-size: 13px; line-height: 1.6; }
+.confidence-basis { margin-top: 5px; color: var(--text-muted); font-size: 12px; }
+.confidence-high { border-inline-start: 2px solid var(--accent-emerald); }
+.confidence-high .confidence-badge { color: var(--accent-emerald); }
+.confidence-medium { border-inline-start: 2px solid var(--accent-amber); }
+.confidence-medium .confidence-badge { color: var(--accent-amber); }
+.confidence-low { border-inline-start: 2px solid var(--accent-rose); }
+.confidence-low .confidence-badge { color: var(--accent-rose); }
+
+/* -- Key takeaways: a scannable closing list. -- */
+.semantic-key-takeaways { margin: 14px 0; }
+.semantic-key-takeaways ul { margin: 8px 0 0; padding-left: 0; list-style: none; display: grid; gap: 6px; }
+.semantic-key-takeaways li {
+  position: relative;
+  padding-left: 20px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.semantic-key-takeaways li::before {
+  content: '✓';
+  position: absolute;
+  left: 2px;
+  color: var(--accent-emerald);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* -- Metric: a headline number with unit, change and source note. -- */
+.semantic-metric { margin: 14px 0; padding: 14px 16px; }
+.metric-label { color: var(--text-muted); font-size: 12px; font-weight: 600; }
+.metric-value {
+  margin-top: 4px;
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: var(--numeric-variant);
+}
+.metric-unit { margin-left: 5px; color: var(--text-secondary); font-size: 15px; font-weight: 500; }
+.metric-delta { margin-top: 6px; font-size: 13px; font-weight: 700; }
+.metric-delta.trend-up { color: var(--accent-emerald); }
+.metric-delta.trend-down { color: var(--accent-rose); }
+.metric-delta.trend-flat { color: var(--text-muted); }
+.metric-note { margin-top: 6px; color: var(--text-muted); font-size: 12px; line-height: 1.5; }
+
+/* -- Code diff: two labelled code surfaces side by side. -- */
+.semantic-code-diff { margin: 14px 0; }
+.code-diff-panes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.code-diff-pane { min-width: 0; }
+.code-diff-label {
+  margin-bottom: 5px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.pane-before .code-diff-label { color: var(--accent-rose); }
+.pane-after .code-diff-label { color: var(--accent-emerald); }
+.code-diff-pane .code-block { margin: 0; height: 100%; font-size: 12.5px; }
+@media (max-width: 720px) {
+  .code-diff-panes { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* -- Term: inline term with a hover/focus definition. -- */
+.semantic-term {
+  position: relative;
+  border-bottom: 1px dotted var(--border-strong);
+  cursor: help;
+  outline: none;
+}
+.semantic-term:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.term-popover {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  z-index: 40;
+  width: max-content;
+  max-width: 260px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-2);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-pop);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.55;
+  text-align: left;
+  white-space: normal;
+  transform: translate(-50%, 4px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+}
+.semantic-term:hover .term-popover,
+.semantic-term:focus .term-popover,
+.semantic-term:focus-within .term-popover {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+/* -- Decision tree: branching conditions with nested outcomes. -- */
+.semantic-decision-tree { margin: 14px 0; }
+.decision-question {
+  margin-bottom: 10px;
+  padding: 9px 12px;
+  border-radius: var(--radius-2);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.55;
+}
+.decision-tree-root,
+.decision-children { margin: 0; padding: 0; list-style: none; }
+.decision-children { margin-top: 6px; margin-left: 14px; padding-left: 14px; border-left: 1px dashed var(--border-strong); display: grid; gap: 6px; }
+.decision-branch { display: grid; gap: 4px; }
+.decision-node {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  border-inline-start: 2px solid var(--border-strong);
+  border-radius: var(--radius-2);
+  background: var(--bg-card);
+}
+.decision-branch.tone-success > .decision-node { border-inline-start-color: var(--accent-emerald); }
+.decision-branch.tone-warn > .decision-node { border-inline-start-color: var(--accent-amber); }
+.decision-branch.tone-danger > .decision-node { border-inline-start-color: var(--accent-rose); }
+.decision-condition { color: var(--text-secondary); font-size: 12px; }
+.decision-condition::after { content: ' →'; color: var(--text-dim); }
+.decision-outcome { color: var(--text-primary); font-size: 13px; font-weight: 700; }
+.decision-node small { color: var(--text-muted); font-size: 11px; }
+
+/* -- Feedback loop: a cycle that closes back on its first node. -- */
+.semantic-feedback-loop { margin: 14px 0; }
+.feedback-loop-track { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; }
+.feedback-node {
+  flex: 1 0 130px;
+  min-width: 130px;
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-card);
+}
+.feedback-node strong { color: var(--text-primary); font-size: 13px; }
+.feedback-node span { color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
+.feedback-arrow {
+  display: grid;
+  place-items: center;
+  color: var(--accent-amber);
+  font-family: var(--font-data);
+  font-size: 14px;
+  font-weight: 700;
+}
+.loop-balancing .feedback-arrow,
+.loop-balancing .feedback-return { color: var(--accent-cyan); }
+.feedback-return {
+  flex: 1 0 100%;
+  margin-top: 2px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border-strong);
+  color: var(--accent-amber);
+  font-family: var(--font-data);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+}
+
 .semantic-callout {
   padding: 16px 20px;
   border-radius: 10px;
@@ -2900,6 +3275,15 @@ button.flow-box {
 .semantic-relation-path,
 .semantic-decision-matrix,
 .semantic-compare-table,
+.semantic-worked-example,
+.semantic-data-table,
+.semantic-state-machine,
+.semantic-quiz,
+.semantic-key-takeaways,
+.semantic-metric,
+.semantic-code-diff,
+.semantic-decision-tree,
+.semantic-feedback-loop,
 .draft-board .semantic-grid > .semantic-mermaid,
 .draft-board .semantic-grid > .semantic-relation-map {
   --component-accent: var(--primary);
@@ -2916,6 +3300,10 @@ button.flow-box {
 .semantic-failure-mode,
 .semantic-tradeoff { --component-accent: var(--accent-amber); }
 .semantic-invariant { --component-accent: var(--primary-light); }
+.semantic-quiz { --component-accent: var(--accent-cyan); }
+.semantic-key-takeaways { --component-accent: var(--accent-emerald); }
+.semantic-worked-example { --component-accent: var(--primary-light); }
+.semantic-decision-tree { --component-accent: var(--accent-amber); }
 
 .tradeoff-option { display: grid; gap: 4px; padding: 9px; border-radius: 8px; background: var(--bg-subtle); }
 

@@ -8,7 +8,7 @@
       <LearningObjectives items={['认识全部组件家族', '理解组件之间的职责边界', '选择合适组件编写自己的 MDX']} />
       <KeyQuestion>我需要表达的是一个事实、一种关系，还是一种组织信息的结构？</KeyQuestion>
       <Callout type="success" title="展厅导航">先看“知识结构”，再看“内容语义”和“经典模型”；最后打开“可视化与布局”和“扩展能力”，就能覆盖完整能力。</Callout>
-      <Children><ConceptRef id="structure-family" /><ConceptRef id="content-family" /><ConceptRef id="verification-family" /><ConceptRef id="concept-models" /><ConceptRef id="presentation-family" /><ConceptRef id="visual-family" /><ConceptRef id="extension-family" /></Children>
+      <Children><ConceptRef id="structure-family" /><ConceptRef id="content-family" /><ConceptRef id="verification-family" /><ConceptRef id="concept-models" /><ConceptRef id="presentation-family" /><ConceptRef id="visual-family" /><ConceptRef id="extension-family" /><ConceptRef id="learning-family" /><ConceptRef id="data-family" /></Children>
     </ConceptNode>
 
     <ConceptNode id="structure-family" title="知识结构组件：搭出可下钻的概念树" level="L1" parent="showroom" summary="页面、图谱、节点、子节点和跨节点关系共同构成导航骨架。">
@@ -154,6 +154,31 @@ npm run build`}</CodeBlock>
       <References title="本节点引用" items={[{id:'shannon1948',authors:'Shannon, C. E.',year:'1948',title:'A Mathematical Theory of Communication',source:'Bell System Technical Journal'},{id:'tufte1983',authors:'Tufte, E. R.',year:'1983',title:'The Visual Display of Quantitative Information',source:'Graphics Press'}]} />
     </ConceptNode>
 
+    <ConceptNode id="learning-family" title="学习闭环组件：从推演到自测再到收尾" level="L1" parent="showroom" summary="WorkedExample、Quiz、KeyTakeaways 与 Confidence 把讲解补成可推演、可自检、可追溯、可收束的闭环。">
+      <Definition>LearningObjectives 和 KeyQuestion 负责开场；这一组负责中段逐步推演、即时自测、来源与置信度标注，以及结尾的压缩要点。</Definition>
+      <WorkedExample title="一次动态库加载失败的完整追踪" problem="程序编译成功却在启动时退出，需要逐步定位而不是直接猜测。">
+        <Step number="1" title="确认格式与架构" reason="格式或架构不匹配会让 loader 直接拒绝文件">file app && readelf -h app</Step>
+        <Step number="2" title="检查直接依赖" reason="排除共享库缺失这一最常见原因">ldd app</Step>
+        <Step number="3" title="核对搜索路径" reason="依赖存在但不在 loader 的搜索路径上同样会失败">echo $LD_LIBRARY_PATH</Step>
+      </WorkedExample>
+      <Quiz question="哪个阶段负责解析跨文件符号？" answer="链接阶段" tone="success">
+        链接器把目标文件中的未定义引用与其他目标文件或库中的定义匹配起来，装载阶段只做重定位。
+      </Quiz>
+      <KeyTakeaways items={['每一步都要给出理由，而不只是结果', '自测用于主动回忆，而不是装饰', '结尾要点应压缩，而不是复述正文']} />
+      <Definition>ELF 的装载语义由规范定义<Source kind="spec" label="System V ABI" href="https://refspecs.linuxfoundation.org/elf/gabi4+/contents.html" />，而不是某个实现的约定。</Definition>
+      <Confidence level="high" basis="规范定义 + 实测复现">装载阶段的不变量由 ABI 明确规定，可由 loader 行为直接验证。</Confidence>
+    </ConceptNode>
+
+    <ConceptNode id="data-family" title="数据与行为模型：表格、指标、状态、分支与回路" level="L1" parent="showroom" summary="DataTable、Metric、StateMachine、DecisionTree、FeedbackLoop 和 CodeDiff 分别表达中立数据、头条数字、状态迁移、分支决策、反馈回路与代码改动。">
+      <Definition>当线性 Flow 和二维矩阵不足以表达信息时，用这些模型补上状态、分支、回路、数据形态和代码差异。缺页<Term name="缺页异常">访问未驻留内存页时由 MMU 触发的可恢复异常</Term>属于典型的状态迁移问题。</Definition>
+      <DataTable title="三种异常对比" caption="同一现象可能来自不同层次，先分类再定位。" headers={['异常', '触发条件', '典型信号']} rows={[['缺页', '访问未驻留页', '可恢复'], ['段错误', '非法地址访问', 'SIGSEGV'], ['除零', '整数除以零', 'SIGFPE']]} />
+      <Metric label="P99 延迟" value="128" unit="ms" delta="-18%" trend="down" note="相对上一版本，来自压测环境。" />
+      <StateMachine title="进程状态" initial="new" states={[{id:'new',label:'新建'},{id:'ready',label:'就绪'},{id:'running',label:'运行'},{id:'done',label:'终止',terminal:true}]} transitions={[{from:'new',to:'ready',event:'admit'},{from:'ready',to:'running',event:'dispatch'},{from:'running',to:'ready',event:'preempt'},{from:'running',to:'done',event:'exit'}]} />
+      <DecisionTree title="先看哪一层" question="页面没有渲染，先排查哪一层？" branches={[{condition:'有构建错误',outcome:'先修构建',tone:'danger'},{condition:'构建通过',outcome:'检查运行时',branches:[{condition:'组件抛错',outcome:'看错误边界',tone:'warn'},{condition:'数据为空',outcome:'检查数据来源',tone:'info'}]}]} />
+      <FeedbackLoop title="缓存命中回路" type="reinforcing" nodes={[{label:'命中率上升',description:'更多请求由缓存服务'},{label:'后端压力下降',description:'响应更快'},{label:'体验提升',description:'更多请求进入'}]} />
+      <CodeDiff language="javascript" title="避免空值崩溃" before={`const name = user.profile.name;`} after={`const name = user?.profile?.name ?? '匿名';`} caption="可选链与空值合并把运行时错误前移为可预期的默认值。" />
+    </ConceptNode>
+
     <Relation from="structure-family" to="content-family" type="precedes" label="先搭骨架" />
     <Relation from="content-family" to="verification-family" type="uses" label="补充证据" />
     <Relation from="concept-models" to="presentation-family" type="implements" label="结构落地" />
@@ -165,5 +190,8 @@ npm run build`}</CodeBlock>
     <Relation from="pyramid-funnel-demo" to="framework-demo" type="contrasts" label="分层 vs 循环" />
     <Relation from="math-demo" to="formula-demo" type="contrasts" label="LaTeX vs 纯文本公式" />
     <Relation from="chart-demo" to="matrix-demo" type="contrasts" label="连续数据 vs 二维定位" />
+    <Relation from="verification-family" to="learning-family" type="precedes" label="证据之后自测" />
+    <Relation from="learning-family" to="data-family" type="uses" label="自测需要数据模型" />
+    <Relation from="concept-models" to="data-family" type="contrasts" label="静态模型 vs 行为模型" />
   </ConceptGraph>
 </ExplainPage>

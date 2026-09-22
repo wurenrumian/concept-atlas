@@ -39,6 +39,15 @@
 [data-style='shadcn'] .semantic-relation-path,
 [data-style='shadcn'] .semantic-decision-matrix,
 [data-style='shadcn'] .semantic-compare-table,
+[data-style='shadcn'] .semantic-worked-example,
+[data-style='shadcn'] .semantic-data-table,
+[data-style='shadcn'] .semantic-state-machine,
+[data-style='shadcn'] .semantic-quiz,
+[data-style='shadcn'] .semantic-key-takeaways,
+[data-style='shadcn'] .semantic-metric,
+[data-style='shadcn'] .semantic-code-diff,
+[data-style='shadcn'] .semantic-decision-tree,
+[data-style='shadcn'] .semantic-feedback-loop,
 [data-style='shadcn'] .semantic-chart,
 [data-style='shadcn'] .semantic-mermaid,
 [data-style='shadcn'] .semantic-relation-map,
@@ -260,7 +269,8 @@
 }
 
 [data-style='shadcn'] .semantic-decision-matrix th,
-[data-style='shadcn'] .semantic-compare-table th {
+[data-style='shadcn'] .semantic-compare-table th,
+[data-style='shadcn'] .semantic-data-table th {
   padding: 10px 20px;
   border: 0;
   border-bottom: 1px solid var(--border-subtle);
@@ -271,7 +281,8 @@
 }
 
 [data-style='shadcn'] .semantic-decision-matrix td,
-[data-style='shadcn'] .semantic-compare-table td {
+[data-style='shadcn'] .semantic-compare-table td,
+[data-style='shadcn'] .semantic-data-table td {
   padding: 12px 20px;
   border: 0;
   border-bottom: 1px solid var(--border-subtle);
@@ -281,7 +292,8 @@
 }
 
 [data-style='shadcn'] .semantic-decision-matrix tr:last-child td,
-[data-style='shadcn'] .semantic-compare-table tr:last-child td {
+[data-style='shadcn'] .semantic-compare-table tr:last-child td,
+[data-style='shadcn'] .semantic-data-table tr:last-child td {
   border-bottom: 0;
 }
 
@@ -440,6 +452,15 @@
 [data-style='shadcn'] .semantic-relation-path,
 [data-style='shadcn'] .semantic-decision-matrix,
 [data-style='shadcn'] .semantic-compare-table,
+[data-style='shadcn'] .semantic-worked-example,
+[data-style='shadcn'] .semantic-data-table,
+[data-style='shadcn'] .semantic-state-machine,
+[data-style='shadcn'] .semantic-quiz,
+[data-style='shadcn'] .semantic-key-takeaways,
+[data-style='shadcn'] .semantic-metric,
+[data-style='shadcn'] .semantic-code-diff,
+[data-style='shadcn'] .semantic-decision-tree,
+[data-style='shadcn'] .semantic-feedback-loop,
 [data-style='shadcn'] .semantic-chart,
 [data-style='shadcn'] .semantic-mermaid,
 [data-style='shadcn'] .semantic-relation-map,
@@ -452,11 +473,20 @@
 [data-style='shadcn'] .semantic-invariant:hover,
 [data-style='shadcn'] .semantic-failure-mode:hover,
 [data-style='shadcn'] .semantic-tradeoff:hover,
+[data-style='shadcn'] .semantic-quiz:hover,
+[data-style='shadcn'] .semantic-key-takeaways:hover,
 [data-style='shadcn'] .semantic-framework-model:hover,
 [data-style='shadcn'] .semantic-model-matrix:hover,
 [data-style='shadcn'] .semantic-model-formula:hover,
 [data-style='shadcn'] .semantic-decision-matrix:hover,
 [data-style='shadcn'] .semantic-compare-table:hover,
+[data-style='shadcn'] .semantic-worked-example:hover,
+[data-style='shadcn'] .semantic-data-table:hover,
+[data-style='shadcn'] .semantic-state-machine:hover,
+[data-style='shadcn'] .semantic-metric:hover,
+[data-style='shadcn'] .semantic-code-diff:hover,
+[data-style='shadcn'] .semantic-decision-tree:hover,
+[data-style='shadcn'] .semantic-feedback-loop:hover,
 [data-style='shadcn'] .semantic-chart:hover,
 [data-style='shadcn'] .semantic-figure:hover {
   border-color: var(--border-strong);
@@ -568,4 +598,96 @@
 [data-style='shadcn'] .semantic-code-caption {
   padding: 8px 14px 10px;
   border-top: 1px solid var(--border-subtle);
+}
+
+/* ===========================================================================
+   LEARNING / PROVENANCE / DATA — shadcn grammar.
+   Inner units are muted hairline chips, the quiz action is a primary button,
+   provenance reads as secondary badges, and numbers use sans with tight
+   tracking. Everything answers on the shared 150ms curve.
+   =========================================================================== */
+
+/* Worked example: divided rows on the card, a small muted index chip. */
+[data-style='shadcn'] .worked-problem {
+  border-radius: var(--radius-2);
+  background: var(--bg-subtle);
+}
+[data-style='shadcn'] .worked-step { border-top-color: var(--border-subtle); }
+[data-style='shadcn'] .worked-step-marker {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-1);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+[data-style='shadcn'] .worked-step-title { font-family: var(--font-sans); font-weight: 600; letter-spacing: -0.01em; }
+[data-style='shadcn'] .worked-step-reason { border-left-color: var(--border-medium); color: var(--text-muted); }
+[data-style='shadcn'] .worked-step-reason span { color: var(--text-muted); font-weight: 500; }
+
+/* Data table: the shared shadcn table already applies; keep header muted. */
+[data-style='shadcn'] .semantic-data-table .data-table th { font-weight: 500; }
+[data-style='shadcn'] .data-table-caption { color: var(--text-muted); }
+
+/* Behaviour models: muted chips; tone moves to the border, not a left bar. */
+[data-style='shadcn'] .state-node,
+[data-style='shadcn'] .decision-node,
+[data-style='shadcn'] .feedback-node {
+  border: 1px solid var(--border-subtle);
+  border-inline-start-width: 1px;
+  border-radius: var(--radius-2);
+  background: var(--bg-subtle);
+  transition: background-color var(--shadcn-motion), border-color var(--shadcn-motion);
+}
+[data-style='shadcn'] .state-node.is-initial { border-color: var(--accent-emerald); }
+[data-style='shadcn'] .state-node.is-terminal { border-color: var(--accent-rose); }
+[data-style='shadcn'] .decision-branch.tone-success > .decision-node { border-color: var(--accent-emerald); }
+[data-style='shadcn'] .decision-branch.tone-warn > .decision-node { border-color: var(--accent-amber); }
+[data-style='shadcn'] .decision-branch.tone-danger > .decision-node { border-color: var(--accent-rose); }
+[data-style='shadcn'] .decision-question { border-radius: var(--radius-2); background: var(--bg-subtle); }
+[data-style='shadcn'] .decision-children { border-left-style: solid; border-left-color: var(--border-subtle); }
+[data-style='shadcn'] .decision-outcome { font-family: var(--font-sans); font-weight: 600; }
+[data-style='shadcn'] .state-machine-transitions li { border-bottom-color: var(--border-subtle); }
+
+/* Quiz: a primary action button and a muted answer panel. */
+[data-style='shadcn'] .quiz-question { font-family: var(--font-sans); font-weight: 600; letter-spacing: -0.01em; }
+[data-style='shadcn'] .quiz-toggle {
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-2);
+  background: var(--primary);
+  color: var(--on-accent);
+  font-weight: 500;
+  transition: background-color var(--shadcn-motion), border-color var(--shadcn-motion);
+}
+[data-style='shadcn'] .quiz-toggle:hover { background: var(--primary-light); border-color: var(--primary-light); }
+[data-style='shadcn'] .quiz-answer {
+  border: 1px solid var(--border-subtle);
+  border-inline-start-width: 1px;
+  border-radius: var(--radius-2);
+  background: var(--bg-subtle);
+}
+
+/* Provenance: secondary badges. */
+[data-style='shadcn'] .semantic-source { border-radius: 9999px; background: var(--bg-subtle); }
+[data-style='shadcn'] .semantic-confidence { border-radius: var(--radius-2); background: var(--bg-surface); }
+[data-style='shadcn'] .confidence-badge { border-radius: 9999px; background: var(--bg-subtle); }
+[data-style='shadcn'] .confidence-high .confidence-badge { background: color-mix(in srgb, var(--accent-emerald) 14%, var(--bg-subtle)); }
+[data-style='shadcn'] .confidence-medium .confidence-badge { background: color-mix(in srgb, var(--accent-amber) 14%, var(--bg-subtle)); }
+[data-style='shadcn'] .confidence-low .confidence-badge { background: color-mix(in srgb, var(--accent-rose) 14%, var(--bg-subtle)); }
+
+/* Metric: sans numerals, tight tracking. */
+[data-style='shadcn'] .metric-value { font-family: var(--font-sans); font-weight: 600; letter-spacing: -0.03em; }
+
+/* Term popover and code diff. */
+[data-style='shadcn'] .semantic-term { border-bottom-style: solid; border-bottom-color: var(--border-medium); }
+[data-style='shadcn'] .term-popover { border-radius: var(--radius-2); box-shadow: var(--shadow-md); }
+[data-style='shadcn'] .code-diff-label { font-weight: 500; }
+
+/* New inner units join the shared fade-in beat. */
+[data-style='shadcn'] .worked-step,
+[data-style='shadcn'] .state-node,
+[data-style='shadcn'] .decision-node,
+[data-style='shadcn'] .feedback-node,
+[data-style='shadcn'] .state-machine-transitions li,
+[data-style='shadcn'] .data-table tbody tr {
+  animation: ca-fade var(--shadcn-motion) backwards;
 }

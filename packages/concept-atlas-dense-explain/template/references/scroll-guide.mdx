@@ -58,6 +58,49 @@ npm run dev`}</CodeBlock>
     </ScrollGrid>
   </ScrollSection>
 
+  <ScrollSection title="把讲解补成学习闭环">
+    <ScrollProse>讲解不应只给结论。WorkedExample 记录每一步的理由，Quiz 触发主动回忆，KeyTakeaways 在结尾压缩真正要带走的部分。</ScrollProse>
+    <WorkedExample title="一次动态库加载失败的完整追踪" problem="程序编译成功却在启动时退出，需要逐步定位而不是直接猜测。">
+      <Step number="1" title="确认格式与架构" reason="格式或架构不匹配会让 loader 直接拒绝文件">file app && readelf -h app</Step>
+      <Step number="2" title="检查直接依赖" reason="排除共享库缺失这一最常见原因">ldd app</Step>
+      <Step number="3" title="核对搜索路径" reason="依赖存在但不在 loader 搜索路径上同样会失败">echo $LD_LIBRARY_PATH</Step>
+    </WorkedExample>
+    <Quiz question="哪个阶段负责解析跨文件符号？" answer="链接阶段" tone="success">
+      链接器把目标文件中的未定义引用与其他目标文件或库中的定义匹配起来，装载阶段只做重定位。
+    </Quiz>
+    <KeyTakeaways items={['每一步都要给出理由，而不只是结果', '自测用于主动回忆，而不是装饰', '结尾要点应压缩，而不是复述正文']} />
+  </ScrollSection>
+
+  <ScrollSection title="标注来源、置信度与术语">
+    <ScrollProse>同一句话的权威性并不相同。用 Source 标出来源类型，用 Confidence 标出确信程度，用 Term 在行内解释术语，读者才能判断该信多少。</ScrollProse>
+    <Confidence level="high" basis="规范定义 + 实测复现">
+      ELF 的装载语义由规范定义<Source kind="spec" label="System V ABI" href="https://refspecs.linuxfoundation.org/elf/gabi4+/contents.html" />，而非某个实现的约定。
+    </Confidence>
+    <Confidence level="medium" basis="单次压测，样本有限">
+      缺页<Term name="缺页异常">访问未驻留内存页时由 MMU 触发的可恢复异常</Term>是延迟波动的主要来源。
+    </Confidence>
+  </ScrollSection>
+
+  <ScrollSection title="中立数据与行为模型">
+    <ScrollProse>DataTable 承载没有比较立场的数据，Metric 给出头条数字，StateMachine、DecisionTree 和 FeedbackLoop 表达状态、分支与回路这三种 Flow 覆盖不了的结构。</ScrollProse>
+    <DataTable title="三种异常对比" caption="同一现象可能来自不同层次，先分类再定位。" headers={['异常', '触发条件', '典型信号']} rows={[['缺页', '访问未驻留页', '可恢复'], ['段错误', '非法地址访问', 'SIGSEGV'], ['除零', '整数除以零', 'SIGFPE']]} />
+    <ScrollGrid columns="3">
+      <Metric label="P99 延迟" value="128" unit="ms" delta="-18%" trend="down" note="相对上一版本。" />
+      <Metric label="可用性" value="99.95" unit="%" delta="+0.02%" trend="up" note="近 30 天。" />
+      <Metric label="错误率" value="0.7" unit="%" delta="+0.3%" trend="up" note="需要关注。" />
+    </ScrollGrid>
+    <StateMachine title="进程状态" initial="new" states={[{id:'new',label:'新建'},{id:'ready',label:'就绪'},{id:'running',label:'运行'},{id:'done',label:'终止',terminal:true}]} transitions={[{from:'new',to:'ready',event:'admit'},{from:'ready',to:'running',event:'dispatch'},{from:'running',to:'ready',event:'preempt'},{from:'running',to:'done',event:'exit'}]} />
+    <ScrollGrid columns="2">
+      <DecisionTree title="先看哪一层" question="页面没有渲染，先排查哪一层？" branches={[{condition:'有构建错误',outcome:'先修构建',tone:'danger'},{condition:'构建通过',outcome:'检查运行时',branches:[{condition:'组件抛错',outcome:'看错误边界',tone:'warn'},{condition:'数据为空',outcome:'检查数据来源',tone:'info'}]}]} />
+      <FeedbackLoop title="缓存命中回路" type="reinforcing" nodes={[{label:'命中率上升',description:'更多请求由缓存服务'},{label:'后端压力下降',description:'响应更快'},{label:'体验提升',description:'更多请求进入'}]} />
+    </ScrollGrid>
+  </ScrollSection>
+
+  <ScrollSection title="展示代码改动">
+    <ScrollProse>CodeDiff 把改动前后并排呈现，适合讲解一次修复或重构；它与单块的 CodeBlock 互补。</ScrollProse>
+    <CodeDiff language="javascript" title="避免空值崩溃" before={`const name = user.profile.name;`} after={`const name = user?.profile?.name ?? '匿名';`} caption="可选链与空值合并把运行时错误前移为可预期的默认值。" />
+  </ScrollSection>
+
   <ScrollSection title="补充配图与出处">
     <ScrollProse>配图和引用让讲解从断言变成可追溯的论述<Cite id="tufte1983" />。相对路径的图片会在构建时内联，输出仍是可离线打开的单文件。</ScrollProse>
     <Figure src="./assets/sample-diagram.svg" alt="概念缩放示意" label="图 1" caption="概念缩放：同一主题可以从 L0 全局逐层下钻到 L4 边界反例。" />

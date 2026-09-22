@@ -16,6 +16,8 @@
 - **知识类型**：节点可用可选的 `kind`（`system`/`stage`/`mechanism`/`artifact`/`failure`/`tool`/`boundary`/`decision`）标注知识角色，与层级正交；知识网络页可按类型筛选，校验器可对机制与故障节点执行可选契约。
 - **两种页面模式**：`atlas` 适合概念导航与关系图谱；`scroll` 适合连续阅读的长文档。
 - **共享信息组件**：支持 `CodeBlock`（代码、命令与伪代码）、`Insight`、`Flow`、`FrameworkModel`、`MatrixModel`、`Mermaid`、`RelationMap`、`NoteGrid`、`Callout`、`Details`、`Columns`、`Grid`、`Stack` 和 `Tabs` 等组件。
+- **学习闭环与溯源**：`LearningObjectives`/`KeyQuestion` 开场，`WorkedExample`/`Step` 逐步推演，`Quiz` 即时自测，`KeyTakeaways` 收束；`Source`/`Confidence` 标注来源类型与置信度，`Term` 提供行内术语释义。
+- **数据与行为模型**：`DataTable`（中立表格）、`Metric`（头条数字）、`StateMachine`（状态迁移）、`DecisionTree`（分支决策）、`FeedbackLoop`（反馈回路）和 `CodeDiff`（改动对比）。
 - **扩展能力**：`Math`/`MathBlock`（KaTeX 公式）、`Chart`（bar/line/pie 图表）、`Figure`（构建时内联图片）、`Cite`/`References`（引用与文献）。
 - **阅读体验可配置**：`scroll` 自动生成侧栏目录和阅读进度，并支持 `fontSize`/`scale`/`lineHeight` 调整正文大小。
 - **外观系统**：读者可随时切换配色皮肤（`aurora` 极光冷调 / `ember` 炉火暖调 / `verdant` 苔原森林 / `sakura` 樱雾粉紫 / `noir` 墨白单色）× 明暗模式 × 组件风格（`manuscript` 手稿排版 / `classic` 经典卡片 / `shadcn` 极简界面 / `elastic` 观测面板），选择在 localStorage 持久化；CLI/环境变量可把默认外观烘焙进产物。
