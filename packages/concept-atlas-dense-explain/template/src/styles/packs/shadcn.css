@@ -232,26 +232,6 @@
   font-weight: 600;
 }
 
-[data-style='shadcn'] .flow-box {
-  padding: 12px 14px;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-2);
-  background: var(--bg-surface);
-  transition: background-color var(--shadcn-motion), border-color var(--shadcn-motion);
-}
-
-[data-style='shadcn'] .flow-box.current-focus {
-  border-color: var(--primary);
-  background: var(--bg-subtle);
-  box-shadow: none;
-}
-
-[data-style='shadcn'] .flow-box.clickable:hover {
-  border-color: var(--border-strong);
-  background: var(--bg-subtle);
-  transform: none;
-}
-
 /* -- Tables: header on a muted strip, rows split by hairlines only. -- */
 [data-style='shadcn'] .semantic-decision-matrix,
 [data-style='shadcn'] .semantic-compare-table {
@@ -350,11 +330,9 @@
 [data-style='shadcn'] .concept-hero-card,
 [data-style='shadcn'] .node-block,
 [data-style='shadcn'] .subnode-card,
-[data-style='shadcn'] .relation-link-card,
 [data-style='shadcn'] .panel-rel-card,
 [data-style='shadcn'] .code-block,
-[data-style='shadcn'] .inline-inspector,
-[data-style='shadcn'] .local-flow-ribbon {
+[data-style='shadcn'] .inline-inspector {
   box-shadow: var(--shadow-sm);
 }
 

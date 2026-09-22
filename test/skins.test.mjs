@@ -61,7 +61,6 @@ test('every component style pack has matching CSS rules', () => {
     `[data-style='manuscript'] .semantic-evidence`,
     `[data-style='manuscript'] .semantic-note`,
     `[data-style='manuscript'] .math-block-expression`,
-    `[data-style='manuscript'] .flow-box`,
     `[data-style='manuscript'] .semantic-chart`,
   ]) {
     assert.ok(css.includes(rule), `manuscript pack missing ${rule}`);
@@ -120,7 +119,6 @@ test('new component packs restate the shared grammar without a new palette', () 
       `[data-style='${pack}'] .semantic-references`,
       `[data-style='${pack}'] .semantic-chart`,
       `[data-style='${pack}'] .math-block-expression`,
-      `[data-style='${pack}'] .flow-box`,
     ]) {
       assert.ok(css.includes(rule), `${pack} pack missing ${rule}`);
     }

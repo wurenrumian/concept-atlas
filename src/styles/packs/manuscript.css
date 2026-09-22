@@ -289,8 +289,7 @@
 [data-style='manuscript'] .semantic-output,
 [data-style='manuscript'] .semantic-glossary-item,
 [data-style='manuscript'] .example-item,
-[data-style='manuscript'] .counterexample-item,
-[data-style='manuscript'] .boundary-card {
+[data-style='manuscript'] .counterexample-item {
   margin: 14px 0;
   padding: 2px 0 2px 14px;
   border: 0;
@@ -312,34 +311,6 @@
 }
 
 /* -- Flow: the ribbon loses its chassis; steps are ledgers off a left rule. -- */
-[data-style='manuscript'] .local-flow-ribbon {
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  padding: 4px 0;
-}
-
-[data-style='manuscript'] .flow-box {
-  background: transparent;
-  border: 0;
-  border-left: 2px solid var(--border-strong);
-  border-radius: 0;
-  padding: 10px 0 10px 14px;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-}
-
-[data-style='manuscript'] .flow-box.current-focus {
-  background: var(--bg-highlight);
-  border-left-color: var(--primary);
-  box-shadow: none;
-}
-
-[data-style='manuscript'] .flow-box.clickable:hover {
-  background: var(--bg-highlight);
-  border-color: var(--border-strong);
-  border-left-color: var(--primary);
-  transform: none;
-}
 
 /* -- Display math sits on the page like a printed equation, not in a well. -- */
 [data-style='manuscript'] .math-block-expression {
