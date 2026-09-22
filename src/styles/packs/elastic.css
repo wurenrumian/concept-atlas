@@ -582,6 +582,13 @@
   font-family: var(--font-sans);
 }
 
+/* Inside the diff card the caption is a plain note under the panes; the card
+   owns the padding, so the footer rule and its inset would look detached. */
+[data-style='elastic'] .semantic-code-diff .semantic-code-caption {
+  padding: 0;
+  border-top: 0;
+}
+
 /* ===========================================================================
    LEARNING / PROVENANCE / DATA — elastic grammar.
    Bordered 4px inner chips on 6px panels, tonal 4px tone bars, a filled

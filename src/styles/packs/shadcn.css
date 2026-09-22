@@ -578,6 +578,13 @@
   border-top: 1px solid var(--border-subtle);
 }
 
+/* Inside the diff card the caption is a plain note under the panes; the card
+   owns the padding, so the footer rule and its inset would look detached. */
+[data-style='shadcn'] .semantic-code-diff .semantic-code-caption {
+  padding: 0;
+  border-top: 0;
+}
+
 /* ===========================================================================
    LEARNING / PROVENANCE / DATA — shadcn grammar.
    Inner units are muted hairline chips, the quiz action is a primary button,

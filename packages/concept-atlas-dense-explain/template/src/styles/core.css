@@ -2343,10 +2343,17 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
 .metric-delta.trend-flat { color: var(--text-muted); }
 .metric-note { margin-top: 6px; color: var(--text-muted); font-size: 12px; line-height: 1.5; }
 
-/* -- Code diff: two labelled code surfaces side by side. -- */
-.semantic-code-diff { margin: 14px 0; }
+/* -- Code diff: two labelled code surfaces side by side. It stacks the head,
+      panes and caption with the same 8px rhythm as the CodeBlock family, so
+      the caption never collides with the dark code inset. -- */
+.semantic-code-diff {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 14px 0;
+}
 .code-diff-panes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.code-diff-pane { min-width: 0; }
+.code-diff-pane { display: flex; flex-direction: column; min-width: 0; }
 .code-diff-label {
   margin-bottom: 5px;
   color: var(--text-muted);
@@ -2356,7 +2363,10 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
 }
 .pane-before .code-diff-label { color: var(--accent-rose); }
 .pane-after .code-diff-label { color: var(--accent-emerald); }
-.code-diff-pane .code-block { margin: 0; height: 100%; font-size: 12.5px; }
+/* The code surface fills the pane's remaining height so both sides match
+   without overflowing it: `height: 100%` ignored the label above, so the code
+   block bled down over the caption. */
+.code-diff-pane .code-block { flex: 1 1 auto; margin: 0; font-size: 12.5px; }
 @media (max-width: 720px) {
   .code-diff-panes { grid-template-columns: minmax(0, 1fr); }
 }
