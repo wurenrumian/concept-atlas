@@ -32,7 +32,7 @@ This is the only runner — there is nothing to look for. Do not search for a lo
    npx concept-atlas-dense-explain validate <file>.mdx --json
    ```
    Diagnostics are `CODE line:column message`. Fix all `error`s and re-run; address warnings when cheap.
-6. Compile: `npx concept-atlas-dense-explain <file>.mdx --mode atlas|scroll [-o out.html] [--skin <id>] [--default-mode dark|light|system] [--style <id>] [--inline-mermaid] [--mermaid-cdn <url>]`. Output is a standalone HTML beside the MDX unless `-o` is given. Validation errors abort the build (`--no-validate` forces a knowingly broken build). Mermaid loads from a CDN at runtime by default (needs network); pass `--inline-mermaid` for a fully offline single file.
+6. Compile: `npx concept-atlas-dense-explain <file>.mdx --mode atlas|scroll [-o out.html] [--skin <id>] [--default-mode dark|light|system] [--style <id>] [--mermaid-cdn <url>]`. Output is a standalone HTML beside the MDX unless `-o` is given. Validation errors abort the build (`--no-validate` forces a knowingly broken build). **Mermaid stays on its runtime CDN by default — do not pass `--inline-mermaid` on your own.** Only add `--inline-mermaid` when the user explicitly asks for a fully offline single file, since it bloats the HTML with the whole Mermaid bundle.
 7. **Appearance (optional)**: pages ship a reader-facing appearance menu — palette (`aurora` indigo, `ember` gold, `verdant` forest, `sakura` pink-plum, `noir` ink), a dark/light toggle, and a component style pack (`manuscript` editorial marginalia, `classic` boxed cards, `shadcn` hairline-bordered minimal UI, `elastic` bordered observability panels). The shipped default is aurora × manuscript × light; choices persist in localStorage across both carriers. Bake different compile-time defaults with `--skin ember --default-mode dark --style classic` (or `CONCEPT_ATLAS_SKIN` / `CONCEPT_ATLAS_DEFAULT_MODE` / `CONCEPT_ATLAS_STYLE` on the repo build); `--default-mode` honors `dark`/`light` and resolves `system` to the carrier default (`light`). Bake a default only when the user asks for one — content MDX never sets appearance.
 8. For several documents, pass them all in one call: `npx concept-atlas-dense-explain a.mdx b.mdx c.mdx -o dist --force [--concurrency 3]` (`-o` is then a directory; everything validates first, then builds in parallel). Builds bundle only the heavy renderers the content uses: no `<Math>` skips KaTeX's ~1.4MB inlined fonts, and Mermaid stays on a CDN. Never add dummy `<Math>`/`<Mermaid>` nodes to "enable" them.
 9. Report the shell, output path, validation result (errors/warnings), and limitations. Do not claim interactions you did not verify.
@@ -81,6 +81,7 @@ This is the only runner — there is nothing to look for. Do not search for a lo
 - All `error` diagnostics resolved (or `--no-validate` explicitly justified).
 - All `ConceptRef`, `Relation` endpoints, and `ConceptGraph root` point at existing node ids.
 - Every node has `title` + `summary`; every `Relation` has a `label`.
+- You left Mermaid on its CDN default and did not pass `--inline-mermaid` unless the user explicitly asked for a fully offline single file.
 - The HTML file exists at the reported path.
 
 If `npx` cannot reach the registry, report the blocker. Never copy implementation files into the skill directory.
