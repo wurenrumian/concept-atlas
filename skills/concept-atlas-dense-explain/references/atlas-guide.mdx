@@ -132,10 +132,11 @@
       <Chart title="留存趋势" type="line" labels={['第1周','第2周','第3周','第4周']} series={[{name:'留存率',values:[100,72,58,49]}]} />
     </ConceptNode>
 
-    <ConceptNode id="figure-demo" title="Figure：图片与题注一起出现" level="L2" parent="extension-family" summary="Figure 把图片、题注编号和说明绑定，构建时把本地图片内联进单文件。">
-      <Definition>相对路径的图片会在构建时转成 base64 内联，远程 URL 保持不变；label 提供“图 1”这样的编号。</Definition>
-      <Figure src="./assets/sample-diagram.svg" alt="概念缩放示意" label="图 1" caption="概念缩放：同一主题可以从 L0 全局逐层下钻到 L4 边界反例。" />
-      <Boundary>大图会显著增大单文件 HTML；截图类内容建议控制尺寸。</Boundary>
+    <ConceptNode id="figure-demo" title="Figure：图片与题注一起出现" level="L2" parent="extension-family" summary="Figure 把图片、题注编号和说明绑定；默认外链，按需内联。">
+      <Definition>相对路径的图片默认保持外链，构建时用 --inline-assets 可全部内联，单张图也可用 `inline={true}` 或 `inline={false}` 覆盖；远程 URL 保持不变。给图一个 id，正文就能用 FigureRef 自动引用“图 N”。</Definition>
+      <Figure id="zoom-scale" src="./assets/sample-diagram.svg" alt="概念缩放示意" caption="概念缩放：同一主题可以从 L0 全局逐层下钻到 L4 边界反例。" />
+      <Example title="自动图号">正文写“见 <FigureRef id="zoom-scale" />”，编号会随插图自动重排，不必手写“图 1”。</Example>
+      <Boundary>内联大图会显著增大 HTML；截图类内容建议控制尺寸，或对单张图设 `inline={false}`。</Boundary>
     </ConceptNode>
 
     <ConceptNode id="code-demo" title="CodeBlock：把命令、配置或伪代码放进正文" level="L2" parent="extension-family" summary="与绑定节点的 Implementation 不同，CodeBlock 可以出现在任何位置，并支持标题、题注、换行和行号。">

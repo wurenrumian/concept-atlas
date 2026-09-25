@@ -65,16 +65,29 @@ npx concept-atlas-dense-explain paper.mdx --mode atlas --mermaid-cdn https://cdn
 
 仓库自身构建用环境变量 `CONCEPT_ATLAS_INLINE_MERMAID=1`（另有 `CONCEPT_ATLAS_MERMAID_CDN`）。CDN 加载失败时图表位置会显示提示，其余内容不受影响。
 
-### 图片内联与 `--link-assets`
+### 图片：默认外链与 `--inline-assets`
 
-默认（不传开关）会把 `Figure` 的相对路径图片读成 base64 内联进 HTML，产物单文件、离线可开，代价是每张截图都会让 HTML 变大。传入 `--link-assets` 后图片保持相对链接：
+默认情况下，`Figure` 的相对路径图片**保持为相对链接**：HTML 体积小，但页面需要和 MDX 的 `assets/` 目录一起分发（输出 HTML 放在资产旁边时相对路径才能解析）。如果 `-o` 指到别处，CLI 会打印警告。
+
+需要单文件、离线可开时，用 `--inline-assets` 把所有本地图片读成 base64 内联进 HTML：
 
 ```bash
-# 输出与 assets/ 同目录时，相对路径可直接解析
-npx concept-atlas-dense-explain paper.mdx --link-assets
+# 默认：图片保持相对链接（HTML 小，适合站点/仓库）
+npx concept-atlas-dense-explain paper.mdx
+
+# 全部内联：单文件离线可开（截图多时 HTML 会变大）
+npx concept-atlas-dense-explain paper.mdx --inline-assets
 ```
 
-实测同一个目标：内联 1.51MB → 链接 270KB。代价是页面不再自包含，`<html>` 必须和 MDX 的 `assets/` 保持相对位置；如果 `-o` 指到别处，CLI 会打印警告，此时需要自行拷贝 `assets/`。
+也可以只对某张图覆盖。优先级为 **组件 `inline` prop > 全局开关 > 默认外链**：
+
+```mdx
+<Figure src="./arch.svg" caption="架构" />                  {/* 跟随默认/全局 */}
+<Figure src="./huge.png" inline={false} caption="大截图" />  {/* 强制外链 */}
+<Figure src="./logo.svg" inline={true} caption="图标" />     {/* 强制内联 */}
+```
+
+`--link-assets` 仍然可用，等价于默认的外链行为（显式声明），不能与 `--inline-assets` 同时使用。远程 `http(s)`、`data:` 和绝对路径图片永远不参与内联；远程图会提示 `ASSET_REMOTE`（离线打开时不可见），内联时单张图超过 512KB 会提示 `ASSET_LARGE`。实测同一个目标：内联 1.51MB → 链接 270KB。
 
 ### 外观系统与编译期默认值
 
@@ -396,13 +409,25 @@ exception-of  异常或反例
 {/* 图表：bar / line / pie */}
 <Chart title="各阶段耗时" type="bar" data={[{label:'收集',value:6},{label:'分析',value:14}]} />
 
-{/* 配图：相对路径在构建时内联为 base64 */}
-<Figure src="./assets/diagram.svg" alt="示意" label="图 1" caption="从输入到输出。" />
+{/* 配图：默认外链；给 id 后正文用 FigureRef 自动引用“图 N” */}
+<Figure id="flow" src="./assets/diagram.svg" alt="示意" caption="从输入到输出。" />
+<ScrollProse>如 <FigureRef id="flow" /> 所示，处理分为三步。</ScrollProse>
 
 {/* 引用与文献：Cite 的 id 对应 References 条目的 id */}
 <ScrollProse>结论依赖可追溯证据<Cite id="tufte1983" />。</ScrollProse>
 <References items={[{id:'tufte1983',authors:'Tufte, E. R.',year:'1983',title:'The Visual Display of Quantitative Information'}]} />
 ```
+
+**选型速查：**
+
+| 要表达的东西 | 用什么 | 说明 |
+| --- | --- | --- |
+| 数据趋势、对比 | `Chart` | bar / line / pie |
+| 流程、拓扑、时序 | `Mermaid` | 文本图，默认 CDN，`--inline-mermaid` 可离线 |
+| 概念之间的关系 | `RelationMap` / `RelationPath` | 复用知识网络的语义关系 |
+| 截图、示意图、照片 | `Figure`（别名 `Image`） | 默认外链，`--inline-assets` 内联 |
+
+`Figure` 给 `id` 后会按文档顺序自动编号，正文用 `<FigureRef id="..." />` 引用；插入新图时编号自动重排，显式 `label` 仍然优先。图号按作用域编号：`scroll` 全文共用一套，`atlas` 每个节点各自编号。`FigureRef` 指向不存在的 `id` 会提示 `FIGURE_REF_UNRESOLVED`。
 
 `Math` 的子内容里出现 `{}` 会被 MDX 当成表达式，因此含花括号的 LaTeX 必须走 `formula` prop。找不到的本地图片只会产生 warning 并显示占位符。`Figure` / `Image` 的图片可以点击放大：滚轮或 `+` / `−` 缩放，拖拽平移，双击切换 1x / 2x，`0` 重置，`Esc` 或点击背景关闭。
 

@@ -55,7 +55,9 @@ function demoSourceFor(entry) {
  * KaTeX fonts and Mermaid module graph instead of bundling them unconditionally.
  */
 async function buildCarrier(entry, baseDefine) {
-  const define = { ...baseDefine };
+  // The repository demo is a self-contained showcase: its `dist/` has no
+  // assets/ dir, so it opts into inlining (the CLI default is now to link).
+  const define = { ...baseDefine, __ATLAS_INLINE_ASSETS__: 'true' };
   const demo = demoSourceFor(entry);
   if (demo) {
     const title = extractPageTitle(demo.source);

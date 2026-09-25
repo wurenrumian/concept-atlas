@@ -242,6 +242,29 @@ test('ScrollToc is registered (it is exported and documented as authorable)', ()
   assert.ok(!errorsOf(result).includes('UNKNOWN_COMPONENT'));
 });
 
+test('figure ids and FigureRef are cross-checked', () => {
+  const ok = validateMdxSource(atlas(`${rootNode}
+    <Figure id="arch" src="./assets/sample-diagram.svg" caption="c" />
+    见 <FigureRef id="arch" />`));
+  assert.deepEqual(warningsOf(ok).filter(code => code.startsWith('FIGURE')), []);
+
+  assert.ok(warningsOf(validateMdxSource(atlas(`${rootNode}\n    <FigureRef id="ghost" />`))).includes('FIGURE_REF_UNRESOLVED'));
+  assert.ok(warningsOf(validateMdxSource(atlas(`${rootNode}\n    <FigureRef />`))).includes('FIGURE_REF_MISSING_ID'));
+  assert.ok(warningsOf(validateMdxSource(atlas(`${rootNode}\n    <Figure id="arch" src="./a.png" />\n    <Figure id="arch" src="./b.png" />`))).includes('FIGURE_DUPLICATE_ID'));
+});
+
+test('remote images warn that they need the network', () => {
+  const result = validateMdxSource(atlas(`${rootNode}\n    <Figure src="https://example.com/a.png" />`));
+  assert.ok(warningsOf(result).includes('ASSET_REMOTE'));
+});
+
+test('a large inlined asset warns, a small one does not', () => {
+  const source = atlas(`${rootNode}\n    <Figure src="./assets/big.png" />`);
+  const base = { filePath: 'x.mdx', inlineAssets: true, assetExists: () => true };
+  assert.ok(warningsOf(validateMdxSource(source, { ...base, assetSize: () => 2 * 1024 * 1024 })).includes('ASSET_LARGE'));
+  assert.ok(!warningsOf(validateMdxSource(source, { ...base, assetSize: () => 1024 })).includes('ASSET_LARGE'));
+});
+
 test('RelationMap item types are checked against the relation whitelist', () => {
   const bad = validateMdxSource(atlas(`${rootNode}\n    <RelationMap items={[{from:'A',type:'supports',to:'B'}]} />`));
   assert.ok(warningsOf(bad).includes('UNKNOWN_RELATION_TYPE'));

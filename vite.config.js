@@ -18,37 +18,111 @@ const MIME_TYPES = {
   '.bmp': 'image/bmp',
 };
 
+// An opening/self-closing JSX tag. Quoted attribute values may contain `>`, so
+// the attribute body is matched as a sequence of quoted strings or bare chars.
+const JSX_TAG_RE = /<([A-Za-z][\w.]*)((?:"[^"]*"|'[^']*'|[^>"'])*)\/?>/g;
+// A markdown image: ![alt](src) or ![alt](src "title"). Base64 has no spaces or
+// parens, so it survives the round trip.
+const MARKDOWN_IMAGE_RE = /!\[([^\]]*)\]\(([^)\s]+)(\s+["'][^"']*["'])?\)/g;
+
 /**
- * Rewrites relative image paths in MDX component props (e.g. <Figure src="./x.png" />)
- * into base64 data URIs at build time. Keeps the single-file HTML self-contained
- * and offline-openable without a runtime asset loader. Remote (http/data) and
- * absolute paths are left untouched.
+ * Reads a tag's per-image `inline` prop. Returns `true`/`false` when it is set
+ * (bare `inline`, `inline={true}`, `inline={false}`) and `null` when absent.
+ * Quoted attribute values are blanked first so a value like "inline" cannot be
+ * mistaken for the prop itself.
+ */
+function readInlineProp(tag) {
+  const stripped = tag.replace(/"[^"]*"|'[^']*'/g, '""');
+  const match = stripped.match(/\binline\b(?:\s*=\s*(\{[^}]*\}|[^\s/>]+))?/);
+  if (!match) return null;
+  if (match[1] === undefined) return true;
+  return match[1].replace(/^\{|\}$/g, '').trim() !== 'false';
+}
+
+/**
+ * Reversibly hides fenced code blocks and inline code spans so documented
+ * samples (`<Figure src="./x.png" />` inside a fence) are not rewritten into
+ * giant data URIs.
+ */
+function maskCode(code) {
+  const blocks = [];
+  const token = index => `\u0000atlas-mask-${index}\u0000`;
+  const hide = (text) => { const key = token(blocks.length); blocks.push(text); return key; };
+  let fence = null;
+  const lines = code.split('\n').map((line) => {
+    const marker = line.match(/^\s*(`{3,}|~{3,})/);
+    if (fence) {
+      if (marker && marker[1][0] === fence[0] && marker[1].length >= fence.length) fence = null;
+      return hide(line);
+    }
+    if (marker) { fence = marker[1]; return hide(line); }
+    // Keep the character before the span so we never eat a JSX opening brace.
+    return line.replace(/([^{])`[^`\n]*`/g, match => match[0] + hide(match.slice(1)));
+  });
+  return {
+    masked: lines.join('\n'),
+    restore: text => blocks.reduce((acc, block, index) => acc.split(token(index)).join(block), text),
+  };
+}
+
+/**
+ * Resolves relative image paths on MDX components and markdown images, or leaves
+ * them alone. The default is to LEAVE them as relative links: the HTML stays
+ * small and the assets travel beside it. Inlining (a self-contained single file)
+ * is opt-in because it is the expensive choice, and it composes in one order:
  *
- * `--link-assets` (the `__ATLAS_INLINE_ASSETS__` define) turns this off so figures
- * stay relative links. That keeps the output small at the cost of the page no
- * longer being self-contained: the HTML must sit beside the MDX's `assets/` dir.
+ *   per-tag `inline` prop  >  `--inline-assets` global flag  >  default (link)
+ *
+ * `--inline-assets` (define `__ATLAS_INLINE_ASSETS__ === 'true'`) inlines every
+ * local image; a per-tag `inline={true|false}` overrides that choice for one
+ * image. Remote (http/https), data URIs and absolute paths are never touched.
  */
 function inlineMdxAssets() {
-  const state = { enabled: true };
+  const state = { defaultInline: false };
   return {
     name: 'concept-atlas-inline-assets',
     enforce: 'pre',
     configResolved(config) {
-      state.enabled = (config.define || {}).__ATLAS_INLINE_ASSETS__ !== 'false';
+      const raw = (config.define || {}).__ATLAS_INLINE_ASSETS__;
+      const value = typeof raw === 'string' ? raw.replace(/^"([\s\S]*)"$/, '$1') : raw;
+      state.defaultInline = value === 'true' || value === true;
     },
     transform(code, id) {
-      if (!state.enabled || !id.endsWith('.mdx')) return null;
+      if (!id.endsWith('.mdx')) return null;
       const dir = path.dirname(id.split('?')[0]);
-      let changed = false;
-      const output = code.replace(/(<[A-Za-z][\w.]*\b[^>]*?\bsrc=)(["'])([^"']+)\2/g, (match, prefix, quote, src) => {
-        if (/^(https?:|data:|\/|#)/i.test(src)) return match;
+      const resolveLocal = (src) => {
+        if (/^(https?:|data:|\/|#)/i.test(src)) return null;
         const file = path.resolve(dir, src);
         const mime = MIME_TYPES[path.extname(file).toLowerCase()];
-        if (!mime || !fs.existsSync(file)) return match;
+        if (!mime || !fs.existsSync(file)) return null;
+        return `data:${mime};base64,${fs.readFileSync(file).toString('base64')}`;
+      };
+
+      const { masked, restore } = maskCode(code);
+      let changed = false;
+      let output = masked.replace(JSX_TAG_RE, (tag) => {
+        const srcMatch = tag.match(/\bsrc=(["'])([^"']+)\1/);
+        if (!srcMatch) return tag;
+        const prop = readInlineProp(tag);
+        const effective = prop === null ? state.defaultInline : prop;
+        if (!effective) return tag;
+        const uri = resolveLocal(srcMatch[2]);
+        if (!uri) return tag;
         changed = true;
-        return `${prefix}${quote}data:${mime};base64,${fs.readFileSync(file).toString('base64')}${quote}`;
+        return tag.replace(srcMatch[0], `src=${srcMatch[1]}${uri}${srcMatch[1]}`);
       });
-      return changed ? { code: output, map: null } : null;
+
+      // Markdown images have no prop slot, so they follow the global flag only.
+      if (state.defaultInline) {
+        output = output.replace(MARKDOWN_IMAGE_RE, (match, alt, src, title = '') => {
+          const uri = resolveLocal(src);
+          if (!uri) return match;
+          changed = true;
+          return `![${alt}](${uri}${title})`;
+        });
+      }
+
+      return changed ? { code: restore(output), map: null } : null;
     },
   };
 }

@@ -5,6 +5,7 @@ import * as Components from './components/index.js';
 import UserDocument from '@concept-atlas/content';
 import { useAppearance } from './app/use-appearance.js';
 import { SkinPicker } from './components/SkinPicker.jsx';
+import { FigureScopeProvider } from './components/FigureScope.jsx';
 import './styles/concept-explain.css';
 
 const rootElement = document.getElementById('root');
@@ -27,7 +28,9 @@ function ScrollApp() {
           {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </button>
       </div>
-      <UserDocument components={Components} />
+      <FigureScopeProvider scope="document">
+        <UserDocument components={Components} />
+      </FigureScopeProvider>
     </main>
   );
 }

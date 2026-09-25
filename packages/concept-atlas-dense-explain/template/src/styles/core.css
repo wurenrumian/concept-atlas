@@ -3891,6 +3891,22 @@ html[data-carrier='scroll'] #root {
   font-weight: 700;
 }
 
+/* In-text reference to a numbered figure; mirrors the citation affordance. */
+.semantic-figure-ref {
+  color: var(--text-accent);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px dashed currentColor;
+}
+
+.semantic-figure-ref:hover {
+  border-bottom-style: solid;
+}
+
+.semantic-figure-ref[data-missing="true"] {
+  color: var(--text-dim);
+}
+
 .figure-placeholder {
   padding: 32px;
   border: 1px dashed var(--border-medium);

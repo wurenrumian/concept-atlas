@@ -22,7 +22,7 @@
 - **阅读体验可配置**：`scroll` 自动生成侧栏目录和阅读进度，并支持 `fontSize`/`scale`/`lineHeight` 调整正文大小。
 - **外观系统**：读者可随时切换配色皮肤（`aurora` 极光冷调 / `ember` 炉火暖调 / `verdant` 苔原森林 / `sakura` 樱雾粉紫 / `noir` 墨白单色）× 明暗模式 × 组件风格（`manuscript` 手稿排版 / `classic` 经典卡片 / `shadcn` 极简界面 / `elastic` 观测面板），选择在 localStorage 持久化；CLI/环境变量可把默认外观烘焙进产物。
 - **内容校验**：CLI 在构建前校验结构，断链、重复 id、缺失字段和错误 prop 会直接报错。
-- **单文件输出**：MDX 可直接编译为独立 `.html` 文件。不含 Mermaid 的页面 JS/CSS 完全内联，可离线打开（字体默认从 Google Fonts CDN 加载，离线时会回退到系统字体栈）；含 Mermaid 的页面默认在运行时从 CDN 加载 Mermaid（构建更快、产物更小），需要离线单文件时加 `--inline-mermaid` 把它内联回 HTML。无图片时基础产物通常较小；实际体积主要取决于文档是否使用 KaTeX，以及是否将本地图片内联进 HTML。
+- **单文件输出**：MDX 可直接编译为独立 `.html` 文件。不含 Mermaid 的页面 JS/CSS 完全内联，可离线打开（字体默认从 Google Fonts CDN 加载，离线时会回退到系统字体栈）；含 Mermaid 的页面默认在运行时从 CDN 加载 Mermaid（构建更快、产物更小），需要离线单文件时加 `--inline-mermaid` 把它内联回 HTML。本地图片默认保持外链（HTML 更小，需与 `assets/` 一起分发），需要离线单文件时加 `--inline-assets` 全部内联，单张图可用 `inline` prop 覆盖；实际体积主要取决于文档是否使用 KaTeX，以及内联了多少图片。
 
 ## 安装与使用
 

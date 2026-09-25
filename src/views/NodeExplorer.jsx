@@ -3,6 +3,7 @@ import { ChevronRight, ArrowUpRight, CornerDownRight, ArrowLeft, Network, Corner
 import { getAncestorPath, getSiblingNodes } from '../model/concept-schema.js';
 import { LEVEL_DEFS } from '../model/relation-types.js';
 import { NODE_KINDS } from '../model/node-kinds.js';
+import { FigureScopeProvider } from '../components/FigureScope.jsx';
 
 export function NodeExplorer({
   graph,
@@ -195,6 +196,7 @@ export function NodeExplorer({
       </aside>
 
       {/* 2. Middle Column: Current Node Explanation Card */}
+      <FigureScopeProvider scope={currentNode.id}>
       <main className="explorer-center">
         <HierarchyStrip
           ancestorPath={ancestorPath}
@@ -457,6 +459,7 @@ export function NodeExplorer({
           </div>
         </div>
       </main>
+      </FigureScopeProvider>
     </div>
   );
 }

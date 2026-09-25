@@ -5,6 +5,7 @@ import * as Components from './components/index.js';
 import ScrollGuideDoc from '../content/scroll-guide.mdx';
 import { useAppearance } from './app/use-appearance.js';
 import { SkinPicker } from './components/SkinPicker.jsx';
+import { FigureScopeProvider } from './components/FigureScope.jsx';
 import './styles/concept-explain.css';
 
 const rootElement = document.getElementById('root');
@@ -27,7 +28,9 @@ function ScrollApp() {
           {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </button>
       </div>
-      <ScrollGuideDoc components={Components} />
+      <FigureScopeProvider scope="document">
+        <ScrollGuideDoc components={Components} />
+      </FigureScopeProvider>
     </main>
   );
 }

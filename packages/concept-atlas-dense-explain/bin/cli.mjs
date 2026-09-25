@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { access, constants, copyFile, cp, mkdir, readFile, rm, rename, writeFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { existsSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { build } from 'vite';
 import { fileURLToPath } from 'node:url';
@@ -14,7 +14,7 @@ let buildCounter = 0;
 
 function usage() {
   console.log('Usage:');
-  console.log('  npx concept-atlas-dense-explain <input.mdx>... [--mode atlas|scroll] [--skin <id>] [--default-mode dark|light|system] [--style <id>] [-o output.html|dir] [--force] [--concurrency N] [--link-assets] [--inline-mermaid] [--mermaid-cdn <url>] [--json] [--no-validate]');
+  console.log('  npx concept-atlas-dense-explain <input.mdx>... [--mode atlas|scroll] [--skin <id>] [--default-mode dark|light|system] [--style <id>] [-o output.html|dir] [--force] [--concurrency N] [--inline-assets] [--inline-mermaid] [--mermaid-cdn <url>] [--json] [--no-validate]');
   console.log('  npx concept-atlas-dense-explain render <input.mdx>... [-o output.html|dir]');
   console.log('  npx concept-atlas-dense-explain validate <input.mdx> [--mode atlas|scroll] [--strict] [--json]');
   console.log('  npx concept-atlas-dense-explain create <output.mdx> [--mode atlas|scroll] [--force]');
@@ -22,13 +22,18 @@ function usage() {
   console.log('');
   console.log('  --help shows this text; --version prints the package version.');
   console.log('  Multiple inputs build in parallel (default 2 at a time, cap 4); -o is then a directory.');
-  console.log('  --link-assets keeps figures as relative links instead of inlining them as base64.');
+  console.log('  Figures are kept as relative links by default (small HTML; ship the assets/ dir beside it). --inline-assets bakes every local image into the HTML as base64 instead; a per-tag inline={true|false} on <Figure> overrides that for one image. --link-assets is kept as an explicit alias for the default.');
   console.log('  Mermaid diagrams load from a CDN at runtime by default (fast builds, needs network); --inline-mermaid bakes Mermaid into the HTML for a fully offline single file; --mermaid-cdn overrides the CDN URL.');
   console.log(`  --skin bakes a default palette (${SKINS.map(skin => skin.id).join(', ')}); --default-mode bakes a default dark/light mode; --style bakes a default component style (${COMPONENT_STYLES.map(style => style.id).join(', ')}). Readers can still switch in the UI.`);
 }
 
 async function exists(filePath) {
   try { await access(filePath, constants.F_OK); return true; } catch { return false; }
+}
+
+/** Byte size of an asset, or null when it does not exist. */
+function assetByteSize(filePath) {
+  try { return statSync(filePath).size; } catch { return null; }
 }
 
 function flagValue(flags, names) {
@@ -46,7 +51,7 @@ function fail(message) {
 }
 
 const VALUE_FLAGS = new Set(['--mode', '-o', '--output', '--concurrency', '--skin', '--default-mode', '--style', '--mermaid-cdn']);
-const BOOLEAN_FLAGS = new Set(['--force', '--json', '--strict', '--no-validate', '--link-assets', '--inline-mermaid', '--help', '-h', '--version', '-v']);
+const BOOLEAN_FLAGS = new Set(['--force', '--json', '--strict', '--no-validate', '--link-assets', '--inline-assets', '--inline-mermaid', '--help', '-h', '--version', '-v']);
 const COMMAND_NAMES = ['help', 'create', 'new', 'render', 'validate', 'guide'];
 
 /** Splits argv into flags, flag values and positional arguments. */
@@ -252,6 +257,10 @@ const strict = parsed.flags.has('--strict');
 const skipValidate = parsed.flags.has('--no-validate');
 const force = parsed.flags.has('--force');
 const linkAssets = parsed.flags.has('--link-assets');
+const inlineAssets = parsed.flags.has('--inline-assets');
+if (linkAssets && inlineAssets) {
+  fail('--link-assets and --inline-assets are mutually exclusive (linking is the default).');
+}
 const inlineMermaid = parsed.flags.has('--inline-mermaid');
 const mermaidCdn = parsed.values.get('--mermaid-cdn') || null;
 const modeFlag = parsed.values.get('--mode') || null;
@@ -285,7 +294,9 @@ if (command === 'validate') {
     filePath: target,
     mode: modeFlag,
     strict,
+    inlineAssets,
     assetExists: spec => existsSync(path.resolve(path.dirname(target), spec)),
+    assetSize: spec => assetByteSize(path.resolve(path.dirname(target), spec)),
   }, { json });
   process.exit(countBySeverity(result.diagnostics).error ? 1 : 0);
 }
@@ -326,7 +337,9 @@ const validations = sources.map((source, index) => printDiagnostics(source, {
   filePath: inputs[index],
   mode: modeFlag,
   strict,
+  inlineAssets,
   assetExists: spec => existsSync(path.resolve(path.dirname(inputs[index]), spec)),
+  assetSize: spec => assetByteSize(path.resolve(path.dirname(inputs[index]), spec)),
 }, json
   ? { json: false, quiet: true }
   : { json: false, label: multi ? inputs[index] : null }));
@@ -350,10 +363,13 @@ const jobs = inputs.map((input, index) => {
     console.error(`Could not detect the MDX carrier for ${input}; choose --mode atlas or --mode scroll.`);
     process.exit(1);
   }
-  if (linkAssets && path.resolve(path.dirname(outputs[index])) !== path.resolve(path.dirname(input))) {
-    console.error(`警告：--link-assets 下 ${outputs[index]} 不在 ${path.dirname(input)} 内，相对图片路径会失效。`);
+  // Figures link by default. If the HTML is written outside the MDX's directory
+  // its relative image paths no longer resolve, so warn unless --inline-assets
+  // bakes them in.
+  if (!inlineAssets && path.resolve(path.dirname(outputs[index])) !== path.resolve(path.dirname(input))) {
+    console.error(`警告：默认外链图片，但 ${outputs[index]} 不在 ${path.dirname(input)} 内，相对图片路径会失效；请用 --inline-assets，或把 assets/ 一并放到输出目录。`);
   }
-  return { input, output: outputs[index], mode, title: extractPageTitle(sources[index]), features: detectFeatures(sources[index]), linkAssets };
+  return { input, output: outputs[index], mode, title: extractPageTitle(sources[index]), features: detectFeatures(sources[index]), inlineAssets };
 });
 
 const limit = clampConcurrency(parsed.values.get('--concurrency'), jobs.length);
@@ -369,7 +385,7 @@ if (failures.length) {
 }
 
 async function buildOne(job) {
-  const { input, output, mode, title, features, linkAssets: link } = job;
+  const { input, output, mode, title, features, inlineAssets: inline } = job;
   const templateEntry = mode === 'atlas' ? 'index.html' : 'scroll.html';
   // Each build gets its own scratch outDir: the template always writes
   // `index.html`/`scroll.html`, so concurrent builds sharing a directory would
@@ -378,7 +394,8 @@ async function buildOne(job) {
   await mkdir(path.dirname(output), { recursive: true });
   await mkdir(scratch, { recursive: true });
   const define = { __ATLAS_FEATURES__: JSON.stringify(features) };
-  if (link) define.__ATLAS_INLINE_ASSETS__ = 'false';
+  // 'false' is the default (link); only --inline-assets sets 'true'.
+  define.__ATLAS_INLINE_ASSETS__ = inline ? 'true' : 'false';
   if (title) define.__ATLAS_PAGE_TITLE__ = JSON.stringify(title);
   if (skinFlag) define.__ATLAS_DEFAULT_SKIN__ = JSON.stringify(skinFlag);
   if (defaultModeFlag) define.__ATLAS_DEFAULT_MODE__ = JSON.stringify(defaultModeFlag);
@@ -424,7 +441,7 @@ async function buildOne(job) {
       }
       if (hasBackup) await rm(backup, { force: true });
     }
-    console.log(`Built ${mode} HTML: ${output}${title ? `  [tab: ${title}]` : ''}${describeFeatures(features)}${link ? '  [figures linked]' : ''}`);
+    console.log(`Built ${mode} HTML: ${output}${title ? `  [tab: ${title}]` : ''}${describeFeatures(features)}${inline ? '  [figures inlined]' : '  [figures linked]'}`);
     return { ok: true, input, output };
   } catch (error) {
     return { ok: false, input, output, error };

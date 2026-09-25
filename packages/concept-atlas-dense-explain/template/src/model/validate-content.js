@@ -87,6 +87,7 @@ export const KNOWN_COMPONENTS = [
   'Chart',
   'Figure',
   'Image',
+  'FigureRef',
   'Cite',
   'References',
 ];
@@ -100,6 +101,9 @@ export const RELATION_TYPE_SET = new Set(RELATION_TYPE_NAMES);
 
 export const LEVEL_NAMES = Object.keys(LEVEL_DEFS);
 export const LEVEL_SET = new Set(LEVEL_NAMES);
+
+/** Inlined images above this size are reported: base64 inflates the HTML ~33%. */
+export const LARGE_ASSET_BYTES = 512 * 1024;
 
 /** Props that must be arrays, mapped to the component that owns them. */
 export const ARRAY_PROPS = {
@@ -358,10 +362,12 @@ function attrValue(map, name) {
  * @param {'atlas'|'scroll'|null} [options.mode] Expected carrier
  * @param {boolean} [options.strict] Promote structural warnings to errors
  * @param {(file:string)=>boolean} [options.assetExists] Asset existence probe
+ * @param {(file:string)=>number|null} [options.assetSize] Asset size probe (bytes)
+ * @param {boolean} [options.inlineAssets] Whether the build inlines local images
  * @returns {{diagnostics:object[], stats:object, carrier:string|null}}
  */
 export function validateMdxSource(source, options = {}) {
-  const { filePath = null, mode = null, strict = false, assetExists = null } = options;
+  const { filePath = null, mode = null, strict = false, assetExists = null, assetSize = null, inlineAssets = false } = options;
   const lineStarts = computeLineStarts(source);
   const masked = maskIgnored(source);
   const tags = tokenize(masked);
@@ -376,6 +382,8 @@ export function validateMdxSource(source, options = {}) {
   const graphRoots = [];
   const relations = [];
   const refs = [];
+  const figureIds = new Map();
+  const figureRefs = [];
   const usedComponents = new Map();
   const stack = [];
 
@@ -434,13 +442,29 @@ export function validateMdxSource(source, options = {}) {
       const map = attrsToMap(tag.attrs);
       const src = attrValue(map, 'src');
       const quoted = map.src ? map.src.quoted : false;
+      const figureId = attrValue(map, 'id');
+      if (figureId) {
+        if (figureIds.has(figureId)) add('warning', 'FIGURE_DUPLICATE_ID', `重复的图片 id：${figureId}`, tag.start, figureId);
+        else figureIds.set(figureId, tag.start);
+      }
       if (!src) add('warning', 'FIGURE_MISSING_SRC', 'Figure 缺少 src', tag.start, tag.name);
-      else if (quoted && !/^(https?:|data:|\/)/i.test(src) && filePath && assetExists) {
+      else if (quoted && /^https?:/i.test(src)) {
+        add('warning', 'ASSET_REMOTE', `远程图片需要联网，离线打开时不可见：${src}`, tag.start, src);
+      } else if (quoted && !/^(data:|\/)/i.test(src) && filePath && assetExists) {
         const resolved = src.startsWith('.') ? src : `./${src}`;
         if (!assetExists(resolved)) {
           add('warning', 'ASSET_MISSING', `找不到图片文件：${src}（将显示占位符）`, tag.start, src);
+        } else if (inlineAssets && assetSize) {
+          const bytes = assetSize(resolved);
+          if (typeof bytes === 'number' && bytes > LARGE_ASSET_BYTES) {
+            add('warning', 'ASSET_LARGE', `图片约 ${Math.round(bytes / 1024)}KB，内联会显著增大 HTML；可用 inline={false} 或改为外链：${src}`, tag.start, src);
+          }
         }
       }
+    }
+
+    if (tag.name === 'FigureRef' && tag.kind !== 'close') {
+      figureRefs.push({ id: attrValue(attrsToMap(tag.attrs), 'id'), offset: tag.start });
     }
 
     if (tag.kind === 'close') {
@@ -463,6 +487,12 @@ export function validateMdxSource(source, options = {}) {
     if (!KNOWN_COMPONENT_SET.has(name)) {
       add('error', 'UNKNOWN_COMPONENT', `未知组件 <${name}>，名称可能拼错或未导出`, offset, name);
     }
+  }
+
+  // <FigureRef> must point at a <Figure id="..."> in the same document.
+  for (const ref of figureRefs) {
+    if (!ref.id) add('warning', 'FIGURE_REF_MISSING_ID', 'FigureRef 缺少 id', ref.offset, 'FigureRef');
+    else if (!figureIds.has(ref.id)) add('warning', 'FIGURE_REF_UNRESOLVED', `FigureRef 指向不存在的图片 id：${ref.id}`, ref.offset, ref.id);
   }
 
   // `{` inside <Math> children is parsed by MDX as an expression, not LaTeX.

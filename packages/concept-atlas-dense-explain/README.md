@@ -35,14 +35,17 @@ Mermaid loads from a CDN at runtime by default (fast builds, needs network);
 `--inline-mermaid` bakes it into the HTML for a fully offline single file, and
 `--mermaid-cdn` overrides the CDN URL. Appearance defaults can be baked with
 `--skin`, `--default-mode` and `--style`; readers can still switch in the UI.
+Local figures link by default (small HTML, ship `assets/` beside the output);
+`--inline-assets` bakes them in as base64 for a self-contained file, and a
+per-figure `inline={true|false}` overrides that choice.
 
 Run `npx concept-atlas-dense-explain help` for the full flag list.
 
 ## Links
 
 - Repository: https://github.com/wurenrumian/concept-atlas
-- Framework guide: [`docs/FRAMEWORK.md`](https://github.com/wurenrumian/concept-atlas/blob/main/docs/FRAMEWORK.md)
-- Usage recipes: [`docs/USAGE.md`](https://github.com/wurenrumian/concept-atlas/blob/main/docs/USAGE.md)
+- Framework guide: [`docs/FRAMEWORK.md`](https://github.com/wurenrumian/concept-atlas/blob/master/docs/FRAMEWORK.md)
+- Usage recipes: [`docs/USAGE.md`](https://github.com/wurenrumian/concept-atlas/blob/master/docs/USAGE.md)
 
 ## License
 

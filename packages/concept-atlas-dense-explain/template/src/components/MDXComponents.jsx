@@ -5,6 +5,8 @@ import katex from 'katex';
 import { ZoomIn } from 'lucide-react';
 import 'katex/dist/katex.min.css';
 import { registerReferences, subscribeReferences, getReferenceIndex } from '../model/citations.js';
+import { registerFigure, subscribeFigures, getFigureNumber } from '../model/figures.js';
+import { useFigureScope } from './FigureScope.jsx';
 
 // Mermaid reads the active skin/mode from CSS variables so diagrams follow
 // the current appearance. A MutationObserver re-renders charts when the
@@ -1568,12 +1570,28 @@ function ImageZoom({ src, alt, caption, label, onClose }) {
   );
 }
 
-export function Figure({ src, alt = '', caption, label, width = 'auto', height = 'auto', x = 0, y = 0, position = 'flow' }) {
+export function Figure({ id, src, alt = '', caption, label, inline, width = 'auto', height = 'auto', x = 0, y = 0, position = 'flow' }) {
+  const scope = useFigureScope();
+  // `inline` is a build-time hint consumed by vite's asset plugin; binding it
+  // here keeps it out of the DOM and documents that the component accepts it.
+  void inline;
+  const number = React.useSyncExternalStore(
+    subscribeFigures,
+    () => getFigureNumber(scope, id),
+    () => getFigureNumber(scope, id),
+  );
+  React.useEffect(() => { registerFigure(scope, id); }, [scope, id]);
   const [zoomed, setZoomed] = React.useState(false);
   const title = alt || caption || '图片';
+  // An explicit `label` wins; otherwise a named figure numbers itself.
+  const displayLabel = label || (id && number ? `图 ${number}` : undefined);
 
   return (
-    <figure className={`semantic-figure ${widgetClass(position)}`} style={widgetStyle({ width, height, x, y, position })}>
+    <figure
+      id={id ? `fig-${id}` : undefined}
+      className={`semantic-figure ${widgetClass(position)}`}
+      style={widgetStyle({ width, height, x, y, position })}
+    >
       {src ? (
         <button
           type="button"
@@ -1585,18 +1603,37 @@ export function Figure({ src, alt = '', caption, label, width = 'auto', height =
           <span className="figure-zoom-hint" aria-hidden="true"><ZoomIn size={12} />点击放大</span>
         </button>
       ) : <div className="figure-placeholder">缺少图片 src</div>}
-      {(caption || label) && (
+      {(caption || displayLabel) && (
         <figcaption>
-          {label && <span className="figure-label">{label}</span>}
+          {displayLabel && <span className="figure-label">{displayLabel}</span>}
           {caption}
         </figcaption>
       )}
-      {zoomed && <ImageZoom src={src} alt={alt} caption={caption} label={label} onClose={() => setZoomed(false)} />}
+      {zoomed && <ImageZoom src={src} alt={alt} caption={caption} label={displayLabel} onClose={() => setZoomed(false)} />}
     </figure>
   );
 }
 Figure.displayName = 'Figure';
 export const Image = Figure;
+
+/**
+ * In-text reference to a numbered figure. `<Figure id="arch" />` numbers itself
+ * in document order and `<FigureRef id="arch" />` renders "图 N", so inserting a
+ * figure never requires renumbering the prose by hand. Links to the figure.
+ */
+export function FigureRef({ id, children }) {
+  const scope = useFigureScope();
+  const number = React.useSyncExternalStore(
+    subscribeFigures,
+    () => getFigureNumber(scope, id),
+    () => getFigureNumber(scope, id),
+  );
+  const text = children ?? (number ? `图 ${number}` : '图 ?');
+  return id
+    ? <a className="semantic-figure-ref" href={`#fig-${id}`}>{text}</a>
+    : <span className="semantic-figure-ref" data-missing="true">{text}</span>;
+}
+FigureRef.displayName = 'FigureRef';
 
 // Citations -----------------------------------------------------------------
 
