@@ -44,7 +44,6 @@ export function App({ mdxContent, initialData }) {
   const [currentNodeId, setCurrentNodeId] = useState(
     () => initialHashNode || graph.meta.rootId || '',
   );
-  const [selectedLevel, setSelectedLevel] = useState(null);
   const [nav, setNav] = useState(() => ({
     entries: (initialHashNode ? [initialHashNode] : [graph.meta.rootId]).filter(Boolean),
     index: 0,
@@ -239,8 +238,6 @@ export function App({ mdxContent, initialData }) {
             currentNodeId={currentNodeId}
             onSelectNode={navigateToNode}
             onSwitchView={setCurrentView}
-            selectedLevel={selectedLevel}
-            onSelectLevel={setSelectedLevel}
           />
         ) : (
           <RelationGraph

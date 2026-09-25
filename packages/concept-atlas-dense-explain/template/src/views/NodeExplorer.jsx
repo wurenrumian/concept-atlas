@@ -10,8 +10,6 @@ export function NodeExplorer({
   currentNodeId,
   onSelectNode,
   onSwitchView,
-  selectedLevel,
-  onSelectLevel
 }) {
   const { nodes, relations } = graph;
   const [canvasScale, setCanvasScale] = React.useState(1);
@@ -126,8 +124,6 @@ export function NodeExplorer({
   const childNodes = currentNode.children
     .filter(id => nodes.has(id))
     .map(id => nodes.get(id));
-  const visibleChildNodes = selectedLevel ? childNodes.filter(node => node.level === selectedLevel) : childNodes;
-  const visibleSiblings = selectedLevel ? siblings.filter(node => node.level === selectedLevel) : siblings;
 
   // Node-specific relations
   const outgoingRelations = relations.filter(r => r.from === currentNode.id);
@@ -169,8 +165,8 @@ export function NodeExplorer({
         <div className="side-section">
           <div className="side-label">同层节点</div>
           <div className="sibling-list">
-            {visibleSiblings.length > 0 ? (
-              visibleSiblings.map(sib => (
+            {siblings.length > 0 ? (
+              siblings.map(sib => (
                 <button
                   key={sib.id}
                   className="sibling-btn"
@@ -205,23 +201,6 @@ export function NodeExplorer({
           onSelectNode={onSelectNode}
         />
         <div className="center-scrollable">
-          {/* Header toolbar */}
-          <div className="center-toolbar">
-            <div className="level-indicators">
-              {Object.keys(LEVEL_DEFS).map(lvl => (
-                <button
-                  key={lvl}
-                  className={`level-pill ${(selectedLevel === lvl || (!selectedLevel && currentNode.level === lvl)) ? 'active' : ''}`}
-                  onClick={() => onSelectLevel && onSelectLevel(selectedLevel === lvl ? null : lvl)}
-                  title={LEVEL_DEFS[lvl].desc}
-                >
-                  {lvl}
-                </button>
-              ))}
-              {selectedLevel && <button className="level-pill level-pill-clear" onClick={() => onSelectLevel && onSelectLevel(null)}>全部</button>}
-            </div>
-          </div>
-
           <div
             ref={viewportRef}
             className={`draft-viewport ${isDragging ? 'is-dragging' : ''}`}
@@ -421,14 +400,14 @@ export function NodeExplorer({
             ))}
 
             {/* Sub-node Exploration Cards (Drill Down Entrance) */}
-            {visibleChildNodes.length > 0 && (
+            {childNodes.length > 0 && (
               <section className="node-block drill-down-section">
                 <div className="block-head">
                   <h2>深入下钻：子概念节点</h2>
                   <small>点击卡片探索更深机制</small>
                 </div>
                 <div className="subnodes-grid">
-                  {visibleChildNodes.map(child => (
+                  {childNodes.map(child => (
                     <button
                       key={child.id}
                       className="subnode-card"
