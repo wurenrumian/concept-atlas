@@ -352,12 +352,14 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
 }
 
 /* ==========================================================================
-   NODE EXPLORER (3-COLUMN EDITORIAL KNOWLEDGE LAYOUT)
+   NODE EXPLORER (2-COLUMN EDITORIAL KNOWLEDGE LAYOUT)
    ========================================================================== */
 
 .node-explorer-layout {
   display: grid;
-  grid-template-columns: 280px 1fr 340px;
+  /* Left sidebar + the scrollable center. The floating app toolbar overlays the
+     top-right; app-main reserves its height so nothing sits underneath. */
+  grid-template-columns: 220px minmax(0, 1fr);
   height: 100%;
   min-height: 0;
 }
@@ -1554,10 +1556,6 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
   border: 0;
   overflow: visible;
   box-shadow: none;
-}
-
-.node-explorer-layout {
-  grid-template-columns: 220px minmax(0, 1fr);
 }
 
 .inline-inspector {
