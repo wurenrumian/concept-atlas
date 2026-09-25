@@ -306,10 +306,6 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
   flex: 1;
   min-height: 0;
   position: relative;
-  /* The app toolbar floats top-right; reserve its height so neither view's
-     content (the atlas hierarchy strip, the graph inspector) slides under it.
-     Absolute positioning ignores this padding, so the toolbar stays put. */
-  padding-top: var(--app-toolbar-clearance);
 }
 
 .app-toolbar {
@@ -1507,6 +1503,9 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
 
 .hierarchy-strip-children {
   padding-left: 0;
+  /* The floating app toolbar hangs into the strip's top-right. Nudge the
+     drill-down row below its bottom edge so its buttons are never covered. */
+  padding-top: 16px;
 }
 
 .hierarchy-child-scroll { display: flex; gap: 5px; overflow-x: auto; min-width: 0; }
