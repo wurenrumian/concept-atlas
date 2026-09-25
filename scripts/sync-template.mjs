@@ -47,9 +47,11 @@ const MANIFEST = [
   { from: 'content/scroll-guide.mdx', to: 'skills/concept-atlas-dense-explain/references/scroll-guide.mdx', base: 'repo' },
   { from: 'content/assets', to: 'skills/concept-atlas-dense-explain/references/assets', base: 'repo' },
   // prepack-only copy for the npm tarball; the name states it is generated so it
-  // cannot be confused with the `skills/` source. Ignored by git.
-  { from: 'skills/concept-atlas-dense-explain/SKILL.md', to: 'packaged-skill/SKILL.md', base: 'package' },
-  { from: 'skills/concept-atlas-dense-explain/references', to: 'packaged-skill/references', base: 'package' },
+  // cannot be confused with the `skills/` source. Ignored by git, so it is
+  // absent from a clean clone: `--check` skips these entries (a missing target
+  // is the expected state, not drift). `prepack` regenerates them before packing.
+  { from: 'skills/concept-atlas-dense-explain/SKILL.md', to: 'packaged-skill/SKILL.md', base: 'package', prepack: true },
+  { from: 'skills/concept-atlas-dense-explain/references', to: 'packaged-skill/references', base: 'package', prepack: true },
 ];
 
 // Entry targets: the npm template by default, the package root for the shipped
@@ -84,6 +86,9 @@ const drift = [];
 let copied = 0;
 
 for (const entry of MANIFEST) {
+  // Prepack-only outputs are gitignored and regenerated at pack time, so a
+  // missing copy in a clean checkout is expected rather than drift.
+  if (check && entry.prepack) continue;
   const targetRoot = TARGET_ROOTS[entry.base || 'template'];
   for (const relative of await collectFiles(entry.from)) {
     const suffix = path.relative(entry.from, relative);
