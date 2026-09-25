@@ -154,9 +154,13 @@ test('tokens.css defines every relation/level variable in both modes', () => {
 
 test('the scroll reading-progress bar uses the per-skin progress gradient', () => {
   const css = readAllStyles();
-  const start = css.indexOf('.reading-progress-bar');
-  const bar = css.slice(start, css.indexOf('}', start));
-  assert.match(bar, /background:\s*var\(--progress-gradient\)/);
+  // No style pack may repaint it with a flat colour: every skin's three-stop
+  // --progress-gradient has to show through.
+  const rules = [...css.matchAll(/\.reading-progress-bar\s*\{([^}]*)\}/g)].map(match => match[1]);
+  assert.ok(rules.length >= 1, 'expected a .reading-progress-bar rule');
+  for (const declarations of rules) {
+    assert.match(declarations, /background:\s*var\(--progress-gradient\)/, `.reading-progress-bar overridden with: ${declarations.trim()}`);
+  }
 
   // core.css now depends on the token, so every skin must define it in both
   // themes; a missing one would silently fall back to the aurora gradient.

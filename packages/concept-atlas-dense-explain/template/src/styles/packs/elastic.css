@@ -372,10 +372,6 @@
   border-bottom: 1px solid var(--border-subtle);
 }
 
-[data-style='elastic'] .reading-progress-bar {
-  background: var(--primary);
-}
-
 [data-style='elastic'] .scroll-toc-title {
   color: var(--text-muted);
   font-weight: 600;
