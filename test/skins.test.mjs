@@ -151,3 +151,28 @@ test('tokens.css defines every relation/level variable in both modes', () => {
     assert.ok(lightBlock.includes(name), `missing ${name} in light tokens`);
   }
 });
+
+test('the scroll reading-progress bar uses the per-skin progress gradient', () => {
+  const css = readAllStyles();
+  const start = css.indexOf('.reading-progress-bar');
+  const bar = css.slice(start, css.indexOf('}', start));
+  assert.match(bar, /background:\s*var\(--progress-gradient\)/);
+
+  // core.css now depends on the token, so every skin must define it in both
+  // themes; a missing one would silently fall back to the aurora gradient.
+  const tokensCss = readFileSync(path.join(repoRoot, 'src', 'styles', 'tokens.css'), 'utf8');
+  const skinsCss = readFileSync(path.join(repoRoot, 'src', 'styles', 'skins.css'), 'utf8');
+  const blockFor = (source, selector) => {
+    const index = source.indexOf(selector);
+    assert.ok(index >= 0, `missing block ${selector}`);
+    return source.slice(source.indexOf('{', index) + 1, source.indexOf('}', index));
+  };
+  for (const skin of SKINS) {
+    const source = skin.id === DEFAULT_SKIN ? tokensCss : skinsCss;
+    const prefix = skin.id === DEFAULT_SKIN ? '' : `[data-skin="${skin.id}"]`;
+    for (const theme of ['dark', 'light']) {
+      const block = blockFor(source, `${prefix}[data-theme="${theme}"]`);
+      assert.ok(block.includes('--progress-gradient'), `missing --progress-gradient for ${skin.id}/${theme}`);
+    }
+  }
+});

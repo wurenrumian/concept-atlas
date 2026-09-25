@@ -3485,7 +3485,7 @@ html[data-carrier='scroll'] #root {
   display: block;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, var(--primary), var(--text-accent));
+  background: var(--progress-gradient);
   transform: scaleX(0);
   transform-origin: left center;
   transition: transform 80ms linear;
