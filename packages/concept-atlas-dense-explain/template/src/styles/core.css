@@ -306,6 +306,10 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
   flex: 1;
   min-height: 0;
   position: relative;
+  /* The app toolbar floats top-right; reserve its height so neither view's
+     content (the atlas hierarchy strip, the graph inspector) slides under it.
+     Absolute positioning ignores this padding, so the toolbar stays put. */
+  padding-top: var(--app-toolbar-clearance);
 }
 
 .app-toolbar {

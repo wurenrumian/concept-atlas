@@ -75,6 +75,9 @@
   --radius-3: 6px;
   --radius-4: 8px;
 
+  /* Vertical room for the floating app toolbar; view content starts below it. */
+  --app-toolbar-clearance: 64px;
+
   /* Knowledge Badge & Callouts */
   --callout-info-bg: rgba(56, 189, 248, 0.08);
   --callout-info-border: #38bdf8;
@@ -195,6 +198,9 @@
   --radius-2: 4px;
   --radius-3: 6px;
   --radius-4: 8px;
+
+  /* Vertical room for the floating app toolbar; view content starts below it. */
+  --app-toolbar-clearance: 64px;
 
   /* Knowledge Badge & Callouts */
   --callout-info-bg: #eff6ff;
