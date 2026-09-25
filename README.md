@@ -18,7 +18,7 @@
 - **共享信息组件**：支持 `CodeBlock`（代码、命令与伪代码）、`Insight`、`Flow`、`FrameworkModel`、`MatrixModel`、`Mermaid`、`RelationMap`、`NoteGrid`、`Callout`、`Details`、`Columns`、`Grid`、`Stack` 和 `Tabs` 等组件。
 - **学习闭环与溯源**：`LearningObjectives`/`KeyQuestion` 开场，`WorkedExample`/`Step` 逐步推演，`Quiz` 即时自测，`KeyTakeaways` 收束；`Source`/`Confidence` 标注来源类型与置信度，`Term` 提供行内术语释义。
 - **数据与行为模型**：`DataTable`（中立表格）、`Metric`（头条数字）、`StateMachine`（状态迁移）、`DecisionTree`（分支决策）、`FeedbackLoop`（反馈回路）和 `CodeDiff`（改动对比）。
-- **扩展能力**：`Math`/`MathBlock`（KaTeX 公式）、`Chart`（bar/line/pie 图表）、`Figure`（构建时内联图片）、`Cite`/`References`（引用与文献）。
+- **扩展能力**：`Math`/`MathBlock`（KaTeX 公式）、`Chart`（bar/line/pie 图表）、`Figure`/`FigureRef`（配图与自动图号）、`Cite`/`References`（引用与文献）。
 - **阅读体验可配置**：`scroll` 自动生成侧栏目录和阅读进度，并支持 `fontSize`/`scale`/`lineHeight` 调整正文大小。
 - **外观系统**：读者可随时切换配色皮肤（`aurora` 极光冷调 / `ember` 炉火暖调 / `verdant` 苔原森林 / `sakura` 樱雾粉紫 / `noir` 墨白单色）× 明暗模式 × 组件风格（`manuscript` 手稿排版 / `classic` 经典卡片 / `shadcn` 极简界面 / `elastic` 观测面板），选择在 localStorage 持久化；CLI/环境变量可把默认外观烘焙进产物。
 - **内容校验**：CLI 在构建前校验结构，断链、重复 id、缺失字段和错误 prop 会直接报错。
@@ -58,6 +58,9 @@ npx concept-atlas-dense-explain article.mdx --mode scroll --skin ember --default
 
 # Mermaid 默认走 CDN；需要离线单文件时内联 Mermaid（--mermaid-cdn 可换 CDN 地址）
 npx concept-atlas-dense-explain article.mdx --mode scroll --inline-mermaid
+
+# 图片默认外链；需要单文件离线时全部内联（单张图也可用 inline prop 覆盖）
+npx concept-atlas-dense-explain article.mdx --mode scroll --inline-assets
 ```
 
 使用 `-o` 指定输出路径，使用 `--force` 覆盖已有文件。校验未通过时构建会被阻止，可用 `--no-validate` 强制跳过。

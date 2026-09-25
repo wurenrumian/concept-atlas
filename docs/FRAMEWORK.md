@@ -251,7 +251,8 @@ MDX 属性使用 JavaScript 表达式。字符串要加引号，数组和对象�
 | `MathBlock` | `formula` / `variables` | `string` / `{ symbol?: string, name?: string, description?: string }[]` |
 | `Chart` | `type` / `data` / `series` / `labels` | `'bar' \| 'line' \| 'pie'` / `{ label?: string, value: number }[]` / `{ name?: string, values: number[] }[]` / `string[]` |
 | `CodeBlock` | `code` / `language` / `title` / `caption` / `lineNumbers` / `wrap` | `string` / `string` / `string` / `string` / `boolean` / `boolean` |
-| `Figure` | `src` / `alt` / `caption` / `label` | `string`（相对路径构建时内联）/ `string` / `string` / `string` |
+| `Figure` | `id` / `src` / `alt` / `caption` / `label` / `inline` | `string` / `string`（默认外链，`--inline-assets` 或 `inline` 控制内联）/ `string` / `string` / `string`（缺省用自动图号）/ `boolean` |
+| `FigureRef` | `id` | `string`（指向带 `id` 的 `Figure`，渲染“图 N”） |
 | `References` | `items` | `{ id: string, authors?: string, year?: string, title?: string, url?: string, source?: string, note?: string }[]` |
 | `WorkedExample` | `title` / `problem` | `string` / `string`（子内容为 `Step`） |
 | `Step` | `number` / `title` / `reason` | `string` / `string` / `string`（`reason` 记录该步理由） |
@@ -293,7 +294,7 @@ MDX 属性使用 JavaScript 表达式。字符串要加引号，数组和对象�
 数据与行为：DataTable、Metric、StateMachine、DecisionTree、FeedbackLoop
 阅读组件：Insight、Callout、Details、NoteGrid、Tabs、Columns、Stack、Grid、Split
 图形组件：Mermaid、RelationMap、RelationPath
-扩展能力：Math、MathBlock、Chart、Figure、Cite、References
+扩展能力：Math、MathBlock、Chart、Figure、FigureRef、Cite、References
 ```
 
 组件的选择应服从内容关系，不应服从视觉装饰。页面的价值来自结构化表达，而不是组件数量。
@@ -340,19 +341,23 @@ npm run sync`}</CodeBlock>
 <Chart title="留存趋势" type="line" labels={['第1周','第2周']} series={[{name:'留存率',values:[100,72]}]} />
 ```
 
-### 图片与题注
+### 图片、题注与自动图号
 
-`Figure` 把图片和题注绑定。相对路径的图片会在构建时转成 base64 内联，保证单文件离线可用；远程 URL 保持外链：
+`Figure` 把图片、题注和编号绑定。相对路径的图片**默认保持外链**（HTML 更小，需与 MDX 的 `assets/` 一起分发）；构建时加 `--inline-assets` 会把本地图片转成 base64 内联，保证单文件离线可用，单张图也可用 `inline={true|false}` 覆盖（优先级：组件 prop > 全局开关 > 默认外链）。远程 URL 永远保持外链，并会产生 `ASSET_REMOTE` 提示。
 
 ```mdx
-<Figure src="./assets/diagram.png" alt="架构示意" label="图 1" caption="数据从输入流经处理到输出。" />
+{/* 默认外链；给 id 后正文可用 FigureRef 自动引用“图 N” */}
+<Figure id="flow" src="./assets/diagram.png" alt="架构示意" caption="数据从输入流经处理到输出。" />
+<Overview>如 <FigureRef id="flow" /> 所示，处理分为三步。</Overview>
 ```
+
+`Figure` 的 `id` 会按文档顺序自动编号（`atlas` 每个节点各自编号，`scroll` 全文共用一套），插入新图时编号自动重排；显式 `label` 仍然优先。
 
 点击图片会在全屏浮层中放大查看：滚轮或 `+` / `−` 缩放，拖拽平移，双击在 1x / 2x 间切换，`0` 重置，`Esc` 或点击背景关闭。图片本身是键盘可达的按钮，回车即可打开。浮层通过 portal 挂到 `body`，因此不受草稿画布缩放或卡片旋转的影响。
 
-找不到本地图片只会产生 warning 并显示占位符，不会中断构建。
+找不到本地图片只会产生 warning 并显示占位符，不会中断构建；`FigureRef` 指向不存在的 `id` 会提示 `FIGURE_REF_UNRESOLVED`。
 
-`--link-assets` 会关闭 base64 内联，让图片保持相对链接，页面不再自包含但体积显著下降（同一目标 1.51MB → 270KB）。此时 HTML 必须与 MDX 的 `assets/` 保持相对位置，否则 CLI 会警告。
+实测同一个目标：内联 1.51MB → 外链 270KB。外链时 HTML 必须与 MDX 的 `assets/` 保持相对位置，否则 CLI 会警告。
 
 ### 引用与文献
 
