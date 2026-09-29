@@ -672,3 +672,37 @@
 [data-style='shadcn'] .data-table tbody tr {
   animation: ca-fade var(--shadcn-motion) backwards;
 }
+
+/* -- Extension components: the same card chassis, a hairline alert quote, and
+      a secondary-badge review stamp. -- */
+[data-style='shadcn'] .semantic-checklist,
+[data-style='shadcn'] .semantic-property-list,
+[data-style='shadcn'] .semantic-tree,
+[data-style='shadcn'] .semantic-code-tabs,
+[data-style='shadcn'] .semantic-annotated-code {
+  margin: 16px 0;
+  padding: 20px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-3);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-style='shadcn'] .semantic-code-tabs .code-tabs { border-radius: var(--radius-3); }
+[data-style='shadcn'] .code-tabs summary { font-family: var(--font-sans); font-weight: 600; }
+
+[data-style='shadcn'] .semantic-quote {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid var(--border-subtle);
+  border-inline-start: 1px solid var(--border-subtle);
+  border-radius: var(--radius-3);
+  background: var(--bg-surface);
+}
+
+[data-style='shadcn'] .checklist-item,
+[data-style='shadcn'] .property-list,
+[data-style='shadcn'] .tree-node { border-radius: var(--radius-2); }
+[data-style='shadcn'] .checklist-item { border-color: transparent; background: var(--bg-subtle); }
+[data-style='shadcn'] .property-name { background: var(--bg-subtle); font-family: var(--font-mono); }
+[data-style='shadcn'] .semantic-last-reviewed { border: 0; border-radius: 9999px; background: var(--bg-subtle); }

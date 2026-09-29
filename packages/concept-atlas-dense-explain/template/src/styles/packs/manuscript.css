@@ -541,3 +541,76 @@
 
 /* Index stamps settle with the page instead of popping. */
 [data-style='manuscript'] .worked-step-marker { animation: none; }
+
+/* -- Extension components: structure blocks read as archive records, a pull
+      quote hangs in the margin, and the review date is a stamped folio. -- */
+[data-style='manuscript'] .semantic-checklist,
+[data-style='manuscript'] .semantic-property-list,
+[data-style='manuscript'] .semantic-tree {
+  --record-accent: var(--text-accent);
+  position: relative;
+  margin: 20px 0 14px;
+  padding: 17px 16px 14px;
+  border: 1px solid var(--border-subtle);
+  border-top-color: color-mix(in srgb, var(--record-accent) 40%, transparent);
+  border-radius: 2px;
+  background: var(--bg-surface);
+  box-shadow: none;
+}
+
+[data-style='manuscript'] .semantic-checklist { --record-accent: var(--accent-emerald); }
+
+[data-style='manuscript'] .semantic-checklist > .semantic-tag,
+[data-style='manuscript'] .semantic-property-list > .semantic-tag,
+[data-style='manuscript'] .semantic-tree > .semantic-tag {
+  position: absolute;
+  top: -10px;
+  left: 12px;
+  padding: 1px 8px;
+  border: 1px solid color-mix(in srgb, var(--record-accent) 55%, transparent);
+  border-radius: 2px;
+  background: var(--bg-surface);
+  color: var(--record-accent);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.55;
+  letter-spacing: 0.02em;
+}
+
+[data-style='manuscript'] .semantic-code-tabs,
+[data-style='manuscript'] .semantic-annotated-code {
+  border: 1px solid var(--border-subtle);
+  border-top: 3px double var(--border-strong);
+  border-radius: 2px;
+  background: var(--bg-surface);
+  box-shadow: none;
+}
+
+[data-style='manuscript'] .semantic-code-tabs { margin: 14px 0; padding: 14px 16px; }
+[data-style='manuscript'] .code-tabs { border-radius: 2px; }
+[data-style='manuscript'] .code-tabs summary { font-family: var(--font-heading); font-weight: 600; }
+[data-style='manuscript'] .code-tabs-caption,
+[data-style='manuscript'] .code-tabs-note { font-style: italic; }
+
+[data-style='manuscript'] .semantic-quote {
+  margin: 18px 0;
+  padding: 2px 0 2px 16px;
+  border-inline-start: 2px solid color-mix(in srgb, var(--border-strong) 70%, transparent);
+  border-radius: 0;
+}
+
+[data-style='manuscript'] .checklist-item,
+[data-style='manuscript'] .property-list,
+[data-style='manuscript'] .property-name,
+[data-style='manuscript'] .tree-node { border-radius: 2px; }
+[data-style='manuscript'] .checklist-item { background: transparent; }
+[data-style='manuscript'] .property-name {
+  border-right: 1px solid var(--border-subtle);
+  background: transparent;
+  font-family: var(--font-label);
+}
+[data-style='manuscript'] .tree-children {
+  border-inline-start-style: solid;
+  border-inline-start-color: var(--border-subtle);
+}
+[data-style='manuscript'] .semantic-last-reviewed { border-radius: 2px; background: transparent; }

@@ -161,12 +161,14 @@ Scroll 用章节组织阅读顺序。共享组件放在章节中，不需要为�
 | 比较和决策 | `Compare`、`MatrixModel`、`DecisionMatrix`、`Tradeoff` |
 | 压缩结论 | `Insight`、`Callout`、`NoteGrid` |
 | 说明限制 | `Boundary`、`Counterexample`、`FailureMode` |
-| 保留证据 | `Evidence`、`Invariant`、`Details` |
+| 保留证据 | `Evidence`、`Invariant`、`Checklist`、`Details` |
 | 教学推演 | `WorkedExample`、`Step`、`Quiz`、`KeyTakeaways` |
-| 标注来源 | `Source`、`Confidence`、`Cite` / `References` |
+| 标注来源 | `Source`、`Confidence`、`LastReviewed`、`Cite` / `References` |
 | 表达状态与分支 | `StateMachine`、`DecisionTree`、`FeedbackLoop` |
-| 呈现数据 | `DataTable`、`Metric`、`Chart` |
-| 解释改动 | `CodeDiff`、`CodeBlock` |
+| 呈现数据 | `DataTable`、`PropertyList`、`Metric`、`Chart` |
+| 解释改动 | `CodeDiff`、`CodeBlock`、`CodeTabs`、`AnnotatedCode` |
+| 表达结构 | `TreeView`、`Columns`、`Stack`、`Grid` |
+| 引用观点 | `Quote` |
 
 推荐一个基本节奏：
 
@@ -267,6 +269,13 @@ MDX 属性使用 JavaScript 表达式。字符串要加引号，数组和对象�
 | `DecisionTree` | `question` / `branches` | `string` / `{ condition?: string, outcome?: string, note?: string, tone?: string, branches?: DecisionBranch[] }[]` |
 | `FeedbackLoop` | `type` / `nodes` | `'reinforcing' \| 'balancing'` / `{ label?: string, title?: string, description?: string }[]` |
 | `CodeDiff` | `before` / `after` / `language` / `title` / `caption` | `string` / `string` / `string` / `string` / `string` |
+| `Quote` | `author` / `source` / `href` | `string` / `string` / `string`（`source` 有 `href` 时渲染为链接） |
+| `Checklist` | `title` / `items` | `string` / `{ text?: string, status?: 'pass' \| 'fail' \| 'unknown' \| 'todo', note?: string }[]` |
+| `LastReviewed` | `date` / `by` / `note` | `string` / `string` / `string`（三者皆空时不渲染） |
+| `PropertyList` | `title` / `items` | `string` / `{ name?: string, label?: string, key?: string, value?: string, note?: string }[]` |
+| `TreeView` | `title` / `items` | `string` / `{ label?: string, title?: string, description?: string, children?: TreeViewNode[] }[]`（递归嵌套） |
+| `CodeTabs` | `items` / `title` / `caption` / `lineNumbers` | `{ label?: string, language?: string, code?: string }[]` / `string` / `string` / `boolean` |
+| `AnnotatedCode` | `code` / `language` / `title` / `caption` / `notes` | `string` / `string` / `string` / `string` / `{ line: number, text?: string }[]` |
 
 组件也支持 JSX 子内容作为备用写法，例如 `<Flow>...</Flow>`、`<DecisionMatrix>...</DecisionMatrix>`。但带数据属性的写法更适合让 AI 稳定生成和检查。
 

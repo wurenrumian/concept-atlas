@@ -47,12 +47,12 @@ This is the only runner — there is nothing to look for. Do not search for a lo
 ## Component families
 
 - Node semantics: `Overview`, `Definition`, `Mechanism`, `Implementation`, `CodeBlock`, `Boundary`, `Example`, `Counterexample`, `Prerequisite`, `Input`, `Output`, `Glossary`
-- Argument and evidence: `Evidence`, `Invariant`, `FailureMode`, `Tradeoff`, `LearningObjectives`, `KeyQuestion`
-- Learning loop and provenance: `WorkedExample` + `Step`, `Quiz`, `KeyTakeaways`, `Source`, `Confidence`, `Term`
+- Argument and evidence: `Evidence`, `Invariant`, `FailureMode`, `Tradeoff`, `Checklist`, `LearningObjectives`, `KeyQuestion`
+- Learning loop and provenance: `WorkedExample` + `Step`, `Quiz`, `KeyTakeaways`, `Source`, `Confidence`, `LastReviewed`, `Term`
 - Information models: `Flow`, `Timeline`, `Compare`, `DecisionMatrix`, `FrameworkModel`, `MatrixModel`, `FormulaModel`, `PyramidModel`, `FunnelModel`
-- Data and behaviour: `DataTable`, `Metric`, `StateMachine`, `DecisionTree`, `FeedbackLoop`, `CodeDiff`
-- Reading and layout: `Insight`, `Callout`, `Details`, `NoteGrid`, `Tabs`, `Columns`, `Stack`, `Grid`, `Split`, `ScrollGrid`, `ScrollPair`, `ScrollToc`
-- Graphics and extensions: `Mermaid`, `RelationMap`, `RelationPath`, `Math`, `MathBlock`, `Chart`, `Figure` (alias `Image`), `FigureRef`, `Cite`, `References`
+- Data and behaviour: `DataTable`, `Metric`, `PropertyList`, `TreeView`, `StateMachine`, `DecisionTree`, `FeedbackLoop`, `CodeDiff`
+- Reading and layout: `Insight`, `Callout`, `Details`, `Quote`, `NoteGrid`, `Tabs`, `Columns`, `Stack`, `Grid`, `Split`, `ScrollGrid`, `ScrollPair`, `ScrollToc`
+- Graphics and extensions: `Mermaid`, `RelationMap`, `RelationPath`, `Math`, `MathBlock`, `Chart`, `CodeTabs`, `AnnotatedCode`, `Figure` (alias `Image`), `FigureRef`, `Cite`, `References`
 
 ## Authoring rules
 

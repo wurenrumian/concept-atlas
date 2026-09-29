@@ -683,3 +683,37 @@
 [data-style='elastic'] .data-table tbody tr {
   animation: ca-fade var(--elastic-motion) backwards;
 }
+
+/* -- Extension components: bordered panels, an EuiCallOut quote, and a chip
+      review stamp. -- */
+[data-style='elastic'] .semantic-checklist,
+[data-style='elastic'] .semantic-property-list,
+[data-style='elastic'] .semantic-tree,
+[data-style='elastic'] .semantic-code-tabs,
+[data-style='elastic'] .semantic-annotated-code {
+  margin: 16px 0;
+  padding: 20px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-2);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-card);
+}
+
+[data-style='elastic'] .semantic-code-tabs .code-tabs { border-radius: var(--radius-1); }
+[data-style='elastic'] .code-tabs summary { font-family: var(--font-sans); font-weight: 600; }
+
+[data-style='elastic'] .semantic-quote {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border: 1px solid var(--border-subtle);
+  border-inline-start: 4px solid var(--border-strong);
+  border-radius: var(--radius-2);
+  background: var(--bg-surface);
+}
+
+[data-style='elastic'] .checklist-item,
+[data-style='elastic'] .property-list,
+[data-style='elastic'] .tree-node { border-radius: var(--radius-1); }
+[data-style='elastic'] .checklist-item { background: var(--bg-subtle); }
+[data-style='elastic'] .property-name { background: var(--bg-subtle); }
+[data-style='elastic'] .semantic-last-reviewed { border-radius: var(--radius-1); background: var(--bg-subtle); }

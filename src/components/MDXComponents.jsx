@@ -2288,3 +2288,244 @@ function widgetStyle({ width, height, x, y, position }) {
 function widgetClass(position) {
   return position === 'absolute' ? 'semantic-widget-absolute' : '';
 }
+
+// Argument, evidence and reference extensions --------------------------------
+
+/** An attributed quotation: the body plus an optional author/source citation. */
+export function Quote({ author, source, href, children }) {
+  const citation = source && href ? <a href={href}>{source}</a> : source;
+  return (
+    <blockquote className="semantic-quote">
+      <div className="quote-body">{children}</div>
+      {(author || source) && (
+        <footer className="quote-attribution">
+          <cite>
+            {author}
+            {author && source ? ' · ' : ''}
+            {citation}
+          </cite>
+        </footer>
+      )}
+    </blockquote>
+  );
+}
+Quote.displayName = 'Quote';
+
+const CHECKLIST_MARKS = { pass: '✓', fail: '✕', unknown: '?', todo: '○' };
+
+/** A verification checklist; each item carries a pass/fail/unknown/todo status. */
+export function Checklist({ title = '验证清单', items = [], children }) {
+  const entries = Array.isArray(items) ? items.filter(Boolean) : [];
+  return (
+    <section className="semantic-checklist">
+      <div className="semantic-tag">☑ {title}</div>
+      {entries.length > 0 ? (
+        <ul className="checklist-items">
+          {entries.map((item, index) => {
+            const entry = typeof item === 'string' ? { text: item } : item;
+            const status = Object.hasOwn(CHECKLIST_MARKS, entry.status) ? entry.status : 'unknown';
+            return (
+              <li className="checklist-item" data-status={status} key={index}>
+                <span className="checklist-mark" aria-hidden="true">
+                  {CHECKLIST_MARKS[status]}
+                </span>
+                <span className="checklist-text">
+                  {entry.text}
+                  {entry.note && <small className="checklist-note">{entry.note}</small>}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        children
+      )}
+    </section>
+  );
+}
+Checklist.displayName = 'Checklist';
+
+/** The review date/reviewer stamp for a claim or page. */
+export function LastReviewed({ date, by, note }) {
+  if (!date && !by && !note) return null;
+  return (
+    <div className="semantic-last-reviewed">
+      <span className="reviewed-label">审阅</span>
+      {date && (
+        <time className="reviewed-date" dateTime={date}>
+          {date}
+        </time>
+      )}
+      {by && <span className="reviewed-by">{by}</span>}
+      {note && <span className="reviewed-note">{note}</span>}
+    </div>
+  );
+}
+LastReviewed.displayName = 'LastReviewed';
+
+/** A definition-style name/value list for specifications and parameters. */
+export function PropertyList({ title, items = [], children }) {
+  const entries = Array.isArray(items) ? items.filter(Boolean) : [];
+  return (
+    <section className="semantic-property-list">
+      {title && <div className="semantic-tag">≡ {title}</div>}
+      {entries.length > 0 ? (
+        <dl className="property-list">
+          {entries.map((item, index) => {
+            const entry = typeof item === 'string' ? { name: item } : item;
+            return (
+              <div className="property-row" key={index}>
+                <dt className="property-name">{entry.name ?? entry.label ?? entry.key}</dt>
+                <dd className="property-value">
+                  {entry.value}
+                  {entry.note && <small className="property-note">{entry.note}</small>}
+                </dd>
+              </div>
+            );
+          })}
+        </dl>
+      ) : (
+        children
+      )}
+    </section>
+  );
+}
+PropertyList.displayName = 'PropertyList';
+
+/** An explicit nested hierarchy, distinct from the relational graph views. */
+function TreeBranch({ node, depth }) {
+  if (!node) return null;
+  const children = Array.isArray(node.children) ? node.children.filter(Boolean) : [];
+  return (
+    <li className="tree-branch" data-depth={depth}>
+      <div className="tree-node">
+        <span className="tree-label">{node.label ?? node.title}</span>
+        {node.description && <span className="tree-desc">{node.description}</span>}
+      </div>
+      {children.length > 0 && (
+        <ul className="tree-children">
+          {children.map((child, index) => (
+            <TreeBranch node={child} depth={depth + 1} key={index} />
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+}
+
+export function TreeView({ title, items = [], children }) {
+  const roots = Array.isArray(items) ? items.filter(Boolean) : [];
+  return (
+    <section className="semantic-tree" data-component="TreeView">
+      {title && <div className="semantic-tag">⌗ {title}</div>}
+      {roots.length > 0 ? (
+        <ul className="tree-root">
+          {roots.map((node, index) => (
+            <TreeBranch node={node} depth={0} key={index} />
+          ))}
+        </ul>
+      ) : (
+        children
+      )}
+    </section>
+  );
+}
+TreeView.displayName = 'TreeView';
+
+// Code extensions ------------------------------------------------------------
+
+/** One code block per variant (language or before/after), toggled like Tabs. */
+export function CodeTabs({ items = [], title, caption, lineNumbers = false }) {
+  const tabs = Array.isArray(items) ? items.filter(Boolean) : [];
+  if (tabs.length === 0) return null;
+  return (
+    <figure className="semantic-code-tabs">
+      {title && <figcaption className="code-tabs-caption">{title}</figcaption>}
+      <div className="code-tabs">
+        {tabs.map((tab, index) => {
+          const text = typeof tab.code === 'string' ? tab.code.replace(/^\n+|\s+$/g, '') : '';
+          const showLang = Boolean(tab.language) && tab.language !== 'text';
+          return (
+            <details key={index} open={index === 0}>
+              <summary>
+                <span className="code-tab-label">
+                  {tab.label || tab.language || `代码 ${index + 1}`}
+                </span>
+                {showLang && <span className="lang-badge">{tab.language}</span>}
+              </summary>
+              <pre className={`code-block${lineNumbers ? ' code-block-numbered' : ''}`}>
+                {lineNumbers ? (
+                  <code>
+                    {text.split('\n').map((line, lineIndex) => (
+                      <span className="code-line" key={lineIndex}>
+                        {line}
+                      </span>
+                    ))}
+                  </code>
+                ) : (
+                  <code>{text}</code>
+                )}
+              </pre>
+            </details>
+          );
+        })}
+      </div>
+      {caption && <p className="code-tabs-note">{caption}</p>}
+    </figure>
+  );
+}
+CodeTabs.displayName = 'CodeTabs';
+
+/** A numbered listing whose specific lines are called out underneath. */
+export function AnnotatedCode({ code, language = 'text', title, caption, notes = [] }) {
+  const raw = typeof code === 'string' ? code : childrenToText(code);
+  const text = typeof raw === 'string' ? raw.replace(/^\n+|\s+$/g, '') : '';
+  if (!text) return null;
+  const annotated = new Map();
+  (Array.isArray(notes) ? notes : []).forEach(note => {
+    if (note && Number.isInteger(note.line)) {
+      const list = annotated.get(note.line) || [];
+      list.push(note);
+      annotated.set(note.line, list);
+    }
+  });
+  const showLang = Boolean(language) && language !== 'text';
+  return (
+    <figure className="semantic-annotated-code" data-language={language}>
+      {(title || showLang) && (
+        <div className="semantic-code-head">
+          {title && <span className="semantic-code-title">{title}</span>}
+          {showLang && <span className="lang-badge">{language}</span>}
+        </div>
+      )}
+      <pre className="code-block code-block-numbered annotated-code">
+        <code>
+          {text.split('\n').map((line, index) => (
+            <span
+              className={`code-line${annotated.has(index + 1) ? ' is-annotated' : ''}`}
+              key={index}
+            >
+              {line}
+            </span>
+          ))}
+        </code>
+      </pre>
+      {annotated.size > 0 && (
+        <ol className="annotated-code-notes">
+          {[...annotated.entries()]
+            .sort((a, b) => a[0] - b[0])
+            .flatMap(([line, list]) =>
+              list.map((note, noteIndex) => (
+                <li className="annotated-code-note" key={`${line}-${noteIndex}`}>
+                  <span className="note-line">L{line}</span>
+                  <span className="note-text">{note.text}</span>
+                </li>
+              ))
+            )}
+        </ol>
+      )}
+      {caption && <figcaption className="semantic-code-caption">{caption}</figcaption>}
+    </figure>
+  );
+}
+AnnotatedCode.displayName = 'AnnotatedCode';

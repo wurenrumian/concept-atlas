@@ -175,6 +175,20 @@ npm run dev`}</CodeBlock>
     </ScrollGrid>
   </ScrollSection>
 
+  <ScrollSection title="扩展组件：引用、清单、规格与结构">
+    <ScrollProse>以下组件补齐了引用、验证清单、规格表、显式层级与代码注解的表达缺口。</ScrollProse>
+    <Quote author="Donald Knuth" source="Literate Programming">程序首先是写给人读的，只是顺便让机器执行。</Quote>
+    <Checklist title="上线前验证" items={[{text:'依赖已锁定',status:'pass'},{text:'压测通过',status:'fail',note:'P99 仍超标 12%'},{text:'回滚脚本演练',status:'todo'},{text:'灰度范围确认',status:'unknown'}]} />
+    <PropertyList title="运行时参数" items={[{name:'heap',value:'4Gi',note:'按峰值负载预留'},{name:'gc',value:'zgc'},{name:'timeout',value:'30s'}]} />
+    <ScrollGrid columns="2">
+      <TreeView title="模块结构" items={[{label:'core',description:'内核',children:[{label:'scheduler'},{label:'memory',children:[{label:'allocator'}]}]}]} />
+      <LastReviewed date="2026-09-29" by="架构组" note="随 ABI 变更重审" />
+    </ScrollGrid>
+    <CodeTabs title="同一逻辑的两种写法" items={[{label:'JavaScript',language:'javascript',code:'const sum = ns.reduce((a, n) => a + n, 0);'},{label:'Rust',language:'rust',code:'let sum: i64 = ns.iter().sum();'}]} />
+    <AnnotatedCode language="bash" title="定位动态链接问题" code={`ldd app
+readelf -d app | head`} notes={[{line:1,text:'列出动态依赖，缺失项会显示 not found'},{line:2,text:'确认 .dynamic 段与 SONAME'}]} />
+  </ScrollSection>
+
   <ScrollSection title="参考文献">
     <References title="本页引用" items={[{id:'tufte1983',authors:'Tufte, E. R.',year:'1983',title:'The Visual Display of Quantitative Information',source:'Graphics Press',note:'关于以图形压缩与呈现证据的经典论述。'}]} />
   </ScrollSection>

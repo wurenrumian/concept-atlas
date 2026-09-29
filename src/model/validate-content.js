@@ -40,6 +40,7 @@ export const KNOWN_COMPONENTS = [
   'Invariant',
   'FailureMode',
   'Tradeoff',
+  'Checklist',
   'LearningObjectives',
   'KeyQuestion',
   'WorkedExample',
@@ -49,6 +50,7 @@ export const KNOWN_COMPONENTS = [
   // Provenance and inline aids
   'Source',
   'Confidence',
+  'LastReviewed',
   'Term',
   // Data and behaviour models
   'DataTable',
@@ -71,6 +73,7 @@ export const KNOWN_COMPONENTS = [
   'Insight',
   'Callout',
   'Details',
+  'Quote',
   'NoteGrid',
   'Tabs',
   'Columns',
@@ -89,7 +92,12 @@ export const KNOWN_COMPONENTS = [
   'Image',
   'FigureRef',
   'Cite',
-  'References'
+  'References',
+  // Structure and code extensions
+  'PropertyList',
+  'TreeView',
+  'CodeTabs',
+  'AnnotatedCode'
 ];
 
 export const KNOWN_COMPONENT_SET = new Set(KNOWN_COMPONENTS);
@@ -117,6 +125,11 @@ export const ARRAY_PROPS = {
   DecisionMatrix: ['headers', 'rows'],
   Compare: ['items'],
   NoteGrid: ['notes'],
+  Checklist: ['items'],
+  CodeTabs: ['items'],
+  AnnotatedCode: ['notes'],
+  PropertyList: ['items'],
+  TreeView: ['items'],
   Tabs: ['items'],
   LearningObjectives: ['items'],
   Tradeoff: ['options'],
@@ -171,6 +184,11 @@ const CORE_CONTENT_COMPONENTS = new Set([
   'Math',
   'MathBlock',
   'Chart',
+  'Checklist',
+  'PropertyList',
+  'TreeView',
+  'CodeTabs',
+  'AnnotatedCode',
   'Figure'
 ]);
 
