@@ -4229,7 +4229,7 @@ a.reference-title:hover { color: var(--text-accent); }
 
 /* -- AnnotatedCode: a numbered listing with per-line notes. -- */
 .semantic-annotated-code { margin: 16px 0; }
-.annotated-code .code-line.is-annotated { background: var(--bg-subtle); }
+.annotated-code .code-line.is-annotated { background: var(--bg-highlight); }
 .annotated-code-notes { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 4px; }
 .annotated-code-note {
   display: grid;
@@ -4239,3 +4239,30 @@ a.reference-title:hover { color: var(--text-accent); }
 }
 .note-line { color: var(--text-accent); font-family: var(--font-data); }
 .note-text { color: var(--text-secondary); line-height: 1.55; }
+
+/* -- Extension components: pointer affordances, a complete status set and a
+      narrow-viewport fallback. CodeTabs/AnnotatedCode deliberately add no
+      second frame — `.code-tabs` and `pre.code-block` already own theirs. -- */
+.checklist-item,
+.property-row,
+.tree-node,
+.code-tabs summary {
+  transition: background-color var(--motion-base) var(--ease-standard);
+}
+.checklist-item:hover { background: var(--bg-card-hover); }
+.checklist-item[data-status='unknown'] { border-inline-start: 2px solid var(--accent-amber); }
+.checklist-item[data-status='todo'] { border-inline-start: 2px solid var(--border-strong); }
+.property-name { border-right: 1px solid var(--border-subtle); }
+.property-row:hover .property-value { background: var(--bg-hover-soft); }
+.tree-node:hover { background: var(--bg-hover-soft); }
+.code-tabs summary:hover { background: var(--bg-subtle); }
+.code-tabs details[open] > summary { border-bottom: 1px solid var(--border-subtle); }
+.annotated-code .code-line.is-annotated::before { color: var(--code-text); font-weight: 700; }
+
+@media (max-width: 620px) {
+  .property-row { grid-template-columns: minmax(0, 1fr); }
+  .property-name {
+    border-right: 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+}

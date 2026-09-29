@@ -688,9 +688,7 @@
       review stamp. -- */
 [data-style='elastic'] .semantic-checklist,
 [data-style='elastic'] .semantic-property-list,
-[data-style='elastic'] .semantic-tree,
-[data-style='elastic'] .semantic-code-tabs,
-[data-style='elastic'] .semantic-annotated-code {
+[data-style='elastic'] .semantic-tree {
   margin: 16px 0;
   padding: 20px;
   border: 1px solid var(--border-medium);
@@ -699,7 +697,12 @@
   box-shadow: var(--shadow-card);
 }
 
-[data-style='elastic'] .semantic-code-tabs .code-tabs { border-radius: var(--radius-1); }
+[data-style='elastic'] .semantic-code-tabs { margin: 16px 0; }
+[data-style='elastic'] .code-tabs {
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-2);
+  box-shadow: var(--shadow-card);
+}
 [data-style='elastic'] .code-tabs summary { font-family: var(--font-sans); font-weight: 600; }
 
 [data-style='elastic'] .semantic-quote {

@@ -677,9 +677,7 @@
       a secondary-badge review stamp. -- */
 [data-style='shadcn'] .semantic-checklist,
 [data-style='shadcn'] .semantic-property-list,
-[data-style='shadcn'] .semantic-tree,
-[data-style='shadcn'] .semantic-code-tabs,
-[data-style='shadcn'] .semantic-annotated-code {
+[data-style='shadcn'] .semantic-tree {
   margin: 16px 0;
   padding: 20px;
   border: 1px solid var(--border-subtle);
@@ -688,7 +686,8 @@
   box-shadow: var(--shadow-sm);
 }
 
-[data-style='shadcn'] .semantic-code-tabs .code-tabs { border-radius: var(--radius-3); }
+[data-style='shadcn'] .semantic-code-tabs { margin: 16px 0; }
+[data-style='shadcn'] .code-tabs { border-radius: var(--radius-3); box-shadow: var(--shadow-sm); }
 [data-style='shadcn'] .code-tabs summary { font-family: var(--font-sans); font-weight: 600; }
 
 [data-style='shadcn'] .semantic-quote {

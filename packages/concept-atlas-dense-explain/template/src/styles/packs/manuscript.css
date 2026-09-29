@@ -577,17 +577,11 @@
   letter-spacing: 0.02em;
 }
 
-[data-style='manuscript'] .semantic-code-tabs,
-[data-style='manuscript'] .semantic-annotated-code {
-  border: 1px solid var(--border-subtle);
-  border-top: 3px double var(--border-strong);
+[data-style='manuscript'] .semantic-code-tabs { margin: 14px 0; }
+[data-style='manuscript'] .code-tabs {
+  border-color: var(--border-subtle);
   border-radius: 2px;
-  background: var(--bg-surface);
-  box-shadow: none;
 }
-
-[data-style='manuscript'] .semantic-code-tabs { margin: 14px 0; padding: 14px 16px; }
-[data-style='manuscript'] .code-tabs { border-radius: 2px; }
 [data-style='manuscript'] .code-tabs summary { font-family: var(--font-heading); font-weight: 600; }
 [data-style='manuscript'] .code-tabs-caption,
 [data-style='manuscript'] .code-tabs-note { font-style: italic; }
