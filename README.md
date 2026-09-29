@@ -77,6 +77,8 @@ npx concept-atlas-dense-explain article.mdx --mode scroll --inline-assets
 
 两种模式共享信息组件，但外层页面结构不同；切换模式时只需要转换页面外壳，不要把一个 MDX 文件同时写成两种外壳。
 
+CLI 的 `create` 与 `guide` 默认使用 `scroll` 外壳（`--mode` 缺省即 `scroll`）；需要 `atlas` 时显式传 `--mode atlas`。
+
 ## 最小示例
 
 ```mdx
