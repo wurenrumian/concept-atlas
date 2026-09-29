@@ -34,7 +34,9 @@ test('a per-tag inline={true} overrides the link default', () => {
 });
 
 test('a per-tag inline={false} overrides --inline-assets', () => {
-  const output = transform(`<Figure src="${IMG}" inline={false} />`, { __ATLAS_INLINE_ASSETS__: '"true"' });
+  const output = transform(`<Figure src="${IMG}" inline={false} />`, {
+    __ATLAS_INLINE_ASSETS__: '"true"'
+  });
   assert.equal(output, null);
 });
 
@@ -42,7 +44,7 @@ test('remote, data and absolute sources are never inlined', () => {
   const code = [
     `<Figure src="https://example.com/a.png" />`,
     `<Figure src="data:image/png;base64,AAAA" />`,
-    `<Figure src="/absolute.png" />`,
+    `<Figure src="/absolute.png" />`
   ].join('\n');
   assert.equal(transform(code, { __ATLAS_INLINE_ASSETS__: '"true"' }), null);
 });

@@ -15,43 +15,43 @@ export const NODE_KINDS = {
   system: {
     label: '系统',
     description: '整体系统、产品或问题域的全貌',
-    tone: 'var(--kind-system)',
+    tone: 'var(--kind-system)'
   },
   stage: {
     label: '阶段',
     description: '生命周期阶段、处理步骤或子系统',
-    tone: 'var(--kind-stage)',
+    tone: 'var(--kind-stage)'
   },
   mechanism: {
     label: '机制',
     description: '可解释、可验证的工作机制',
-    tone: 'var(--kind-mechanism)',
+    tone: 'var(--kind-mechanism)'
   },
   artifact: {
     label: '产物',
     description: '阶段产出的实体、数据或文件',
-    tone: 'var(--kind-artifact)',
+    tone: 'var(--kind-artifact)'
   },
   failure: {
     label: '故障',
     description: '失败模式、异常与边界情况',
-    tone: 'var(--kind-failure)',
+    tone: 'var(--kind-failure)'
   },
   tool: {
     label: '工具',
     description: '使用的工具、库或外部依赖',
-    tone: 'var(--kind-tool)',
+    tone: 'var(--kind-tool)'
   },
   boundary: {
     label: '边界',
     description: '约束、前提、限制与非目标',
-    tone: 'var(--kind-boundary)',
+    tone: 'var(--kind-boundary)'
   },
   decision: {
     label: '决策',
     description: '设计取舍与选择点',
-    tone: 'var(--kind-decision)',
-  },
+    tone: 'var(--kind-decision)'
+  }
 };
 
 export const NODE_KIND_NAMES = Object.keys(NODE_KINDS);

@@ -89,13 +89,13 @@ export const KNOWN_COMPONENTS = [
   'Image',
   'FigureRef',
   'Cite',
-  'References',
+  'References'
 ];
 
 export const KNOWN_COMPONENT_SET = new Set(KNOWN_COMPONENTS);
 
 export const RELATION_TYPE_NAMES = Object.keys(RELATION_TYPES).filter(
-  name => !RELATION_TYPES[name].isTree,
+  name => !RELATION_TYPES[name].isTree
 );
 export const RELATION_TYPE_SET = new Set(RELATION_TYPE_NAMES);
 
@@ -128,7 +128,7 @@ export const ARRAY_PROPS = {
   StateMachine: ['states', 'transitions'],
   KeyTakeaways: ['items'],
   DecisionTree: ['branches'],
-  FeedbackLoop: ['nodes'],
+  FeedbackLoop: ['nodes']
 };
 
 /** Node content components that satisfy the "has substance" contract. */
@@ -171,7 +171,7 @@ const CORE_CONTENT_COMPONENTS = new Set([
   'Math',
   'MathBlock',
   'Chart',
-  'Figure',
+  'Figure'
 ]);
 
 function maskIgnored(source) {
@@ -264,7 +264,8 @@ function parseTag(source, start) {
   while (i < source.length) {
     while (i < source.length && /\s/.test(source[i])) i += 1;
     if (source[i] === '>') return { kind: 'open', name, attrs, start, end: i + 1 };
-    if (source[i] === '/' && source[i + 1] === '>') return { kind: 'self', name, attrs, start, end: i + 2 };
+    if (source[i] === '/' && source[i + 1] === '>')
+      return { kind: 'self', name, attrs, start, end: i + 2 };
     const attrMatch = /^[A-Za-z_][\w:.-]*/.exec(source.slice(i));
     if (!attrMatch) {
       i += 1;
@@ -325,9 +326,7 @@ function tokenize(source) {
 
 /** Blank out tag ranges, preserving offsets and newlines, so only text remains. */
 function textRegions(source, tags) {
-  const ranges = tags
-    .map(tag => [tag.start, tag.end])
-    .sort((a, b) => a[0] - b[0]);
+  const ranges = tags.map(tag => [tag.start, tag.end]).sort((a, b) => a[0] - b[0]);
   const pieces = [];
   let cursor = 0;
   for (const [start, end] of ranges) {
@@ -367,14 +366,28 @@ function attrValue(map, name) {
  * @returns {{diagnostics:object[], stats:object, carrier:string|null}}
  */
 export function validateMdxSource(source, options = {}) {
-  const { filePath = null, mode = null, strict = false, assetExists = null, assetSize = null, inlineAssets = false } = options;
+  const {
+    filePath = null,
+    mode = null,
+    strict = false,
+    assetExists = null,
+    assetSize = null,
+    inlineAssets = false
+  } = options;
   const lineStarts = computeLineStarts(source);
   const masked = maskIgnored(source);
   const tags = tokenize(masked);
   const diagnostics = [];
   const add = (severity, code, message, offset, target) => {
     const at = locate(offset, lineStarts);
-    diagnostics.push({ severity, code, message, line: at.line, column: at.column, target: target || null });
+    diagnostics.push({
+      severity,
+      code,
+      message,
+      line: at.line,
+      column: at.column,
+      target: target || null
+    });
   };
 
   const nodes = [];
@@ -398,7 +411,8 @@ export function validateMdxSource(source, options = {}) {
     if (tag.kind === 'open' || tag.kind === 'self') {
       if (!usedComponents.has(tag.name)) usedComponents.set(tag.name, tag.start);
     }
-    if (tag.name === 'ConceptGraph' && tag.kind !== 'close') graphRoots.push({ tag, root: attrValue(attrsToMap(tag.attrs), 'root') });
+    if (tag.name === 'ConceptGraph' && tag.kind !== 'close')
+      graphRoots.push({ tag, root: attrValue(attrsToMap(tag.attrs), 'root') });
 
     if (tag.name === 'ConceptNode' && tag.kind !== 'close') {
       const map = attrsToMap(tag.attrs);
@@ -412,7 +426,7 @@ export function validateMdxSource(source, options = {}) {
         offset: tag.start,
         closeOffset: null,
         body: '',
-        map,
+        map
       };
       nodes.push(node);
       if (tag.kind === 'open') stack.push({ tag, conceptNode: node });
@@ -424,7 +438,11 @@ export function validateMdxSource(source, options = {}) {
     }
 
     if (tag.name === 'ConceptRef' && tag.kind !== 'close') {
-      refs.push({ id: attrValue(attrsToMap(tag.attrs), 'id'), offset: tag.start, node: currentConceptNode() });
+      refs.push({
+        id: attrValue(attrsToMap(tag.attrs), 'id'),
+        offset: tag.start,
+        node: currentConceptNode()
+      });
     }
 
     if (tag.name === 'Relation' && tag.kind !== 'close') {
@@ -434,7 +452,7 @@ export function validateMdxSource(source, options = {}) {
         to: attrValue(map, 'to'),
         type: attrValue(map, 'type') || 'depends-on',
         label: attrValue(map, 'label'),
-        offset: tag.start,
+        offset: tag.start
       });
     }
 
@@ -444,12 +462,19 @@ export function validateMdxSource(source, options = {}) {
       const quoted = map.src ? map.src.quoted : false;
       const figureId = attrValue(map, 'id');
       if (figureId) {
-        if (figureIds.has(figureId)) add('warning', 'FIGURE_DUPLICATE_ID', `重复的图片 id：${figureId}`, tag.start, figureId);
+        if (figureIds.has(figureId))
+          add('warning', 'FIGURE_DUPLICATE_ID', `重复的图片 id：${figureId}`, tag.start, figureId);
         else figureIds.set(figureId, tag.start);
       }
       if (!src) add('warning', 'FIGURE_MISSING_SRC', 'Figure 缺少 src', tag.start, tag.name);
       else if (quoted && /^https?:/i.test(src)) {
-        add('warning', 'ASSET_REMOTE', `远程图片需要联网，离线打开时不可见：${src}`, tag.start, src);
+        add(
+          'warning',
+          'ASSET_REMOTE',
+          `远程图片需要联网，离线打开时不可见：${src}`,
+          tag.start,
+          src
+        );
       } else if (quoted && !/^(data:|\/)/i.test(src) && filePath && assetExists) {
         const resolved = src.startsWith('.') ? src : `./${src}`;
         if (!assetExists(resolved)) {
@@ -457,7 +482,13 @@ export function validateMdxSource(source, options = {}) {
         } else if (inlineAssets && assetSize) {
           const bytes = assetSize(resolved);
           if (typeof bytes === 'number' && bytes > LARGE_ASSET_BYTES) {
-            add('warning', 'ASSET_LARGE', `图片约 ${Math.round(bytes / 1024)}KB，内联会显著增大 HTML；可用 inline={false} 或改为外链：${src}`, tag.start, src);
+            add(
+              'warning',
+              'ASSET_LARGE',
+              `图片约 ${Math.round(bytes / 1024)}KB，内联会显著增大 HTML；可用 inline={false} 或改为外链：${src}`,
+              tag.start,
+              src
+            );
           }
         }
       }
@@ -491,14 +522,28 @@ export function validateMdxSource(source, options = {}) {
 
   // <FigureRef> must point at a <Figure id="..."> in the same document.
   for (const ref of figureRefs) {
-    if (!ref.id) add('warning', 'FIGURE_REF_MISSING_ID', 'FigureRef 缺少 id', ref.offset, 'FigureRef');
-    else if (!figureIds.has(ref.id)) add('warning', 'FIGURE_REF_UNRESOLVED', `FigureRef 指向不存在的图片 id：${ref.id}`, ref.offset, ref.id);
+    if (!ref.id)
+      add('warning', 'FIGURE_REF_MISSING_ID', 'FigureRef 缺少 id', ref.offset, 'FigureRef');
+    else if (!figureIds.has(ref.id))
+      add(
+        'warning',
+        'FIGURE_REF_UNRESOLVED',
+        `FigureRef 指向不存在的图片 id：${ref.id}`,
+        ref.offset,
+        ref.id
+      );
   }
 
   // `{` inside <Math> children is parsed by MDX as an expression, not LaTeX.
   for (const match of masked.matchAll(/<Math(?![^>]*\/>)[^>]*>([\s\S]*?)<\/Math>/g)) {
     if (match[1].includes('{')) {
-      add('warning', 'MATH_CHILDREN_BRACES', 'Math 子内容包含 {，MDX 会当作表达式；请改用 formula="..."', match.index, 'Math');
+      add(
+        'warning',
+        'MATH_CHILDREN_BRACES',
+        'Math 子内容包含 {，MDX 会当作表达式；请改用 formula="..."',
+        match.index,
+        'Math'
+      );
     }
   }
 
@@ -510,28 +555,63 @@ export function validateMdxSource(source, options = {}) {
     const expression = match[1].trim();
     if (!expression || expression.startsWith('/*')) continue;
     if (/^[A-Za-z_$][\w$]*\s*(,[\s\S]*)?$/.test(expression)) {
-      add('warning', 'PROSE_EXPRESSION', `正文中的 {${expression}} 会被 MDX 当作表达式并导致运行时报错；请改成行内代码 \`{${expression}}\``, match.index, expression);
+      add(
+        'warning',
+        'PROSE_EXPRESSION',
+        `正文中的 {${expression}} 会被 MDX 当作表达式并导致运行时报错；请改成行内代码 \`{${expression}}\``,
+        match.index,
+        expression
+      );
     }
   }
 
   // MDX has no frontmatter support by default: a leading `---` block renders as
   // a stray rule and text at the top of the page.
   if (/^---\r?\n[\s\S]*?\r?\n---(\r?\n|$)/.test(source)) {
-    add('warning', 'FRONTMATTER_UNSUPPORTED', '文件以 --- 开头，但 MDX 不解析 frontmatter，它会被渲染成正文；请删除', 0, null);
+    add(
+      'warning',
+      'FRONTMATTER_UNSUPPORTED',
+      '文件以 --- 开头，但 MDX 不解析 frontmatter，它会被渲染成正文；请删除',
+      0,
+      null
+    );
   }
 
-  const carrier = usedComponents.has('ScrollDocument') ? 'scroll'
-    : (usedComponents.has('ExplainPage') || usedComponents.has('ConceptGraph')) ? 'atlas'
+  const carrier = usedComponents.has('ScrollDocument')
+    ? 'scroll'
+    : usedComponents.has('ExplainPage') || usedComponents.has('ConceptGraph')
+      ? 'atlas'
       : null;
 
   if (!carrier) {
-    add('error', 'CARRIER_MISSING', '找不到页面外壳：需要 ExplainPage/ConceptGraph 或 ScrollDocument', 0, null);
+    add(
+      'error',
+      'CARRIER_MISSING',
+      '找不到页面外壳：需要 ExplainPage/ConceptGraph 或 ScrollDocument',
+      0,
+      null
+    );
   }
-  if (usedComponents.has('ScrollDocument') && (usedComponents.has('ExplainPage') || usedComponents.has('ConceptGraph'))) {
-    add('error', 'CARRIER_CONFLICT', '同一文件同时包含 atlas 和 scroll 外壳，只能选择其一', usedComponents.get('ScrollDocument'), null);
+  if (
+    usedComponents.has('ScrollDocument') &&
+    (usedComponents.has('ExplainPage') || usedComponents.has('ConceptGraph'))
+  ) {
+    add(
+      'error',
+      'CARRIER_CONFLICT',
+      '同一文件同时包含 atlas 和 scroll 外壳，只能选择其一',
+      usedComponents.get('ScrollDocument'),
+      null
+    );
   }
   if (mode && carrier && mode !== carrier) {
-    add('error', 'CARRIER_MODE_MISMATCH', `指定 --mode ${mode}，但文件是 ${carrier} 载体`, 0, carrier);
+    add(
+      'error',
+      'CARRIER_MODE_MISMATCH',
+      `指定 --mode ${mode}，但文件是 ${carrier} 载体`,
+      0,
+      carrier
+    );
   }
 
   for (const node of nodes) {
@@ -548,44 +628,109 @@ export function validateMdxSource(source, options = {}) {
 
   for (const node of nodes) {
     const label = node.id || '<无 id>';
-    if (!node.title) add('error', 'NODE_MISSING_TITLE', `节点 ${label} 缺少 title`, node.offset, node.id);
-    if (!node.summary) add('warning', 'NODE_MISSING_SUMMARY', `节点 ${label} 缺少 summary`, node.offset, node.id);
+    if (!node.title)
+      add('error', 'NODE_MISSING_TITLE', `节点 ${label} 缺少 title`, node.offset, node.id);
+    if (!node.summary)
+      add('warning', 'NODE_MISSING_SUMMARY', `节点 ${label} 缺少 summary`, node.offset, node.id);
     if (!LEVEL_SET.has(node.level)) {
-      add('warning', 'UNKNOWN_LEVEL', `节点 ${label} 的 level 无效：${node.level}`, node.offset, node.id);
+      add(
+        'warning',
+        'UNKNOWN_LEVEL',
+        `节点 ${label} 的 level 无效：${node.level}`,
+        node.offset,
+        node.id
+      );
     }
     if (node.kind && !NODE_KIND_SET.has(node.kind)) {
-      add('warning', 'UNKNOWN_KIND', `节点 ${label} 的 kind 无效：${node.kind}（可选：${NODE_KIND_NAMES.join('、')}）`, node.offset, node.id);
+      add(
+        'warning',
+        'UNKNOWN_KIND',
+        `节点 ${label} 的 kind 无效：${node.kind}（可选：${NODE_KIND_NAMES.join('、')}）`,
+        node.offset,
+        node.id
+      );
     }
     if (node.parent && !nodesById.has(node.parent)) {
-      add('error', 'MISSING_PARENT', `节点 ${label} 的 parent 不存在：${node.parent}`, node.offset, node.id);
+      add(
+        'error',
+        'MISSING_PARENT',
+        `节点 ${label} 的 parent 不存在：${node.parent}`,
+        node.offset,
+        node.id
+      );
     }
-    if (node.body && ![...CORE_CONTENT_COMPONENTS].some(name => new RegExp(`<${name}\\b`).test(node.body))) {
-      add('warning', 'NODE_NO_CORE_CONTENT', `节点 ${label} 缺少核心内容组件（Definition/Mechanism/Example/Boundary 等）`, node.offset, node.id);
+    if (
+      node.body &&
+      ![...CORE_CONTENT_COMPONENTS].some(name => new RegExp(`<${name}\\b`).test(node.body))
+    ) {
+      add(
+        'warning',
+        'NODE_NO_CORE_CONTENT',
+        `节点 ${label} 缺少核心内容组件（Definition/Mechanism/Example/Boundary 等）`,
+        node.offset,
+        node.id
+      );
     }
     // Opt-in knowledge-kind contracts. They only fire once an author declares
     // `kind`, so the existing corpus keeps validating clean.
     if (node.kind === 'mechanism' && node.body && !/<(Invariant|Evidence)\b/.test(node.body)) {
-      add(strict ? 'error' : 'warning', 'MECHANISM_KIND_UNVERIFIED', `机制节点 ${label} 建议至少包含一个 <Invariant> 或 <Evidence>`, node.offset, node.id);
+      add(
+        strict ? 'error' : 'warning',
+        'MECHANISM_KIND_UNVERIFIED',
+        `机制节点 ${label} 建议至少包含一个 <Invariant> 或 <Evidence>`,
+        node.offset,
+        node.id
+      );
     }
     if (node.kind === 'failure' && node.body && !/<FailureMode\b/.test(node.body)) {
-      add(strict ? 'error' : 'warning', 'FAILURE_KIND_UNSTRUCTURED', `故障节点 ${label} 建议使用 <FailureMode> 描述现象、原因、证据与建议`, node.offset, node.id);
+      add(
+        strict ? 'error' : 'warning',
+        'FAILURE_KIND_UNSTRUCTURED',
+        `故障节点 ${label} 建议使用 <FailureMode> 描述现象、原因、证据与建议`,
+        node.offset,
+        node.id
+      );
     }
   }
 
   const l0 = nodes.filter(node => node.level === 'L0');
   if (nodes.length > 0 && l0.length === 0) {
     const severity = strict ? 'error' : 'warning';
-    add(severity, 'NO_ROOT_LEVEL', '没有 L0 根节点，页面将从第一个无父节点开始', nodes[0].offset, null);
+    add(
+      severity,
+      'NO_ROOT_LEVEL',
+      '没有 L0 根节点，页面将从第一个无父节点开始',
+      nodes[0].offset,
+      null
+    );
   }
   if (l0.length > 1) {
-    add(strict ? 'error' : 'warning', 'MULTIPLE_ROOT_LEVEL', `存在 ${l0.length} 个 L0 节点，建议只保留一个`, l0[1].offset, l0[1].id);
+    add(
+      strict ? 'error' : 'warning',
+      'MULTIPLE_ROOT_LEVEL',
+      `存在 ${l0.length} 个 L0 节点，建议只保留一个`,
+      l0[1].offset,
+      l0[1].id
+    );
   }
 
   for (const graph of graphRoots) {
     if (!graph.root) {
-      add('warning', 'GRAPH_MISSING_ROOT', 'ConceptGraph 缺少 root，将自动推断根节点', graph.tag.start, null);
+      add(
+        'warning',
+        'GRAPH_MISSING_ROOT',
+        'ConceptGraph 缺少 root，将自动推断根节点',
+        graph.tag.start,
+        null
+      );
     } else if (!nodesById.has(graph.root)) {
-      add('error', 'GRAPH_ROOT_UNRESOLVED', `ConceptGraph root 指向不存在的节点：${graph.root}`, graph.tag.start, graph.root);
+      add(
+        'error',
+        'GRAPH_ROOT_UNRESOLVED',
+        `ConceptGraph root 指向不存在的节点：${graph.root}`,
+        graph.tag.start,
+        graph.root
+      );
     }
   }
 
@@ -601,19 +746,49 @@ export function validateMdxSource(source, options = {}) {
 
   for (const relation of relations) {
     if (!relation.from || !nodesById.has(relation.from)) {
-      add('error', 'RELATION_FROM_UNRESOLVED', `Relation from 不存在：${relation.from || '<空>'}`, relation.offset, relation.from);
+      add(
+        'error',
+        'RELATION_FROM_UNRESOLVED',
+        `Relation from 不存在：${relation.from || '<空>'}`,
+        relation.offset,
+        relation.from
+      );
     }
     if (!relation.to || !nodesById.has(relation.to)) {
-      add('error', 'RELATION_TO_UNRESOLVED', `Relation to 不存在：${relation.to || '<空>'}`, relation.offset, relation.to);
+      add(
+        'error',
+        'RELATION_TO_UNRESOLVED',
+        `Relation to 不存在：${relation.to || '<空>'}`,
+        relation.offset,
+        relation.to
+      );
     }
     if (!RELATION_TYPE_SET.has(relation.type)) {
-      add('warning', 'UNKNOWN_RELATION_TYPE', `未知关系类型：${relation.type}`, relation.offset, relation.type);
+      add(
+        'warning',
+        'UNKNOWN_RELATION_TYPE',
+        `未知关系类型：${relation.type}`,
+        relation.offset,
+        relation.type
+      );
     }
     if (!relation.label) {
-      add('warning', 'RELATION_MISSING_LABEL', `关系 ${relation.from || '?'} → ${relation.to || '?'} 缺少 label`, relation.offset, null);
+      add(
+        'warning',
+        'RELATION_MISSING_LABEL',
+        `关系 ${relation.from || '?'} → ${relation.to || '?'} 缺少 label`,
+        relation.offset,
+        null
+      );
     }
     if (relation.from && relation.to && relation.from === relation.to) {
-      add('warning', 'RELATION_SELF', `关系 ${relation.from} 指向自身`, relation.offset, relation.from);
+      add(
+        'warning',
+        'RELATION_SELF',
+        `关系 ${relation.from} 指向自身`,
+        relation.offset,
+        relation.from
+      );
     }
   }
 
@@ -626,7 +801,13 @@ export function validateMdxSource(source, options = {}) {
     if (!items || !items.hasValue || items.quoted || !items.expr) continue;
     for (const match of items.expr.matchAll(/\btype\s*:\s*(['"])([^'"]+)\1/g)) {
       if (!RELATION_TYPE_SET.has(match[2])) {
-        add('warning', 'UNKNOWN_RELATION_TYPE', `RelationMap 含未知关系类型：${match[2]}（可选：${RELATION_TYPE_NAMES.join('、')}）`, tag.start, match[2]);
+        add(
+          'warning',
+          'UNKNOWN_RELATION_TYPE',
+          `RelationMap 含未知关系类型：${match[2]}（可选：${RELATION_TYPE_NAMES.join('、')}）`,
+          tag.start,
+          match[2]
+        );
       }
     }
   }
@@ -636,9 +817,17 @@ export function validateMdxSource(source, options = {}) {
   for (const tag of tags) {
     if (tag.name !== 'FailureMode' || tag.kind !== 'self') continue;
     const map = attrsToMap(tag.attrs);
-    const hasField = ['symptom', 'cause', 'evidence', 'remedy'].some(field => attrValue(map, field));
+    const hasField = ['symptom', 'cause', 'evidence', 'remedy'].some(field =>
+      attrValue(map, field)
+    );
     if (!hasField) {
-      add('warning', 'FAILURE_MODE_EMPTY', 'FailureMode 缺少 symptom/cause/evidence/remedy，也没有子内容', tag.start, 'FailureMode');
+      add(
+        'warning',
+        'FAILURE_MODE_EMPTY',
+        'FailureMode 缺少 symptom/cause/evidence/remedy，也没有子内容',
+        tag.start,
+        'FailureMode'
+      );
     }
   }
 
@@ -651,9 +840,21 @@ export function validateMdxSource(source, options = {}) {
       const attr = map[prop];
       if (!attr || !attr.hasValue) continue;
       if (attr.quoted) {
-        add('warning', 'PROP_EXPECTS_ARRAY', `${tag.name} 的 ${prop} 应为数组，却收到字符串`, tag.start, `${tag.name}.${prop}`);
+        add(
+          'warning',
+          'PROP_EXPECTS_ARRAY',
+          `${tag.name} 的 ${prop} 应为数组，却收到字符串`,
+          tag.start,
+          `${tag.name}.${prop}`
+        );
       } else if (attr.expr && !attr.expr.trim().startsWith('[')) {
-        add('warning', 'PROP_EXPECTS_ARRAY', `${tag.name} 的 ${prop} 应为数组字面量 [...]`, tag.start, `${tag.name}.${prop}`);
+        add(
+          'warning',
+          'PROP_EXPECTS_ARRAY',
+          `${tag.name} 的 ${prop} 应为数组字面量 [...]`,
+          tag.start,
+          `${tag.name}.${prop}`
+        );
       }
     }
   }
@@ -664,17 +865,20 @@ export function validateMdxSource(source, options = {}) {
       nodes: nodes.length,
       relations: relations.length,
       refs: refs.length,
-      components: usedComponents.size,
+      components: usedComponents.size
     },
-    diagnostics,
+    diagnostics
   };
 }
 
 export function countBySeverity(diagnostics) {
-  return diagnostics.reduce((acc, item) => {
-    acc[item.severity] = (acc[item.severity] || 0) + 1;
-    return acc;
-  }, { error: 0, warning: 0 });
+  return diagnostics.reduce(
+    (acc, item) => {
+      acc[item.severity] = (acc[item.severity] || 0) + 1;
+      return acc;
+    },
+    { error: 0, warning: 0 }
+  );
 }
 
 /**
@@ -695,14 +899,15 @@ export function detectFeatures(source) {
   }
   return {
     math: used.has('Math') || used.has('MathBlock'),
-    mermaid: used.has('Mermaid'),
+    mermaid: used.has('Mermaid')
   };
 }
 
 /** JSX string literals decode these five entities; a single pass avoids
  * double-decoding sequences like `&amp;lt;`. */
 const ENTITY_MAP = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" };
-const decodeEntities = text => text.replace(/&(amp|lt|gt|quot|#39);/g, (_, entity) => ENTITY_MAP[entity]);
+const decodeEntities = text =>
+  text.replace(/&(amp|lt|gt|quot|#39);/g, (_, entity) => ENTITY_MAP[entity]);
 
 /**
  * Reads the browser-tab title from the MDX source without rendering: the atlas

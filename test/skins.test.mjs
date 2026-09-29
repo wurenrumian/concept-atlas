@@ -10,15 +10,25 @@ const stylesRoot = path.join(repoRoot, 'src', 'styles');
 // The entry stylesheet is an @import manifest, so structure lives across
 // core.css + packs/*.css. Tests that scan rules must read the whole tree.
 function readAllStyles() {
-  const walk = dir => readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) return walk(full);
-    return entry.name.endsWith('.css') ? [readFileSync(full, 'utf8')] : [];
-  });
+  const walk = dir =>
+    readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) return walk(full);
+      return entry.name.endsWith('.css') ? [readFileSync(full, 'utf8')] : [];
+    });
   return walk(stylesRoot).join('\n');
 }
 
-const { SKINS, DEFAULT_SKIN, SKIN_IDS, normalizeSkin, COMPONENT_STYLES, DEFAULT_STYLE, STYLE_IDS, normalizeStyle } = await import('../src/model/skins.js');
+const {
+  SKINS,
+  DEFAULT_SKIN,
+  SKIN_IDS,
+  normalizeSkin,
+  COMPONENT_STYLES,
+  DEFAULT_STYLE,
+  STYLE_IDS,
+  normalizeStyle
+} = await import('../src/model/skins.js');
 const { RELATION_TYPES, LEVEL_DEFS } = await import('../src/model/relation-types.js');
 
 test('every registered skin has dark & light token blocks', () => {
@@ -28,12 +38,14 @@ test('every registered skin has dark & light token blocks', () => {
     // The default skin owns the base token blocks in tokens.css; every other
     // skin must ship full palette overrides in skins.css.
     const css = skin.id === DEFAULT_SKIN ? tokensCss : skinsCss;
-    const darkSelector = skin.id === DEFAULT_SKIN
-      ? '[data-theme="dark"]'
-      : `[data-skin="${skin.id}"][data-theme="dark"]`;
-    const lightSelector = skin.id === DEFAULT_SKIN
-      ? '[data-theme="light"]'
-      : `[data-skin="${skin.id}"][data-theme="light"]`;
+    const darkSelector =
+      skin.id === DEFAULT_SKIN
+        ? '[data-theme="dark"]'
+        : `[data-skin="${skin.id}"][data-theme="dark"]`;
+    const lightSelector =
+      skin.id === DEFAULT_SKIN
+        ? '[data-theme="light"]'
+        : `[data-skin="${skin.id}"][data-theme="light"]`;
     assert.ok(css.includes(darkSelector), `missing dark block for ${skin.id}`);
     assert.ok(css.includes(lightSelector), `missing light block for ${skin.id}`);
     assert.match(skin.label, /\S/);
@@ -61,7 +73,7 @@ test('every component style pack has matching CSS rules', () => {
     `[data-style='manuscript'] .semantic-evidence`,
     `[data-style='manuscript'] .semantic-note`,
     `[data-style='manuscript'] .math-block-expression`,
-    `[data-style='manuscript'] .semantic-chart`,
+    `[data-style='manuscript'] .semantic-chart`
   ]) {
     assert.ok(css.includes(rule), `manuscript pack missing ${rule}`);
   }
@@ -77,7 +89,7 @@ test('every component style pack has matching CSS rules', () => {
     `[data-style='manuscript'] .semantic-flow-steps`,
     `[data-style='manuscript'] .semantic-references`,
     `[data-style='manuscript'] .semantic-example`,
-    `[data-style='manuscript'] .semantic-definition`,
+    `[data-style='manuscript'] .semantic-definition`
   ]) {
     assert.ok(css.includes(rule), `manuscript pack missing ${rule}`);
   }
@@ -88,7 +100,16 @@ test('component style packs re-voice typography through shared font tokens', () 
   const css = readAllStyles();
 
   // tokens.css owns the family stacks; packs only remap the role tokens.
-  for (const token of ['--font-sans', '--font-serif', '--font-mono', '--font-body', '--font-heading', '--font-lead', '--font-label', '--font-data']) {
+  for (const token of [
+    '--font-sans',
+    '--font-serif',
+    '--font-mono',
+    '--font-body',
+    '--font-heading',
+    '--font-lead',
+    '--font-label',
+    '--font-data'
+  ]) {
     assert.ok(tokensCss.includes(token), `tokens.css missing ${token}`);
   }
 
@@ -96,7 +117,11 @@ test('component style packs re-voice typography through shared font tokens', () 
   const families = [...css.matchAll(/font-family:\s*([^;]+);/g)].map(match => match[1].trim());
   assert.ok(families.length > 0, 'expected font-family declarations in the stylesheets');
   for (const family of families) {
-    assert.match(family, /^(inherit|var\(--font-[\w-]+\))$/, `font-family must consume a font token: ${family}`);
+    assert.match(
+      family,
+      /^(inherit|var\(--font-[\w-]+\))$/,
+      `font-family must consume a font token: ${family}`
+    );
   }
 
   // Each pack must declare its heading voice so switching packs visibly changes type.
@@ -118,19 +143,26 @@ test('new component packs restate the shared grammar without a new palette', () 
       `[data-style='${pack}'] .semantic-flow-steps`,
       `[data-style='${pack}'] .semantic-references`,
       `[data-style='${pack}'] .semantic-chart`,
-      `[data-style='${pack}'] .math-block-expression`,
+      `[data-style='${pack}'] .math-block-expression`
     ]) {
       assert.ok(css.includes(rule), `${pack} pack missing ${rule}`);
     }
     // Each pack restates structure only: its token block may not hardcode colors.
-    const block = css.slice(css.indexOf(`[data-style='${pack}'] {`), css.indexOf(`[data-style='${pack}'] .semantic-learning-objectives`));
+    const block = css.slice(
+      css.indexOf(`[data-style='${pack}'] {`),
+      css.indexOf(`[data-style='${pack}'] .semantic-learning-objectives`)
+    );
     assert.doesNotMatch(block, /#[0-9a-fA-F]{3,8}\b/, `${pack} pack must not hardcode colors`);
   }
 });
 
 test('relation and level colors are themeable var() references', () => {
   for (const def of Object.values(RELATION_TYPES)) {
-    assert.match(def.color, /^var\(--rel-[\w-]+\)$/, `relation color must be a var(): ${def.color}`);
+    assert.match(
+      def.color,
+      /^var\(--rel-[\w-]+\)$/,
+      `relation color must be a var(): ${def.color}`
+    );
   }
   for (const def of Object.values(LEVEL_DEFS)) {
     assert.match(def.color, /^var\(--level-l[0-4]\)$/, `level color must be a var(): ${def.color}`);
@@ -144,7 +176,7 @@ test('tokens.css defines every relation/level variable in both modes', () => {
   const names = [
     ...Object.keys(RELATION_TYPES).map(id => `--rel-${id}`),
     '--rel-default',
-    ...Object.keys(LEVEL_DEFS).map(id => `--level-${id.toLowerCase()}`),
+    ...Object.keys(LEVEL_DEFS).map(id => `--level-${id.toLowerCase()}`)
   ];
   for (const name of names) {
     assert.ok(darkBlock.includes(name), `missing ${name} in dark tokens`);
@@ -159,7 +191,11 @@ test('the scroll reading-progress bar uses the per-skin progress gradient', () =
   const rules = [...css.matchAll(/\.reading-progress-bar\s*\{([^}]*)\}/g)].map(match => match[1]);
   assert.ok(rules.length >= 1, 'expected a .reading-progress-bar rule');
   for (const declarations of rules) {
-    assert.match(declarations, /background:\s*var\(--progress-gradient\)/, `.reading-progress-bar overridden with: ${declarations.trim()}`);
+    assert.match(
+      declarations,
+      /background:\s*var\(--progress-gradient\)/,
+      `.reading-progress-bar overridden with: ${declarations.trim()}`
+    );
   }
 
   // core.css now depends on the token, so every skin must define it in both
@@ -176,7 +212,10 @@ test('the scroll reading-progress bar uses the per-skin progress gradient', () =
     const prefix = skin.id === DEFAULT_SKIN ? '' : `[data-skin="${skin.id}"]`;
     for (const theme of ['dark', 'light']) {
       const block = blockFor(source, `${prefix}[data-theme="${theme}"]`);
-      assert.ok(block.includes('--progress-gradient'), `missing --progress-gradient for ${skin.id}/${theme}`);
+      assert.ok(
+        block.includes('--progress-gradient'),
+        `missing --progress-gradient for ${skin.id}/${theme}`
+      );
     }
   }
 });

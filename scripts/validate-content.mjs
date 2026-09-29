@@ -11,8 +11,9 @@ const explicit = args.filter(arg => !arg.startsWith('--'));
 
 const files = explicit.length
   ? explicit.map(file => path.resolve(file))
-  : ['content/atlas-guide.mdx', 'content/compile-runtime.mdx', 'content/scroll-guide.mdx']
-    .map(file => path.join(rootDir, file));
+  : ['content/atlas-guide.mdx', 'content/compile-runtime.mdx', 'content/scroll-guide.mdx'].map(
+      file => path.join(rootDir, file)
+    );
 
 let errors = 0;
 
@@ -26,11 +27,13 @@ for (const file of files) {
   const result = validateMdxSource(source, {
     filePath: file,
     strict,
-    assetExists: spec => fs.existsSync(path.resolve(path.dirname(file), spec)),
+    assetExists: spec => fs.existsSync(path.resolve(path.dirname(file), spec))
   });
   const { error, warning } = countBySeverity(result.diagnostics);
   errors += error;
-  console.log(`${path.relative(rootDir, file)}  ${result.carrier || 'unknown'}  errors=${error} warnings=${warning}`);
+  console.log(
+    `${path.relative(rootDir, file)}  ${result.carrier || 'unknown'}  errors=${error} warnings=${warning}`
+  );
   for (const item of result.diagnostics) {
     const label = item.severity === 'error' ? 'error' : 'warn ';
     console.log(`  ${label} ${item.line}:${item.column}  ${item.code}  ${item.message}`);

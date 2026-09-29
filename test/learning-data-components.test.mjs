@@ -15,10 +15,16 @@ test('worked example renders numbered steps with a reason per step', async () =>
   const React = await import('react');
   const { WorkedExample, Step } = await import('../src/components/index.js');
   const html = await render(
-    React.createElement(WorkedExample, { title: '推演', problem: '为什么失败' },
-      React.createElement(Step, { number: '1', title: '确认格式', reason: '格式不符会被拒绝' }, 'readelf -h app'),
-      React.createElement(Step, { title: '检查依赖' }, 'ldd app'),
-    ),
+    React.createElement(
+      WorkedExample,
+      { title: '推演', problem: '为什么失败' },
+      React.createElement(
+        Step,
+        { number: '1', title: '确认格式', reason: '格式不符会被拒绝' },
+        'readelf -h app'
+      ),
+      React.createElement(Step, { title: '检查依赖' }, 'ldd app')
+    )
   );
   assert.match(html, /semantic-worked-example/);
   assert.match(html, /worked-problem/);
@@ -36,8 +42,11 @@ test('data table renders headers, rows and caption', async () => {
       title: '对比',
       caption: '先分类再定位',
       headers: ['异常', '信号'],
-      rows: [['缺页', '可恢复'], ['段错误', 'SIGSEGV']],
-    }),
+      rows: [
+        ['缺页', '可恢复'],
+        ['段错误', 'SIGSEGV']
+      ]
+    })
   );
   assert.match(html, /semantic-data-table/);
   assert.match(html, /<th>异常<\/th>/);
@@ -52,9 +61,12 @@ test('state machine renders states and transitions', async () => {
     React.createElement(StateMachine, {
       title: '进程状态',
       initial: 'new',
-      states: [{ id: 'new', label: '新建' }, { id: 'done', label: '终止', terminal: true }],
-      transitions: [{ from: 'new', to: 'done', event: 'exit', guard: 'pid == 0' }],
-    }),
+      states: [
+        { id: 'new', label: '新建' },
+        { id: 'done', label: '终止', terminal: true }
+      ],
+      transitions: [{ from: 'new', to: 'done', event: 'exit', guard: 'pid == 0' }]
+    })
   );
   assert.match(html, /semantic-state-machine/);
   assert.match(html, /state-node is-initial/);
@@ -67,7 +79,11 @@ test('quiz hides the answer until revealed', async () => {
   const React = await import('react');
   const { Quiz } = await import('../src/components/index.js');
   const html = await render(
-    React.createElement(Quiz, { question: '谁解析符号？', answer: '链接阶段' }, '链接器负责匹配引用与定义。'),
+    React.createElement(
+      Quiz,
+      { question: '谁解析符号？', answer: '链接阶段' },
+      '链接器负责匹配引用与定义。'
+    )
   );
   assert.match(html, /semantic-quiz/);
   assert.match(html, /quiz-toggle/);
@@ -80,10 +96,12 @@ test('source and confidence render their provenance signals', async () => {
   const React = await import('react');
   const { Source, Confidence } = await import('../src/components/index.js');
   const html = await render(
-    React.createElement('div', null,
+    React.createElement(
+      'div',
+      null,
       React.createElement(Source, { kind: 'spec', label: 'ABI', href: 'https://example.com' }),
-      React.createElement(Confidence, { level: 'high', basis: '规范 + 实测' }, '该约束成立。'),
-    ),
+      React.createElement(Confidence, { level: 'high', basis: '规范 + 实测' }, '该约束成立。')
+    )
   );
   assert.match(html, /semantic-source source-spec/);
   assert.match(html, /source-kind">规范</);
@@ -95,11 +113,23 @@ test('key takeaways, metric and code diff render', async () => {
   const React = await import('react');
   const { KeyTakeaways, Metric, CodeDiff } = await import('../src/components/index.js');
   const html = await render(
-    React.createElement('div', null,
+    React.createElement(
+      'div',
+      null,
       React.createElement(KeyTakeaways, { items: ['要点一', '要点二'] }),
-      React.createElement(Metric, { label: 'P99', value: '128', unit: 'ms', delta: '-18%', trend: 'down' }),
-      React.createElement(CodeDiff, { language: 'javascript', before: 'const a = b.c;', after: 'const a = b?.c;' }),
-    ),
+      React.createElement(Metric, {
+        label: 'P99',
+        value: '128',
+        unit: 'ms',
+        delta: '-18%',
+        trend: 'down'
+      }),
+      React.createElement(CodeDiff, {
+        language: 'javascript',
+        before: 'const a = b.c;',
+        after: 'const a = b?.c;'
+      })
+    )
   );
   assert.match(html, /semantic-key-takeaways/);
   assert.match(html, /semantic-metric/);
@@ -113,17 +143,19 @@ test('term, decision tree and feedback loop render', async () => {
   const React = await import('react');
   const { Term, DecisionTree, FeedbackLoop } = await import('../src/components/index.js');
   const html = await render(
-    React.createElement('div', null,
+    React.createElement(
+      'div',
+      null,
       React.createElement(Term, { name: '缺页异常' }, '访问未驻留页时的可恢复异常'),
       React.createElement(DecisionTree, {
         question: '先看哪一层',
-        branches: [{ condition: '有构建错误', outcome: '先修构建', tone: 'danger' }],
+        branches: [{ condition: '有构建错误', outcome: '先修构建', tone: 'danger' }]
       }),
       React.createElement(FeedbackLoop, {
         type: 'balancing',
-        nodes: [{ label: '负载上升' }, { label: '扩容' }],
-      }),
-    ),
+        nodes: [{ label: '负载上升' }, { label: '扩容' }]
+      })
+    )
   );
   assert.match(html, /semantic-term/);
   assert.match(html, /term-popover/);
@@ -141,26 +173,40 @@ test('every new component is restated in each style pack', async () => {
   const packs = Object.fromEntries(
     ['manuscript', 'shadcn', 'elastic'].map(name => [
       name,
-      readFileSync(path.join(root, 'src', 'styles', 'packs', `${name}.css`), 'utf8'),
-    ]),
+      readFileSync(path.join(root, 'src', 'styles', 'packs', `${name}.css`), 'utf8')
+    ])
   );
   // A reader switching packs must never see one of the new components fall back
   // to the classic chassis, so each pack names the container and its inner units.
   const selectors = [
-    '.semantic-worked-example', '.worked-step-marker',
+    '.semantic-worked-example',
+    '.worked-step-marker',
     '.semantic-data-table',
-    '.semantic-state-machine', '.state-node',
-    '.semantic-quiz', '.quiz-toggle',
-    '.semantic-source', '.semantic-confidence', '.confidence-badge',
-    '.semantic-key-takeaways', '.semantic-metric', '.metric-value',
-    '.semantic-code-diff', '.code-diff-label',
-    '.semantic-term', '.term-popover',
-    '.semantic-decision-tree', '.decision-node',
-    '.semantic-feedback-loop', '.feedback-node',
+    '.semantic-state-machine',
+    '.state-node',
+    '.semantic-quiz',
+    '.quiz-toggle',
+    '.semantic-source',
+    '.semantic-confidence',
+    '.confidence-badge',
+    '.semantic-key-takeaways',
+    '.semantic-metric',
+    '.metric-value',
+    '.semantic-code-diff',
+    '.code-diff-label',
+    '.semantic-term',
+    '.term-popover',
+    '.semantic-decision-tree',
+    '.decision-node',
+    '.semantic-feedback-loop',
+    '.feedback-node'
   ];
   for (const [pack, css] of Object.entries(packs)) {
     for (const selector of selectors) {
-      assert.ok(css.includes(`[data-style='${pack}'] ${selector}`), `${pack} pack missing ${selector}`);
+      assert.ok(
+        css.includes(`[data-style='${pack}'] ${selector}`),
+        `${pack} pack missing ${selector}`
+      );
     }
   }
 });
@@ -188,12 +234,20 @@ test('the validator accepts every new component and its array props', async () =
   const result = validateMdxSource(source);
   const codes = result.diagnostics.map(item => item.code);
   assert.equal(result.carrier, 'atlas');
-  assert.ok(!codes.includes('UNKNOWN_COMPONENT'), `unexpected unknown component: ${codes.join(', ')}`);
-  assert.ok(!codes.includes('PROP_EXPECTS_ARRAY'), `unexpected array-prop warning: ${codes.join(', ')}`);
+  assert.ok(
+    !codes.includes('UNKNOWN_COMPONENT'),
+    `unexpected unknown component: ${codes.join(', ')}`
+  );
+  assert.ok(
+    !codes.includes('PROP_EXPECTS_ARRAY'),
+    `unexpected array-prop warning: ${codes.join(', ')}`
+  );
 });
 
-const atlas = body => `<ExplainPage id="p" title="T" summary="S">\n  <ConceptGraph root="root">\n${body}\n  </ConceptGraph>\n</ExplainPage>`;
-const warningsOf = result => result.diagnostics.filter(item => item.severity === 'warning').map(item => item.code);
+const atlas = body =>
+  `<ExplainPage id="p" title="T" summary="S">\n  <ConceptGraph root="root">\n${body}\n  </ConceptGraph>\n</ExplainPage>`;
+const warningsOf = result =>
+  result.diagnostics.filter(item => item.severity === 'warning').map(item => item.code);
 const codesOf = result => result.diagnostics.map(item => item.code);
 
 test('new array props warn on a string and pass on an array', async () => {
@@ -207,13 +261,19 @@ test('new array props warn on a string and pass on an array', async () => {
     ['StateMachine', 'transitions'],
     ['KeyTakeaways', 'items'],
     ['DecisionTree', 'branches'],
-    ['FeedbackLoop', 'nodes'],
+    ['FeedbackLoop', 'nodes']
   ];
   for (const [name, prop] of props) {
     const bad = validateMdxSource(atlas(`<${name} ${prop}="nope" />`));
-    assert.ok(warningsOf(bad).includes('PROP_EXPECTS_ARRAY'), `${name}.${prop} should warn on a string`);
+    assert.ok(
+      warningsOf(bad).includes('PROP_EXPECTS_ARRAY'),
+      `${name}.${prop} should warn on a string`
+    );
     const good = validateMdxSource(atlas(`<${name} ${prop}={[]} />`));
-    assert.ok(!warningsOf(good).includes('PROP_EXPECTS_ARRAY'), `${name}.${prop} should accept an array`);
+    assert.ok(
+      !warningsOf(good).includes('PROP_EXPECTS_ARRAY'),
+      `${name}.${prop} should accept an array`
+    );
   }
 });
 
@@ -228,11 +288,16 @@ test('a node whose only substance is a new component is not flagged empty', asyn
     '<Metric label="l" value="1" />',
     '<CodeDiff before="a" after="b" />',
     '<DecisionTree branches={[{condition:"c",outcome:"o"}]} />',
-    '<FeedbackLoop nodes={[{label:"n"}]} />',
+    '<FeedbackLoop nodes={[{label:"n"}]} />'
   ];
   for (const body of bodies) {
-    const source = atlas(`<ConceptNode id="root" title="根" level="L0" summary="根">${body}</ConceptNode>`);
-    assert.ok(!codesOf(validateMdxSource(source)).includes('NODE_NO_CORE_CONTENT'), `${body} should count as core content`);
+    const source = atlas(
+      `<ConceptNode id="root" title="根" level="L0" summary="根">${body}</ConceptNode>`
+    );
+    assert.ok(
+      !codesOf(validateMdxSource(source)).includes('NODE_NO_CORE_CONTENT'),
+      `${body} should count as core content`
+    );
   }
 });
 
@@ -240,14 +305,20 @@ test('new components inside a node are kept as renderable custom sections', asyn
   const React = await import('react');
   const C = await import('../src/components/index.js');
   const { extractConceptData } = await import('../src/model/normalize-content.js');
-  const page = React.createElement(C.ExplainPage, { id: 'p', title: 'T', summary: 'S' },
-    React.createElement(C.ConceptGraph, { root: 'root' },
-      React.createElement(C.ConceptNode, { id: 'root', title: '根', level: 'L0', summary: '根' },
+  const page = React.createElement(
+    C.ExplainPage,
+    { id: 'p', title: 'T', summary: 'S' },
+    React.createElement(
+      C.ConceptGraph,
+      { root: 'root' },
+      React.createElement(
+        C.ConceptNode,
+        { id: 'root', title: '根', level: 'L0', summary: '根' },
         React.createElement(C.Definition, null, '定义'),
         React.createElement(C.DataTable, { headers: ['a'], rows: [['b']] }),
-        React.createElement(C.Quiz, { question: 'q', answer: 'a' }),
-      ),
-    ),
+        React.createElement(C.Quiz, { question: 'q', answer: 'a' })
+      )
+    )
   );
   const raw = extractConceptData(page);
   const names = raw.nodes[0].customSections.map(el => el.type.displayName || el.type.name);
@@ -266,28 +337,45 @@ test('text inside new components is reachable by search', async () => {
       React.createElement(C.DataTable, { headers: ['异常'], rows: [['缺页异常']] }),
       React.createElement(C.Quiz, { question: '哪个阶段解析符号？', answer: '链接阶段' }),
       React.createElement(C.Metric, { label: 'P99 延迟', value: '128' }),
-      React.createElement(C.StateMachine, { title: '进程状态', states: [{ id: 'ready', label: '就绪' }] }),
-    ],
+      React.createElement(C.StateMachine, {
+        title: '进程状态',
+        states: [{ id: 'ready', label: '就绪' }]
+      })
+    ]
   };
   const text = nodeSearchText(node);
   assert.match(text, /缺页异常/);
   assert.match(text, /链接阶段/);
   assert.match(text, /p99 延迟/);
   assert.match(text, /就绪/);
-  assert.deepEqual(searchNodes([node], '链接阶段').map(item => item.id), ['n']);
+  assert.deepEqual(
+    searchNodes([node], '链接阶段').map(item => item.id),
+    ['n']
+  );
 });
 
 test('new components fall back safely on missing data', async () => {
   const React = await import('react');
-  const { Source, Term, CodeDiff, StateMachine, FeedbackLoop } = await import('../src/components/index.js');
+  const { Source, Term, CodeDiff, StateMachine, FeedbackLoop } =
+    await import('../src/components/index.js');
   const html = await render(
-    React.createElement('div', null,
+    React.createElement(
+      'div',
+      null,
       React.createElement(Source, {}),
       React.createElement(Term, {}),
       React.createElement(CodeDiff, {}),
-      React.createElement(StateMachine, { states: [] }, React.createElement('em', null, 'state-fallback')),
-      React.createElement(FeedbackLoop, { nodes: [] }, React.createElement('em', null, 'loop-fallback')),
-    ),
+      React.createElement(
+        StateMachine,
+        { states: [] },
+        React.createElement('em', null, 'state-fallback')
+      ),
+      React.createElement(
+        FeedbackLoop,
+        { nodes: [] },
+        React.createElement('em', null, 'loop-fallback')
+      )
+    )
   );
   // No data means no empty shell is emitted.
   assert.doesNotMatch(html, /semantic-source/);
@@ -308,10 +396,17 @@ test('metric infers a trend and feedback loop reports its polarity', async () =>
   const flat = await render(React.createElement(Metric, { label: 'x', value: '1' }));
   assert.doesNotMatch(flat, /metric-delta/);
 
-  const balancing = await render(React.createElement(FeedbackLoop, { type: 'balancing', nodes: [{ label: 'a' }, { label: 'b' }] }));
+  const balancing = await render(
+    React.createElement(FeedbackLoop, {
+      type: 'balancing',
+      nodes: [{ label: 'a' }, { label: 'b' }]
+    })
+  );
   assert.match(balancing, /loop-balancing/);
   assert.match(balancing, /− ↺/);
-  const reinforcing = await render(React.createElement(FeedbackLoop, { type: 'reinforcing', nodes: [{ label: 'a' }] }));
+  const reinforcing = await render(
+    React.createElement(FeedbackLoop, { type: 'reinforcing', nodes: [{ label: 'a' }] })
+  );
   assert.match(reinforcing, /loop-reinforcing/);
   assert.match(reinforcing, /\+ ↺/);
 });

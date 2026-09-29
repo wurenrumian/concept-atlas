@@ -13,9 +13,10 @@ import { useFigureScope } from './FigureScope.jsx';
 // attributes on <html> change.
 const appearanceStore = (() => {
   const listeners = new Set();
-  const readKey = () => (typeof document === 'undefined'
-    ? ''
-    : `${document.documentElement.getAttribute('data-skin') || ''}:${document.documentElement.getAttribute('data-theme') || ''}`);
+  const readKey = () =>
+    typeof document === 'undefined'
+      ? ''
+      : `${document.documentElement.getAttribute('data-skin') || ''}:${document.documentElement.getAttribute('data-theme') || ''}`;
   let observer = null;
   let lastKey = '';
   return {
@@ -30,7 +31,10 @@ const appearanceStore = (() => {
             listeners.forEach(fn => fn());
           }
         });
-        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-skin', 'data-theme'] });
+        observer.observe(document.documentElement, {
+          attributes: true,
+          attributeFilter: ['data-skin', 'data-theme']
+        });
       }
       return () => {
         listeners.delete(listener);
@@ -40,12 +44,16 @@ const appearanceStore = (() => {
         }
       };
     },
-    getKey: readKey,
+    getKey: readKey
   };
 })();
 
 function useAppearanceKey() {
-  return React.useSyncExternalStore(appearanceStore.subscribe, appearanceStore.getKey, appearanceStore.getKey);
+  return React.useSyncExternalStore(
+    appearanceStore.subscribe,
+    appearanceStore.getKey,
+    appearanceStore.getKey
+  );
 }
 
 const MERMAID_FALLBACKS = {
@@ -53,7 +61,7 @@ const MERMAID_FALLBACKS = {
   primaryTextColor: '#e0f2fe',
   primaryBorderColor: '#38bdf8',
   lineColor: '#64748b',
-  tertiaryColor: '#0f172a',
+  tertiaryColor: '#0f172a'
 };
 
 function configureMermaid() {
@@ -72,8 +80,8 @@ function configureMermaid() {
       lineColor: read('--mermaid-line', MERMAID_FALLBACKS.lineColor),
       secondaryColor: nodeBg,
       tertiaryColor: read('--mermaid-canvas', MERMAID_FALLBACKS.tertiaryColor),
-      fontFamily: read('--font-sans', "'Plus Jakarta Sans', sans-serif"),
-    },
+      fontFamily: read('--font-sans', "'Plus Jakarta Sans', sans-serif")
+    }
   });
 }
 
@@ -83,18 +91,21 @@ function childrenToText(children) {
   if (children === null || children === undefined || typeof children === 'boolean') return '';
   if (typeof children === 'string' || typeof children === 'number') return String(children);
   if (Array.isArray(children)) return children.map(childrenToText).join('');
-  if (React.isValidElement(children) && children.props) return childrenToText(children.props.children);
+  if (React.isValidElement(children) && children.props)
+    return childrenToText(children.props.children);
   return '';
 }
 
 function slugify(text) {
-  return String(text)
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^\w\u4e00-\u9fa5-]/g, '')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '') || 'section';
+  return (
+    String(text)
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w\u4e00-\u9fa5-]/g, '')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '') || 'section'
+  );
 }
 
 const katexCache = new Map();
@@ -109,7 +120,7 @@ function renderTex(tex, displayMode) {
       throwOnError: false,
       errorColor: 'var(--accent-rose)',
       strict: 'ignore',
-      trust: false,
+      trust: false
     });
   } catch {
     html = `<code class="math-error">${tex.replace(/[<>&]/g, '')}</code>`;
@@ -122,22 +133,63 @@ const FONT_PRESETS = {
   compact: { scale: 0.95, lineHeight: 1.7 },
   normal: { scale: 1, lineHeight: 1.8 },
   large: { scale: 1.15, lineHeight: 1.85 },
-  xlarge: { scale: 1.3, lineHeight: 1.9 },
+  xlarge: { scale: 1.3, lineHeight: 1.9 }
 };
 
 // Data Layer Components
-export function ExplainPage({ id, title, summary, layout = 'editorial', density = 'reading', children }) {
-  return <div data-component="ExplainPage" data-id={id} data-title={title} data-summary={summary} data-layout={layout} data-density={density}>{children}</div>;
+export function ExplainPage({
+  id,
+  title,
+  summary,
+  layout = 'editorial',
+  density = 'reading',
+  children
+}) {
+  return (
+    <div
+      data-component="ExplainPage"
+      data-id={id}
+      data-title={title}
+      data-summary={summary}
+      data-layout={layout}
+      data-density={density}
+    >
+      {children}
+    </div>
+  );
 }
 ExplainPage.displayName = 'ExplainPage';
 
 export function ConceptGraph({ root, children }) {
-  return <div data-component="ConceptGraph" data-root={root}>{children}</div>;
+  return (
+    <div data-component="ConceptGraph" data-root={root}>
+      {children}
+    </div>
+  );
 }
 ConceptGraph.displayName = 'ConceptGraph';
 
-export function ConceptNode({ id, title, level = 'L2', parent = null, children, input, output, summary }) {
-  return <div data-component="ConceptNode" data-id={id} data-title={title} data-level={level} data-parent={parent}>{children}</div>;
+export function ConceptNode({
+  id,
+  title,
+  level = 'L2',
+  parent = null,
+  children,
+  input,
+  output,
+  summary
+}) {
+  return (
+    <div
+      data-component="ConceptNode"
+      data-id={id}
+      data-title={title}
+      data-level={level}
+      data-parent={parent}
+    >
+      {children}
+    </div>
+  );
 }
 ConceptNode.displayName = 'ConceptNode';
 
@@ -152,7 +204,17 @@ export function Children({ children }) {
 Children.displayName = 'Children';
 
 export function Relation({ from, to, type = 'depends-on', label, description, children }) {
-  return <div data-component="Relation" data-from={from} data-to={to} data-type={type} data-label={label}>{children || description}</div>;
+  return (
+    <div
+      data-component="Relation"
+      data-from={from}
+      data-to={to}
+      data-type={type}
+      data-label={label}
+    >
+      {children || description}
+    </div>
+  );
 }
 Relation.displayName = 'Relation';
 
@@ -181,7 +243,9 @@ export function Implementation({ language = 'text', title = '实现代码', chil
           {language && <span className="lang-badge">{language}</span>}
         </div>
       )}
-      <pre className="code-block"><code>{typeof children === 'string' ? children.trim() : children}</code></pre>
+      <pre className="code-block">
+        <code>{typeof children === 'string' ? children.trim() : children}</code>
+      </pre>
     </div>
   );
 }
@@ -194,7 +258,15 @@ Implementation.displayName = 'Implementation';
  * Pass the code as a string through `code` (or as children) so MDX parsing and
  * the validator never confuse code with markup.
  */
-export function CodeBlock({ code, language = 'text', title, caption, lineNumbers = false, wrap = false, children }) {
+export function CodeBlock({
+  code,
+  language = 'text',
+  title,
+  caption,
+  lineNumbers = false,
+  wrap = false,
+  children
+}) {
   const raw = typeof code === 'string' ? code : childrenToText(children);
   const text = typeof raw === 'string' ? raw.replace(/^\n+|\s+$/g, '') : '';
   if (!text) return null;
@@ -208,10 +280,20 @@ export function CodeBlock({ code, language = 'text', title, caption, lineNumbers
           {showLanguage && <span className="lang-badge">{language}</span>}
         </div>
       )}
-      <pre className={`code-block${lineNumbers ? ' code-block-numbered' : ''}${wrap ? ' code-block-wrap' : ''}`}>
-        {lineNumbers
-          ? <code>{text.split('\n').map((line, index) => <span className="code-line" key={index}>{line}</span>)}</code>
-          : <code>{text}</code>}
+      <pre
+        className={`code-block${lineNumbers ? ' code-block-numbered' : ''}${wrap ? ' code-block-wrap' : ''}`}
+      >
+        {lineNumbers ? (
+          <code>
+            {text.split('\n').map((line, index) => (
+              <span className="code-line" key={index}>
+                {line}
+              </span>
+            ))}
+          </code>
+        ) : (
+          <code>{text}</code>
+        )}
       </pre>
       {caption && <figcaption className="semantic-code-caption">{caption}</figcaption>}
     </figure>
@@ -288,16 +370,16 @@ export function Compare({ items = [], children }) {
             </tr>
           </thead>
           <tbody>
-            {items[0]?.rows ? (
-              items[0].rows.map((rowKey, rIdx) => (
-                <tr key={rIdx}>
-                  <td className="compare-row-label">{rowKey}</td>
-                  {items.map((it, idx) => (
-                    <td key={idx}>{it.values?.[rIdx] || '-'}</td>
-                  ))}
-                </tr>
-              ))
-            ) : null}
+            {items[0]?.rows
+              ? items[0].rows.map((rowKey, rIdx) => (
+                  <tr key={rIdx}>
+                    <td className="compare-row-label">{rowKey}</td>
+                    {items.map((it, idx) => (
+                      <td key={idx}>{it.values?.[rIdx] || '-'}</td>
+                    ))}
+                  </tr>
+                ))
+              : null}
           </tbody>
         </table>
       </div>
@@ -315,13 +397,17 @@ export function DecisionMatrix({ title = '权衡矩阵', headers = [], rows = []
         <table className="matrix-table">
           <thead>
             <tr>
-              {headers.map((h, i) => <th key={i}>{h}</th>)}
+              {headers.map((h, i) => (
+                <th key={i}>{h}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {rows.map((row, i) => (
               <tr key={i}>
-                {row.map((cell, j) => <td key={j}>{cell}</td>)}
+                {row.map((cell, j) => (
+                  <td key={j}>{cell}</td>
+                ))}
               </tr>
             ))}
           </tbody>
@@ -340,7 +426,16 @@ export function Flow({ steps = [], children }) {
         {steps.map((step, idx) => (
           <div key={idx} className="flow-step">
             <span className="step-num">{idx + 1}</span>
-            <span className="step-text">{typeof step === 'object' ? <><strong>{step.title || step.label || `步骤 ${idx + 1}`}</strong>{step.description && <small>{step.description}</small>}</> : step}</span>
+            <span className="step-text">
+              {typeof step === 'object' ? (
+                <>
+                  <strong>{step.title || step.label || `步骤 ${idx + 1}`}</strong>
+                  {step.description && <small>{step.description}</small>}
+                </>
+              ) : (
+                step
+              )}
+            </span>
             {idx < steps.length - 1 && <span className="step-arrow">→</span>}
           </div>
         ))}
@@ -369,7 +464,13 @@ export function Timeline({ events = [], children }) {
 }
 Timeline.displayName = 'Timeline';
 
-export function FrameworkModel({ title = '结构化模型', type = 'elements', elements = [], question, children }) {
+export function FrameworkModel({
+  title = '结构化模型',
+  type = 'elements',
+  elements = [],
+  question,
+  children
+}) {
   const labels = { elements: '要素', stages: '阶段', layers: '层级', cycle: '循环' };
   return (
     <section className={`semantic-framework-model model-${type}`}>
@@ -388,16 +489,26 @@ export function FrameworkModel({ title = '结构化模型', type = 'elements', e
             </div>
           ))}
         </div>
-      ) : children}
+      ) : (
+        children
+      )}
     </section>
   );
 }
 FrameworkModel.displayName = 'FrameworkModel';
 
-export function MatrixModel({ title = '二维矩阵', xLabel = '横轴', yLabel = '纵轴', cells = [], children }) {
+export function MatrixModel({
+  title = '二维矩阵',
+  xLabel = '横轴',
+  yLabel = '纵轴',
+  cells = [],
+  children
+}) {
   return (
     <section className="semantic-model-matrix">
-      <div className="framework-model-head"><span className="semantic-tag">▦ {title}</span></div>
+      <div className="framework-model-head">
+        <span className="semantic-tag">▦ {title}</span>
+      </div>
       {cells.length > 0 ? (
         <div className="model-matrix-grid">
           <div className="model-matrix-axis model-matrix-y">{yLabel}</div>
@@ -409,7 +520,9 @@ export function MatrixModel({ title = '二维矩阵', xLabel = '横轴', yLabel 
             </div>
           ))}
         </div>
-      ) : children}
+      ) : (
+        children
+      )}
     </section>
   );
 }
@@ -418,9 +531,26 @@ MatrixModel.displayName = 'MatrixModel';
 export function FormulaModel({ title = '公式模型', formula, variables = [], children }) {
   return (
     <section className="semantic-model-formula">
-      <div className="framework-model-head"><span className="semantic-tag">∑ {title}</span></div>
-      {formula && <div className="model-formula-expression"><code>{formula}</code></div>}
-      {variables.length > 0 ? <dl className="model-formula-variables">{variables.map((variable, index) => <React.Fragment key={index}><dt>{variable.symbol || variable.name}</dt><dd>{variable.description || variable.value}</dd></React.Fragment>)}</dl> : children}
+      <div className="framework-model-head">
+        <span className="semantic-tag">∑ {title}</span>
+      </div>
+      {formula && (
+        <div className="model-formula-expression">
+          <code>{formula}</code>
+        </div>
+      )}
+      {variables.length > 0 ? (
+        <dl className="model-formula-variables">
+          {variables.map((variable, index) => (
+            <React.Fragment key={index}>
+              <dt>{variable.symbol || variable.name}</dt>
+              <dd>{variable.description || variable.value}</dd>
+            </React.Fragment>
+          ))}
+        </dl>
+      ) : (
+        children
+      )}
     </section>
   );
 }
@@ -429,17 +559,25 @@ FormulaModel.displayName = 'FormulaModel';
 export function PyramidModel({ title = '金字塔模型', levels = [], children }) {
   return (
     <section className="semantic-model-pyramid">
-      <div className="framework-model-head"><span className="semantic-tag">△ {title}</span></div>
+      <div className="framework-model-head">
+        <span className="semantic-tag">△ {title}</span>
+      </div>
       {levels.length > 0 ? (
         <div className="model-pyramid-levels">
           {levels.map((level, index) => (
-            <div className="model-pyramid-level" key={index} style={{ '--pyramid-width': `${Math.max(38, 100 - index * 12)}%` }}>
+            <div
+              className="model-pyramid-level"
+              key={index}
+              style={{ '--pyramid-width': `${Math.max(38, 100 - index * 12)}%` }}
+            >
               <strong>{level.title || level.label}</strong>
               {level.description && <span>{level.description}</span>}
             </div>
           ))}
         </div>
-      ) : children}
+      ) : (
+        children
+      )}
     </section>
   );
 }
@@ -448,17 +586,25 @@ PyramidModel.displayName = 'PyramidModel';
 export function FunnelModel({ title = '漏斗模型', steps = [], children }) {
   return (
     <section className="semantic-model-funnel">
-      <div className="framework-model-head"><span className="semantic-tag">▽ {title}</span></div>
+      <div className="framework-model-head">
+        <span className="semantic-tag">▽ {title}</span>
+      </div>
       {steps.length > 0 ? (
         <div className="model-funnel-steps">
           {steps.map((step, index) => (
-            <div className="model-funnel-step" key={index} style={{ '--funnel-width': `${Math.max(40, 100 - index * 12)}%` }}>
+            <div
+              className="model-funnel-step"
+              key={index}
+              style={{ '--funnel-width': `${Math.max(40, 100 - index * 12)}%` }}
+            >
               <strong>{step.title || step.label}</strong>
               {step.description && <span>{step.description}</span>}
             </div>
           ))}
         </div>
-      ) : children}
+      ) : (
+        children
+      )}
     </section>
   );
 }
@@ -467,7 +613,10 @@ FunnelModel.displayName = 'FunnelModel';
 export function Callout({ type = 'info', title, children }) {
   const tone = ['info', 'success', 'warn', 'danger'].includes(type) ? type : 'info';
   return (
-    <aside className={`semantic-callout callout-${tone}${title ? ' has-callout-title' : ''}`} data-tone={tone}>
+    <aside
+      className={`semantic-callout callout-${tone}${title ? ' has-callout-title' : ''}`}
+      data-tone={tone}
+    >
       {title && <div className="callout-title">{title}</div>}
       <div className="callout-content">{children}</div>
     </aside>
@@ -490,7 +639,15 @@ export function LearningObjectives({ items = [], children }) {
   return (
     <section className="semantic-learning-objectives">
       <div className="semantic-tag">◎ 学习目标</div>
-      {goals.length > 0 ? <ul>{goals.map((item, index) => <li key={index}>{item}</li>)}</ul> : children}
+      {goals.length > 0 ? (
+        <ul>
+          {goals.map((item, index) => (
+            <li key={index}>{item}</li>
+          ))}
+        </ul>
+      ) : (
+        children
+      )}
     </section>
   );
 }
@@ -528,11 +685,25 @@ export function Invariant({ title = '不变量', children }) {
 Invariant.displayName = 'Invariant';
 
 export function FailureMode({ symptom, cause, evidence, remedy, children }) {
-  const rows = [['现象', symptom], ['原因', cause], ['证据', evidence], ['建议', remedy]].filter(([, value]) => value);
+  const rows = [
+    ['现象', symptom],
+    ['原因', cause],
+    ['证据', evidence],
+    ['建议', remedy]
+  ].filter(([, value]) => value);
   return (
     <div className="semantic-failure-mode">
       <div className="semantic-tag">⚠ 故障模式</div>
-      {rows.length > 0 && <dl>{rows.map(([label, value]) => <React.Fragment key={label}><dt>{label}</dt><dd>{value}</dd></React.Fragment>)}</dl>}
+      {rows.length > 0 && (
+        <dl>
+          {rows.map(([label, value]) => (
+            <React.Fragment key={label}>
+              <dt>{label}</dt>
+              <dd>{value}</dd>
+            </React.Fragment>
+          ))}
+        </dl>
+      )}
       {children && <div className="failure-details">{children}</div>}
     </div>
   );
@@ -548,13 +719,30 @@ export function Tradeoff({ title = '工程权衡', options = [], children }) {
           {options.map((option, index) => (
             <div className="tradeoff-option" key={index}>
               <strong>{option.name || option.label || `方案 ${index + 1}`}</strong>
-              {option.benefit && <span><b>收益</b>{option.benefit}</span>}
-              {option.cost && <span><b>代价</b>{option.cost}</span>}
-              {option.when && <span><b>适用</b>{option.when}</span>}
+              {option.benefit && (
+                <span>
+                  <b>收益</b>
+                  {option.benefit}
+                </span>
+              )}
+              {option.cost && (
+                <span>
+                  <b>代价</b>
+                  {option.cost}
+                </span>
+              )}
+              {option.when && (
+                <span>
+                  <b>适用</b>
+                  {option.when}
+                </span>
+              )}
             </div>
           ))}
         </div>
-      ) : children}
+      ) : (
+        children
+      )}
     </div>
   );
 }
@@ -589,7 +777,12 @@ export function Step({ number, title, reason, children }) {
       <div className="worked-step-body">
         {title && <strong className="worked-step-title">{title}</strong>}
         {children && <div className="worked-step-content">{children}</div>}
-        {reason && <div className="worked-step-reason"><span>为什么</span>{reason}</div>}
+        {reason && (
+          <div className="worked-step-reason">
+            <span>为什么</span>
+            {reason}
+          </div>
+        )}
       </div>
     </li>
   );
@@ -617,19 +810,27 @@ export function DataTable({ title, caption, headers = [], rows = [], children })
           <table className="data-table">
             {head.length > 0 && (
               <thead>
-                <tr>{head.map((cell, index) => <th key={index}>{cell}</th>)}</tr>
+                <tr>
+                  {head.map((cell, index) => (
+                    <th key={index}>{cell}</th>
+                  ))}
+                </tr>
               </thead>
             )}
             <tbody>
               {body.map((row, rowIndex) => (
                 <tr key={rowIndex}>
-                  {(Array.isArray(row) ? row : [row]).map((cell, cellIndex) => <td key={cellIndex}>{cell}</td>)}
+                  {(Array.isArray(row) ? row : [row]).map((cell, cellIndex) => (
+                    <td key={cellIndex}>{cell}</td>
+                  ))}
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      ) : children}
+      ) : (
+        children
+      )}
       {caption && <figcaption className="data-table-caption">{caption}</figcaption>}
     </figure>
   );
@@ -640,7 +841,13 @@ DataTable.displayName = 'DataTable';
  * States plus transitions. `Flow` is linear and `Timeline` is chronological;
  * a state machine expresses cycles, guarded transitions and terminal states.
  */
-export function StateMachine({ title = '状态机', initial, states = [], transitions = [], children }) {
+export function StateMachine({
+  title = '状态机',
+  initial,
+  states = [],
+  transitions = [],
+  children
+}) {
   const list = Array.isArray(states) ? states.filter(Boolean) : [];
   const edges = Array.isArray(transitions) ? transitions.filter(Boolean) : [];
   return (
@@ -675,7 +882,9 @@ export function StateMachine({ title = '状态机', initial, states = [], transi
             </ul>
           )}
         </>
-      ) : children}
+      ) : (
+        children
+      )}
     </section>
   );
 }
@@ -692,7 +901,12 @@ export function Quiz({ question, answer, children, tone = 'info' }) {
       {question && <p className="quiz-question">{question}</p>}
       {hasAnswer ? (
         <>
-          <button type="button" className="quiz-toggle" aria-expanded={shown} onClick={() => setShown(value => !value)}>
+          <button
+            type="button"
+            className="quiz-toggle"
+            aria-expanded={shown}
+            onClick={() => setShown(value => !value)}
+          >
             {shown ? '隐藏答案' : '显示答案'}
           </button>
           {shown && (
@@ -702,7 +916,9 @@ export function Quiz({ question, answer, children, tone = 'info' }) {
             </div>
           )}
         </>
-      ) : children}
+      ) : (
+        children
+      )}
     </aside>
   );
 }
@@ -714,7 +930,7 @@ const SOURCE_KIND_LABELS = {
   implementation: '实现',
   experiment: '实测',
   experience: '经验',
-  reference: '来源',
+  reference: '来源'
 };
 
 /**
@@ -729,7 +945,13 @@ export function Source({ kind = 'reference', label, href, children }) {
   return (
     <span className={`semantic-source source-${safeKind}`} data-kind={safeKind}>
       <span className="source-kind">{SOURCE_KIND_LABELS[safeKind]}</span>
-      {href ? <a href={href} target="_blank" rel="noreferrer">{text}</a> : <span>{text}</span>}
+      {href ? (
+        <a href={href} target="_blank" rel="noreferrer">
+          {text}
+        </a>
+      ) : (
+        <span>{text}</span>
+      )}
     </span>
   );
 }
@@ -758,7 +980,15 @@ export function KeyTakeaways({ title = '关键要点', items = [], children }) {
   return (
     <section className="semantic-key-takeaways">
       <div className="semantic-tag">✓ {title}</div>
-      {list.length > 0 ? <ul>{list.map((item, index) => <li key={index}>{item}</li>)}</ul> : children}
+      {list.length > 0 ? (
+        <ul>
+          {list.map((item, index) => (
+            <li key={index}>{item}</li>
+          ))}
+        </ul>
+      ) : (
+        children
+      )}
     </section>
   );
 }
@@ -768,7 +998,11 @@ KeyTakeaways.displayName = 'KeyTakeaways';
 export function Metric({ label, value, unit, delta, trend, note }) {
   const safeTrend = ['up', 'down', 'flat'].includes(trend)
     ? trend
-    : (typeof delta === 'string' && delta.trim().startsWith('-') ? 'down' : (delta ? 'up' : null));
+    : typeof delta === 'string' && delta.trim().startsWith('-')
+      ? 'down'
+      : delta
+        ? 'up'
+        : null;
   return (
     <div className="semantic-metric">
       {label && <div className="metric-label">{label}</div>}
@@ -784,7 +1018,15 @@ export function Metric({ label, value, unit, delta, trend, note }) {
 Metric.displayName = 'Metric';
 
 /** Before/after code comparison, for explaining a fix or a refactor. */
-export function CodeDiff({ title = '代码对比', language = 'text', before, after, beforeLabel = '修改前', afterLabel = '修改后', caption }) {
+export function CodeDiff({
+  title = '代码对比',
+  language = 'text',
+  before,
+  after,
+  beforeLabel = '修改前',
+  afterLabel = '修改后',
+  caption
+}) {
   const beforeText = typeof before === 'string' ? before.replace(/^\n+|\s+$/g, '') : '';
   const afterText = typeof after === 'string' ? after.replace(/^\n+|\s+$/g, '') : '';
   if (!beforeText && !afterText) return null;
@@ -798,11 +1040,15 @@ export function CodeDiff({ title = '代码对比', language = 'text', before, af
       <div className="code-diff-panes">
         <div className="code-diff-pane pane-before">
           <div className="code-diff-label">{beforeLabel}</div>
-          <pre className="code-block"><code>{beforeText}</code></pre>
+          <pre className="code-block">
+            <code>{beforeText}</code>
+          </pre>
         </div>
         <div className="code-diff-pane pane-after">
           <div className="code-diff-label">{afterLabel}</div>
-          <pre className="code-block"><code>{afterText}</code></pre>
+          <pre className="code-block">
+            <code>{afterText}</code>
+          </pre>
         </div>
       </div>
       {caption && <figcaption className="semantic-code-caption">{caption}</figcaption>}
@@ -822,7 +1068,11 @@ export function Term({ name, definition, children }) {
   return (
     <span className="semantic-term" tabIndex={0} data-term={term}>
       {term}
-      {description && <span className="term-popover" role="tooltip">{description}</span>}
+      {description && (
+        <span className="term-popover" role="tooltip">
+          {description}
+        </span>
+      )}
     </span>
   );
 }
@@ -840,7 +1090,9 @@ function DecisionBranch({ node, depth }) {
       </div>
       {kids.length > 0 && (
         <ul className="decision-children">
-          {kids.map((child, index) => <DecisionBranch key={index} node={child} depth={depth + 1} />)}
+          {kids.map((child, index) => (
+            <DecisionBranch key={index} node={child} depth={depth + 1} />
+          ))}
         </ul>
       )}
     </li>
@@ -859,9 +1111,13 @@ export function DecisionTree({ title = '决策路径', question, branches = [], 
       {question && <div className="decision-question">{question}</div>}
       {list.length > 0 ? (
         <ul className="decision-tree-root">
-          {list.map((branch, index) => <DecisionBranch key={index} node={branch} depth={0} />)}
+          {list.map((branch, index) => (
+            <DecisionBranch key={index} node={branch} depth={0} />
+          ))}
         </ul>
-      ) : children}
+      ) : (
+        children
+      )}
     </section>
   );
 }
@@ -886,12 +1142,20 @@ export function FeedbackLoop({ title = '反馈回路', type = 'reinforcing', nod
                 <strong>{node.label || node.title}</strong>
                 {node.description && <span>{node.description}</span>}
               </div>
-              {index < list.length - 1 && <span className="feedback-arrow" aria-hidden="true">{polarity}</span>}
+              {index < list.length - 1 && (
+                <span className="feedback-arrow" aria-hidden="true">
+                  {polarity}
+                </span>
+              )}
             </React.Fragment>
           ))}
-          <span className="feedback-return" aria-hidden="true">{polarity} ↺</span>
+          <span className="feedback-return" aria-hidden="true">
+            {polarity} ↺
+          </span>
         </div>
-      ) : children}
+      ) : (
+        children
+      )}
     </section>
   );
 }
@@ -915,7 +1179,9 @@ function ReadingProgress() {
       const ratio = total > 0 ? Math.min(1, Math.max(0, window.scrollY / total)) : 0;
       if (barRef.current) barRef.current.style.transform = `scaleX(${ratio})`;
     };
-    const onScroll = () => { if (!frame) frame = window.requestAnimationFrame(update); };
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(update);
+    };
     update();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
@@ -950,8 +1216,18 @@ export function ScrollToc({ items = [], activeId = null, title = '目录' }) {
 }
 ScrollToc.displayName = 'ScrollToc';
 
-export function ScrollDocument({ spacing = 'comfortable', fontSize = 'normal', scale, lineHeight, toc = true, progress = true, children }) {
-  const safeSpacing = ['compact', 'comfortable', 'airy'].includes(spacing) ? spacing : 'comfortable';
+export function ScrollDocument({
+  spacing = 'comfortable',
+  fontSize = 'normal',
+  scale,
+  lineHeight,
+  toc = true,
+  progress = true,
+  children
+}) {
+  const safeSpacing = ['compact', 'comfortable', 'airy'].includes(spacing)
+    ? spacing
+    : 'comfortable';
   const preset = FONT_PRESETS[fontSize] || FONT_PRESETS.normal;
   const [items, setItems] = React.useState([]);
   const [activeId, setActiveId] = React.useState(null);
@@ -961,7 +1237,10 @@ export function ScrollDocument({ spacing = 'comfortable', fontSize = 'normal', s
   const register = React.useCallback(item => {
     setItems(previous => {
       const existing = previous.find(entry => entry.id === item.id);
-      if (existing) return existing.title === item.title ? previous : previous.map(entry => (entry.id === item.id ? item : entry));
+      if (existing)
+        return existing.title === item.title
+          ? previous
+          : previous.map(entry => (entry.id === item.id ? item : entry));
       return [...previous, item];
     });
     return () => setItems(previous => previous.filter(entry => entry.id !== item.id));
@@ -969,12 +1248,15 @@ export function ScrollDocument({ spacing = 'comfortable', fontSize = 'normal', s
 
   React.useEffect(() => {
     if (items.length < 2 || typeof IntersectionObserver === 'undefined') return undefined;
-    const observer = new IntersectionObserver(entries => {
-      const visible = entries
-        .filter(entry => entry.isIntersecting)
-        .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-      if (visible[0]) setActiveId(visible[0].target.id);
-    }, { rootMargin: '-15% 0px -75% 0px', threshold: 0 });
+    const observer = new IntersectionObserver(
+      entries => {
+        const visible = entries
+          .filter(entry => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible[0]) setActiveId(visible[0].target.id);
+      },
+      { rootMargin: '-15% 0px -75% 0px', threshold: 0 }
+    );
     items.forEach(item => {
       const node = document.getElementById(item.id);
       if (node) observer.observe(node);
@@ -985,19 +1267,21 @@ export function ScrollDocument({ spacing = 'comfortable', fontSize = 'normal', s
   const outline = React.useMemo(() => ({ register }), [register]);
   const style = {
     '--reading-scale': String(scale ?? preset.scale),
-    '--reading-line-height': String(lineHeight ?? preset.lineHeight),
+    '--reading-line-height': String(lineHeight ?? preset.lineHeight)
   };
 
   const showToc = toc && items.length >= 2;
 
   return (
-    <article className={`continuous-document continuous-spacing-${safeSpacing}${showToc ? ' has-toc' : ''}`} data-font-size={fontSize} style={style}>
+    <article
+      className={`continuous-document continuous-spacing-${safeSpacing}${showToc ? ' has-toc' : ''}`}
+      data-font-size={fontSize}
+      style={style}
+    >
       {progress && <ReadingProgress />}
       <ScrollOutlineContext.Provider value={outline}>
         {showToc && <ScrollToc items={items} activeId={activeId} />}
-        <div className="continuous-content">
-          {children}
-        </div>
+        <div className="continuous-content">{children}</div>
       </ScrollOutlineContext.Provider>
     </article>
   );
@@ -1005,14 +1289,22 @@ export function ScrollDocument({ spacing = 'comfortable', fontSize = 'normal', s
 ScrollDocument.displayName = 'ScrollDocument';
 
 export function ScrollHeader({ label = '连续阅读', title, children }) {
-  return <header className="continuous-header"><p>{label}</p>{title && <h1>{title}</h1>}<div>{children}</div></header>;
+  return (
+    <header className="continuous-header">
+      <p>{label}</p>
+      {title && <h1>{title}</h1>}
+      <div>{children}</div>
+    </header>
+  );
 }
 ScrollHeader.displayName = 'ScrollHeader';
 
 export function ScrollSection({ title, id, wide = false, spacing = 'inherit', children }) {
   const outline = React.useContext(ScrollOutlineContext);
   const anchor = id || (title ? slugify(title) : '');
-  const safeSpacing = ['compact', 'comfortable', 'airy'].includes(spacing) ? ` continuous-spacing-${spacing}` : '';
+  const safeSpacing = ['compact', 'comfortable', 'airy'].includes(spacing)
+    ? ` continuous-spacing-${spacing}`
+    : '';
 
   React.useEffect(() => {
     if (!outline || !title || !anchor) return undefined;
@@ -1020,7 +1312,10 @@ export function ScrollSection({ title, id, wide = false, spacing = 'inherit', ch
   }, [outline, anchor, title]);
 
   return (
-    <section id={anchor || undefined} className={`continuous-section${wide ? ' continuous-section-wide' : ''}${safeSpacing}`}>
+    <section
+      id={anchor || undefined}
+      className={`continuous-section${wide ? ' continuous-section-wide' : ''}${safeSpacing}`}
+    >
       {title && <h2>{title}</h2>}
       {children}
     </section>
@@ -1056,12 +1351,27 @@ export function Grid({ columns = 'auto', gap = 'md', children }) {
 Grid.displayName = 'Grid';
 
 export function Split({ ratio = '1fr 1fr', children }) {
-  return <div className="semantic-split" style={{ '--split-ratio': ratio }}>{children}</div>;
+  return (
+    <div className="semantic-split" style={{ '--split-ratio': ratio }}>
+      {children}
+    </div>
+  );
 }
 Split.displayName = 'Split';
 
 export function Tabs({ items = [], children }) {
-  return <div className="semantic-tabs" data-tab-count={items.length || undefined}>{items.length ? items.map((item, i) => <details key={i} open={i === 0}><summary>{item.label || item.title}</summary><div>{item.content}</div></details>) : children}</div>;
+  return (
+    <div className="semantic-tabs" data-tab-count={items.length || undefined}>
+      {items.length
+        ? items.map((item, i) => (
+            <details key={i} open={i === 0}>
+              <summary>{item.label || item.title}</summary>
+              <div>{item.content}</div>
+            </details>
+          ))
+        : children}
+    </div>
+  );
 }
 Tabs.displayName = 'Tabs';
 
@@ -1089,19 +1399,31 @@ function MermaidZoom({ chart, title, onClose }) {
       }
     }
     renderZoom();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [chart, appearanceKey]);
 
   return (
     <ZoomOverlay title={title || '关系草图'} caption={title} onClose={onClose}>
-      {error
-        ? <pre className="mermaid-error">{error}</pre>
-        : <div className="mermaid-zoom-canvas" ref={ref} />}
+      {error ? (
+        <pre className="mermaid-error">{error}</pre>
+      ) : (
+        <div className="mermaid-zoom-canvas" ref={ref} />
+      )}
     </ZoomOverlay>
   );
 }
 
-export function Mermaid({ chart = '', title = '关系草图', width = 'auto', height = 'auto', x = 0, y = 0, position = 'flow' }) {
+export function Mermaid({
+  chart = '',
+  title = '关系草图',
+  width = 'auto',
+  height = 'auto',
+  x = 0,
+  y = 0,
+  position = 'flow'
+}) {
   const ref = React.useRef(null);
   const id = React.useId().replace(/:/g, '');
   const appearanceKey = useAppearanceKey();
@@ -1125,11 +1447,15 @@ export function Mermaid({ chart = '', title = '关系草图', width = 'auto', he
       }
     }
     renderChart();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [chart, id, appearanceKey]);
 
   const canZoom = Boolean(chart.trim()) && !error;
-  const openZoom = () => { if (canZoom) setZoomed(true); };
+  const openZoom = () => {
+    if (canZoom) setZoomed(true);
+  };
   const onKeyDown = event => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
@@ -1138,13 +1464,22 @@ export function Mermaid({ chart = '', title = '关系草图', width = 'auto', he
   };
 
   return (
-    <div className={`semantic-mermaid ${widgetClass(position)}`} style={widgetStyle({ width, height, x, y, position })}>
+    <div
+      className={`semantic-mermaid ${widgetClass(position)}`}
+      style={widgetStyle({ width, height, x, y, position })}
+    >
       <div className="semantic-widget-head">
         <span>{title}</span>
         <div className="mermaid-tools">
           <code>MERMAID</code>
-          <button type="button" onClick={openZoom} disabled={!canZoom} aria-label={`放大阅读：${title}`}>
-            <ZoomIn size={12} />放大阅读
+          <button
+            type="button"
+            onClick={openZoom}
+            disabled={!canZoom}
+            aria-label={`放大阅读：${title}`}
+          >
+            <ZoomIn size={12} />
+            放大阅读
           </button>
         </div>
       </div>
@@ -1168,10 +1503,25 @@ export function Mermaid({ chart = '', title = '关系草图', width = 'auto', he
 }
 Mermaid.displayName = 'Mermaid';
 
-export function RelationMap({ title = '关系速览', items = [], children, width = 'auto', height = 'auto', x = 0, y = 0, position = 'flow' }) {
+export function RelationMap({
+  title = '关系速览',
+  items = [],
+  children,
+  width = 'auto',
+  height = 'auto',
+  x = 0,
+  y = 0,
+  position = 'flow'
+}) {
   return (
-    <div className={`semantic-relation-map ${widgetClass(position)}`} style={widgetStyle({ width, height, x, y, position })}>
-      <div className="semantic-widget-head"><span>{title}</span><code>RELATIONS</code></div>
+    <div
+      className={`semantic-relation-map ${widgetClass(position)}`}
+      style={widgetStyle({ width, height, x, y, position })}
+    >
+      <div className="semantic-widget-head">
+        <span>{title}</span>
+        <code>RELATIONS</code>
+      </div>
       {items.length > 0 ? (
         <div className="relation-map-grid">
           {items.map((item, index) => (
@@ -1183,7 +1533,9 @@ export function RelationMap({ title = '关系速览', items = [], children, widt
             </div>
           ))}
         </div>
-      ) : children}
+      ) : (
+        children
+      )}
     </div>
   );
 }
@@ -1193,7 +1545,12 @@ export function RelationPath({ title = '关系链', steps = [], children }) {
   const safeSteps = Array.isArray(steps) ? steps.filter(Boolean) : [];
   return (
     <div className="semantic-relation-path">
-      {title && <div className="semantic-widget-head"><span>{title}</span><code>PATH</code></div>}
+      {title && (
+        <div className="semantic-widget-head">
+          <span>{title}</span>
+          <code>PATH</code>
+        </div>
+      )}
       {safeSteps.length > 0 ? (
         <div className="relation-path-steps">
           {safeSteps.map((step, index) => (
@@ -1203,20 +1560,39 @@ export function RelationPath({ title = '关系链', steps = [], children }) {
                 <strong>{step.node || step.title}</strong>
                 {step.note && <small>{step.note}</small>}
               </div>
-              {index < safeSteps.length - 1 && <div className="relation-path-edge"><span>{safeSteps[index].relation || '→'}</span></div>}
+              {index < safeSteps.length - 1 && (
+                <div className="relation-path-edge">
+                  <span>{safeSteps[index].relation || '→'}</span>
+                </div>
+              )}
             </React.Fragment>
           ))}
         </div>
-      ) : children}
+      ) : (
+        children
+      )}
     </div>
   );
 }
 RelationPath.displayName = 'RelationPath';
 
-export function Insight({ title = '关键判断', tone = 'info', children, width = 'auto', height = 'auto', x = 0, y = 0, position = 'flow' }) {
+export function Insight({
+  title = '关键判断',
+  tone = 'info',
+  children,
+  width = 'auto',
+  height = 'auto',
+  x = 0,
+  y = 0,
+  position = 'flow'
+}) {
   const safeTone = ['info', 'success', 'warn', 'danger'].includes(tone) ? tone : 'info';
   return (
-    <aside className={`semantic-insight insight-${safeTone} ${widgetClass(position)}`} data-tone={safeTone} style={widgetStyle({ width, height, x, y, position })}>
+    <aside
+      className={`semantic-insight insight-${safeTone} ${widgetClass(position)}`}
+      data-tone={safeTone}
+      style={widgetStyle({ width, height, x, y, position })}
+    >
       <div className="insight-kicker">{title}</div>
       <div className="insight-body">{children}</div>
     </aside>
@@ -1224,15 +1600,28 @@ export function Insight({ title = '关键判断', tone = 'info', children, width
 }
 Insight.displayName = 'Insight';
 
-export function NoteGrid({ notes = [], children, width = 'auto', height = 'auto', x = 0, y = 0, position = 'flow' }) {
+export function NoteGrid({
+  notes = [],
+  children,
+  width = 'auto',
+  height = 'auto',
+  x = 0,
+  y = 0,
+  position = 'flow'
+}) {
   return (
-    <div className={`semantic-note-grid ${widgetClass(position)}`} style={widgetStyle({ width, height, x, y, position })}>
-      {notes.length > 0 ? notes.map((note, index) => (
-        <div className="semantic-note" key={index}>
-          <strong>{note.title || note.label}</strong>
-          <span>{note.content || note.text || note.description}</span>
-        </div>
-      )) : children}
+    <div
+      className={`semantic-note-grid ${widgetClass(position)}`}
+      style={widgetStyle({ width, height, x, y, position })}
+    >
+      {notes.length > 0
+        ? notes.map((note, index) => (
+            <div className="semantic-note" key={index}>
+              <strong>{note.title || note.label}</strong>
+              <span>{note.content || note.text || note.description}</span>
+            </div>
+          ))
+        : children}
     </div>
   );
 }
@@ -1246,7 +1635,9 @@ NoteGrid.displayName = 'NoteGrid';
 function MathInline({ formula, children }) {
   const tex = (formula || childrenToText(children)).trim();
   if (!tex) return null;
-  return <span className="semantic-math" dangerouslySetInnerHTML={{ __html: renderTex(tex, false) }} />;
+  return (
+    <span className="semantic-math" dangerouslySetInnerHTML={{ __html: renderTex(tex, false) }} />
+  );
 }
 MathInline.displayName = 'Math';
 export { MathInline as Math };
@@ -1260,12 +1651,19 @@ export function MathBlock({ title = '公式', formula, variables = [], children 
         <span className="semantic-tag">∑ {title}</span>
         <span className="framework-model-type">公式</span>
       </div>
-      <div className="math-block-expression" dangerouslySetInnerHTML={{ __html: renderTex(tex, true) }} />
+      <div
+        className="math-block-expression"
+        dangerouslySetInnerHTML={{ __html: renderTex(tex, true) }}
+      />
       {variables.length > 0 && (
         <dl className="model-formula-variables">
           {variables.map((variable, index) => (
             <React.Fragment key={index}>
-              <dt dangerouslySetInnerHTML={{ __html: renderTex(variable.symbol || variable.name || '', false) }} />
+              <dt
+                dangerouslySetInnerHTML={{
+                  __html: renderTex(variable.symbol || variable.name || '', false)
+                }}
+              />
               <dd>{variable.description || variable.value}</dd>
             </React.Fragment>
           ))}
@@ -1290,7 +1688,10 @@ function normalizePoints(data) {
       if (typeof point === 'number') return { label: String(index + 1), value: point };
       if (!point || typeof point !== 'object') return null;
       const value = Number(point.value ?? point.y ?? 0);
-      return { label: String(point.label ?? point.x ?? index + 1), value: Number.isFinite(value) ? value : 0 };
+      return {
+        label: String(point.label ?? point.x ?? index + 1),
+        value: Number.isFinite(value) ? value : 0
+      };
     })
     .filter(Boolean);
 }
@@ -1301,14 +1702,30 @@ function niceMax(value) {
   return Math.ceil(value / magnitude) * magnitude;
 }
 
-export function Chart({ title = '图表', type = 'bar', data = [], series = [], labels = [], unit = '', showValues = true, width = 'auto', height = 'auto', x = 0, y = 0, position = 'flow' }) {
+export function Chart({
+  title = '图表',
+  type = 'bar',
+  data = [],
+  series = [],
+  labels = [],
+  unit = '',
+  showValues = true,
+  width = 'auto',
+  height = 'auto',
+  x = 0,
+  y = 0,
+  position = 'flow'
+}) {
   const points = normalizePoints(data);
   const seriesList = (Array.isArray(series) ? series : []).filter(Boolean).map((entry, index) => ({
     name: entry.name || entry.label || `系列 ${index + 1}`,
     colorIndex: index + 1,
-    values: (Array.isArray(entry.values) ? entry.values : []).map(value => Number(value) || 0),
+    values: (Array.isArray(entry.values) ? entry.values : []).map(value => Number(value) || 0)
   }));
-  const allValues = [...points.map(point => point.value), ...seriesList.flatMap(entry => entry.values)];
+  const allValues = [
+    ...points.map(point => point.value),
+    ...seriesList.flatMap(entry => entry.values)
+  ];
   const max = niceMax(Math.max(1, ...allValues));
 
   const VIEW_W = 600;
@@ -1344,8 +1761,16 @@ export function Chart({ title = '图表', type = 'bar', data = [], series = [], 
           <g className="chart-legend">
             {points.map((point, index) => (
               <g key={index} transform={`translate(${PAD.left + 8}, ${PAD.top + index * 22})`}>
-                <rect className="chart-legend-swatch" style={chartColor(index)} width="10" height="10" rx="2" />
-                <text className="chart-legend-label" x="18" y="9">{point.label} · {Math.round((Math.max(0, point.value) / total) * 100)}%</text>
+                <rect
+                  className="chart-legend-swatch"
+                  style={chartColor(index)}
+                  width="10"
+                  height="10"
+                  rx="2"
+                />
+                <text className="chart-legend-label" x="18" y="9">
+                  {point.label} · {Math.round((Math.max(0, point.value) / total) * 100)}%
+                </text>
               </g>
             ))}
           </g>
@@ -1360,7 +1785,9 @@ export function Chart({ title = '图表', type = 'bar', data = [], series = [], 
           return (
             <g key={index}>
               <line x1={PAD.left} y1={yPos} x2={PAD.left + innerW} y2={yPos} />
-              <text className="chart-axis-value" x={PAD.left - 8} y={yPos + 3}>{Math.round(tick.value)}</text>
+              <text className="chart-axis-value" x={PAD.left - 8} y={yPos + 3}>
+                {Math.round(tick.value)}
+              </text>
             </g>
           );
         })}
@@ -1384,18 +1811,43 @@ export function Chart({ title = '图表', type = 'bar', data = [], series = [], 
                 points={entry.values.map((value, idx) => `${xFor(idx)},${yFor(value)}`).join(' ')}
               />
               {entry.values.map((value, idx) => (
-                <circle key={idx} className="chart-point" style={chartColor(seriesIndex)} cx={xFor(idx)} cy={yFor(value)} r="3" />
+                <circle
+                  key={idx}
+                  className="chart-point"
+                  style={chartColor(seriesIndex)}
+                  cx={xFor(idx)}
+                  cy={yFor(value)}
+                  r="3"
+                />
               ))}
             </g>
           ))}
-          {(labels.length ? labels : seriesList[0]?.values.map((_, i) => String(i + 1)) || []).map((label, idx) => (
-            <text key={idx} className="chart-axis-label" x={xFor(idx)} y={VIEW_H - PAD.bottom + 20} textAnchor="middle">{label}</text>
-          ))}
+          {(labels.length ? labels : seriesList[0]?.values.map((_, i) => String(i + 1)) || []).map(
+            (label, idx) => (
+              <text
+                key={idx}
+                className="chart-axis-label"
+                x={xFor(idx)}
+                y={VIEW_H - PAD.bottom + 20}
+                textAnchor="middle"
+              >
+                {label}
+              </text>
+            )
+          )}
           <g className="chart-legend">
             {seriesList.map((entry, index) => (
               <g key={index} transform={`translate(${PAD.left + index * 130}, ${PAD.top - 10})`}>
-                <rect className="chart-legend-swatch" style={chartColor(index)} width="10" height="10" rx="2" />
-                <text className="chart-legend-label" x="16" y="9">{entry.name}</text>
+                <rect
+                  className="chart-legend-swatch"
+                  style={chartColor(index)}
+                  width="10"
+                  height="10"
+                  rx="2"
+                />
+                <text className="chart-legend-label" x="16" y="9">
+                  {entry.name}
+                </text>
               </g>
             ))}
           </g>
@@ -1405,7 +1857,10 @@ export function Chart({ title = '图表', type = 'bar', data = [], series = [], 
 
     const bars = points.length
       ? points
-      : (seriesList[0]?.values.map((value, index) => ({ label: labels[index] || String(index + 1), value })) || []);
+      : seriesList[0]?.values.map((value, index) => ({
+          label: labels[index] || String(index + 1),
+          value
+        })) || [];
     const barCount = Math.max(1, bars.length);
     const slot = innerW / barCount;
     const barWidth = Math.min(56, slot * 0.6);
@@ -1418,9 +1873,33 @@ export function Chart({ title = '图表', type = 'bar', data = [], series = [], 
           const yPos = PAD.top + innerH - barHeight;
           return (
             <g key={index}>
-              <rect className="chart-bar" style={chartColor(index)} x={xPos} y={yPos} width={barWidth} height={Math.max(0, barHeight)} rx="3" />
-              {showValues && <text className="chart-bar-value" x={xPos + barWidth / 2} y={yPos - 6} textAnchor="middle">{bar.value}</text>}
-              <text className="chart-axis-label" x={xPos + barWidth / 2} y={VIEW_H - PAD.bottom + 20} textAnchor="middle">{bar.label}</text>
+              <rect
+                className="chart-bar"
+                style={chartColor(index)}
+                x={xPos}
+                y={yPos}
+                width={barWidth}
+                height={Math.max(0, barHeight)}
+                rx="3"
+              />
+              {showValues && (
+                <text
+                  className="chart-bar-value"
+                  x={xPos + barWidth / 2}
+                  y={yPos - 6}
+                  textAnchor="middle"
+                >
+                  {bar.value}
+                </text>
+              )}
+              <text
+                className="chart-axis-label"
+                x={xPos + barWidth / 2}
+                y={VIEW_H - PAD.bottom + 20}
+                textAnchor="middle"
+              >
+                {bar.label}
+              </text>
             </g>
           );
         })}
@@ -1429,13 +1908,30 @@ export function Chart({ title = '图表', type = 'bar', data = [], series = [], 
   })();
 
   return (
-    <div className={`semantic-chart ${widgetClass(position)}`} style={widgetStyle({ width, height, x, y, position })}>
-      <div className="semantic-widget-head"><span>{title}</span><code>CHART · {type.toUpperCase()}{unit ? ` · ${unit}` : ''}</code></div>
+    <div
+      className={`semantic-chart ${widgetClass(position)}`}
+      style={widgetStyle({ width, height, x, y, position })}
+    >
+      <div className="semantic-widget-head">
+        <span>{title}</span>
+        <code>
+          CHART · {type.toUpperCase()}
+          {unit ? ` · ${unit}` : ''}
+        </code>
+      </div>
       {body ? (
-        <svg className="chart-canvas" viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} role="img" aria-label={title} preserveAspectRatio="xMidYMid meet">
+        <svg
+          className="chart-canvas"
+          viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+          role="img"
+          aria-label={title}
+          preserveAspectRatio="xMidYMid meet"
+        >
           {body}
         </svg>
-      ) : <div className="chart-empty">没有可绘制的数据</div>}
+      ) : (
+        <div className="chart-empty">没有可绘制的数据</div>
+      )}
     </div>
   );
 }
@@ -1465,9 +1961,14 @@ function ZoomOverlay({ title, caption, label, onClose, children }) {
 
   const clampScale = value => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, +value.toFixed(3)));
   const zoomBy = delta => setScale(value => clampScale(value + delta));
-  const reset = () => { setScale(1); setOffset({ x: 0, y: 0 }); };
+  const reset = () => {
+    setScale(1);
+    setOffset({ x: 0, y: 0 });
+  };
   // Cursor-anchored zoom feels wrong at 1x; recentre whenever we return to it.
-  const settle = value => { if (value <= 1) setOffset({ x: 0, y: 0 }); };
+  const settle = value => {
+    if (value <= 1) setOffset({ x: 0, y: 0 });
+  };
 
   React.useEffect(() => {
     const stage = stageRef.current;
@@ -1485,8 +1986,10 @@ function ZoomOverlay({ title, caption, label, onClose, children }) {
 
   React.useEffect(() => {
     const onKeyDown = event => {
-      if (event.key === 'Escape') { event.stopPropagation(); onClose(); }
-      else if (event.key === '+' || event.key === '=') zoomBy(0.25);
+      if (event.key === 'Escape') {
+        event.stopPropagation();
+        onClose();
+      } else if (event.key === '+' || event.key === '=') zoomBy(0.25);
       else if (event.key === '-' || event.key === '_') zoomBy(-0.25);
       else if (event.key === '0') reset();
     };
@@ -1502,7 +2005,13 @@ function ZoomOverlay({ title, caption, label, onClose, children }) {
 
   const onPointerDown = event => {
     if (event.target.closest('button')) return;
-    dragRef.current = { id: event.pointerId, x: event.clientX, y: event.clientY, ox: offset.x, oy: offset.y };
+    dragRef.current = {
+      id: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      ox: offset.x,
+      oy: offset.y
+    };
     movedRef.current = false;
     setDragging(true);
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -1532,7 +2041,9 @@ function ZoomOverlay({ title, caption, label, onClose, children }) {
       role="dialog"
       aria-modal="true"
       aria-label={`放大查看：${title}`}
-      onClick={event => { if (event.target === event.currentTarget && !movedRef.current) onClose(); }}
+      onClick={event => {
+        if (event.target === event.currentTarget && !movedRef.current) onClose();
+      }}
     >
       <div
         ref={stageRef}
@@ -1541,23 +2052,54 @@ function ZoomOverlay({ title, caption, label, onClose, children }) {
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
-        onDoubleClick={() => { const next = scaleRef.current > 1 ? 1 : 2; setScale(next); settle(next); }}
-        onClick={event => { if (movedRef.current) { event.stopPropagation(); movedRef.current = false; } }}
+        onDoubleClick={() => {
+          const next = scaleRef.current > 1 ? 1 : 2;
+          setScale(next);
+          settle(next);
+        }}
+        onClick={event => {
+          if (movedRef.current) {
+            event.stopPropagation();
+            movedRef.current = false;
+          }
+        }}
       >
-        <div className="image-zoom-target" style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})` }}>
+        <div
+          className="image-zoom-target"
+          style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})` }}
+        >
           {children}
         </div>
       </div>
-      {title && <p className="image-zoom-caption">{label && <b>{label}</b>}{caption}</p>}
+      {title && (
+        <p className="image-zoom-caption">
+          {label && <b>{label}</b>}
+          {caption}
+        </p>
+      )}
       <div className="image-zoom-toolbar">
-        <button type="button" onClick={() => zoomBy(-0.25)} aria-label="缩小" title="缩小（−）">−</button>
+        <button type="button" onClick={() => zoomBy(-0.25)} aria-label="缩小" title="缩小（−）">
+          −
+        </button>
         <span aria-live="polite">{Math.round(scale * 100)}%</span>
-        <button type="button" onClick={() => zoomBy(0.25)} aria-label="放大" title="放大（＋）">＋</button>
-        <button type="button" onClick={reset} aria-label="重置缩放" title="重置（0）">↺</button>
-        <button type="button" ref={closeRef} onClick={onClose} aria-label="关闭" title="关闭（Esc）">✕</button>
+        <button type="button" onClick={() => zoomBy(0.25)} aria-label="放大" title="放大（＋）">
+          ＋
+        </button>
+        <button type="button" onClick={reset} aria-label="重置缩放" title="重置（0）">
+          ↺
+        </button>
+        <button
+          type="button"
+          ref={closeRef}
+          onClick={onClose}
+          aria-label="关闭"
+          title="关闭（Esc）"
+        >
+          ✕
+        </button>
       </div>
     </div>,
-    document.body,
+    document.body
   );
 }
 
@@ -1570,7 +2112,19 @@ function ImageZoom({ src, alt, caption, label, onClose }) {
   );
 }
 
-export function Figure({ id, src, alt = '', caption, label, inline, width = 'auto', height = 'auto', x = 0, y = 0, position = 'flow' }) {
+export function Figure({
+  id,
+  src,
+  alt = '',
+  caption,
+  label,
+  inline,
+  width = 'auto',
+  height = 'auto',
+  x = 0,
+  y = 0,
+  position = 'flow'
+}) {
   const scope = useFigureScope();
   // `inline` is a build-time hint consumed by vite's asset plugin; binding it
   // here keeps it out of the DOM and documents that the component accepts it.
@@ -1578,9 +2132,11 @@ export function Figure({ id, src, alt = '', caption, label, inline, width = 'aut
   const number = React.useSyncExternalStore(
     subscribeFigures,
     () => getFigureNumber(scope, id),
-    () => getFigureNumber(scope, id),
+    () => getFigureNumber(scope, id)
   );
-  React.useEffect(() => { registerFigure(scope, id); }, [scope, id]);
+  React.useEffect(() => {
+    registerFigure(scope, id);
+  }, [scope, id]);
   const [zoomed, setZoomed] = React.useState(false);
   const title = alt || caption || '图片';
   // An explicit `label` wins; otherwise a named figure numbers itself.
@@ -1600,16 +2156,29 @@ export function Figure({ id, src, alt = '', caption, label, inline, width = 'aut
           aria-label={`放大查看：${title}`}
         >
           <img src={src} alt={alt} loading="lazy" />
-          <span className="figure-zoom-hint" aria-hidden="true"><ZoomIn size={12} />点击放大</span>
+          <span className="figure-zoom-hint" aria-hidden="true">
+            <ZoomIn size={12} />
+            点击放大
+          </span>
         </button>
-      ) : <div className="figure-placeholder">缺少图片 src</div>}
+      ) : (
+        <div className="figure-placeholder">缺少图片 src</div>
+      )}
       {(caption || displayLabel) && (
         <figcaption>
           {displayLabel && <span className="figure-label">{displayLabel}</span>}
           {caption}
         </figcaption>
       )}
-      {zoomed && <ImageZoom src={src} alt={alt} caption={caption} label={displayLabel} onClose={() => setZoomed(false)} />}
+      {zoomed && (
+        <ImageZoom
+          src={src}
+          alt={alt}
+          caption={caption}
+          label={displayLabel}
+          onClose={() => setZoomed(false)}
+        />
+      )}
     </figure>
   );
 }
@@ -1626,12 +2195,18 @@ export function FigureRef({ id, children }) {
   const number = React.useSyncExternalStore(
     subscribeFigures,
     () => getFigureNumber(scope, id),
-    () => getFigureNumber(scope, id),
+    () => getFigureNumber(scope, id)
   );
   const text = children ?? (number ? `图 ${number}` : '图 ?');
-  return id
-    ? <a className="semantic-figure-ref" href={`#fig-${id}`}>{text}</a>
-    : <span className="semantic-figure-ref" data-missing="true">{text}</span>;
+  return id ? (
+    <a className="semantic-figure-ref" href={`#fig-${id}`}>
+      {text}
+    </a>
+  ) : (
+    <span className="semantic-figure-ref" data-missing="true">
+      {text}
+    </span>
+  );
 }
 FigureRef.displayName = 'FigureRef';
 
@@ -1641,12 +2216,14 @@ export function Cite({ id, children }) {
   const index = React.useSyncExternalStore(
     subscribeReferences,
     () => getReferenceIndex(id),
-    () => null,
+    () => null
   );
   const uid = React.useId().replace(/:/g, '');
   return (
     <sup className="semantic-cite" data-missing={index ? undefined : 'true'}>
-      <a href={`#ref-${id}`} id={`cite-${id}-${uid}`}>{children ?? (index ? `[${index}]` : '[?]')}</a>
+      <a href={`#ref-${id}`} id={`cite-${id}-${uid}`}>
+        {children ?? (index ? `[${index}]` : '[?]')}
+      </a>
     </sup>
   );
 }
@@ -1654,26 +2231,42 @@ Cite.displayName = 'Cite';
 
 export function References({ title = '参考文献', items = [], children }) {
   const key = JSON.stringify(items || []);
-  React.useEffect(() => { registerReferences(items); }, [key]);
+  React.useEffect(() => {
+    registerReferences(items);
+  }, [key]);
   const list = Array.isArray(items) ? items.filter(Boolean) : [];
   return (
     <section className="semantic-references">
-      <div className="framework-model-head"><span className="semantic-tag">❡ {title}</span><code>REFERENCES</code></div>
+      <div className="framework-model-head">
+        <span className="semantic-tag">❡ {title}</span>
+        <code>REFERENCES</code>
+      </div>
       {list.length > 0 ? (
         <ol className="reference-list">
           {list.map((item, index) => (
-            <li key={item.id || index} id={item.id ? `ref-${item.id}` : undefined} className="reference-item">
+            <li
+              key={item.id || index}
+              id={item.id ? `ref-${item.id}` : undefined}
+              className="reference-item"
+            >
               {item.authors && <span className="reference-authors">{item.authors}</span>}
               {item.year && <span className="reference-year">{item.year}</span>}
-              {item.title && (item.url
-                ? <a className="reference-title" href={item.url} target="_blank" rel="noreferrer">{item.title}</a>
-                : <span className="reference-title">{item.title}</span>)}
+              {item.title &&
+                (item.url ? (
+                  <a className="reference-title" href={item.url} target="_blank" rel="noreferrer">
+                    {item.title}
+                  </a>
+                ) : (
+                  <span className="reference-title">{item.title}</span>
+                ))}
               {item.source && <span className="reference-source">{item.source}</span>}
               {item.note && <span className="reference-note">{item.note}</span>}
             </li>
           ))}
         </ol>
-      ) : children}
+      ) : (
+        children
+      )}
     </section>
   );
 }

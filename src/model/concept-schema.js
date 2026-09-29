@@ -14,7 +14,7 @@ export function createConceptGraphState() {
       rootId: ''
     },
     nodes: new Map(), // id -> NodeObject
-    relations: [], // Array<{ from, to, type, label, description }>
+    relations: [] // Array<{ from, to, type, label, description }>
   };
 }
 
@@ -30,7 +30,7 @@ export function normalizeNode(raw) {
     kind: normalizeKind(raw.kind),
     parent: raw.parent || null,
     children: Array.isArray(raw.children) ? raw.children : [],
-    
+
     // Semantic Content Sections
     summary: raw.summary || '',
     overview: raw.overview || null,
@@ -54,7 +54,7 @@ export function normalizeNode(raw) {
     evidence: Array.isArray(raw.evidence) ? raw.evidence : [],
     invariants: Array.isArray(raw.invariants) ? raw.invariants : [],
     failureModes: Array.isArray(raw.failureModes) ? raw.failureModes : [],
-    tradeoffs: Array.isArray(raw.tradeoffs) ? raw.tradeoffs : [],
+    tradeoffs: Array.isArray(raw.tradeoffs) ? raw.tradeoffs : []
   };
 }
 
@@ -73,7 +73,8 @@ export function buildGraphModel(rawGraph) {
     if (n.kind && !NODE_KIND_SET.has(n.kind)) {
       diagnostics.push({ level: 'warning', code: 'UNKNOWN_KIND', nodeId: node.id, kind: n.kind });
     }
-    if (nodes.has(node.id)) diagnostics.push({ level: 'error', code: 'DUPLICATE_NODE_ID', nodeId: node.id });
+    if (nodes.has(node.id))
+      diagnostics.push({ level: 'error', code: 'DUPLICATE_NODE_ID', nodeId: node.id });
     nodes.set(node.id, node);
   });
 
@@ -95,11 +96,28 @@ export function buildGraphModel(rawGraph) {
         if (!childNode.parent) {
           childNode.parent = node.id;
         }
-      }
-      else diagnostics.push({ level: 'warning', code: 'MISSING_CHILD', nodeId: node.id, targetId: childId });
+      } else
+        diagnostics.push({
+          level: 'warning',
+          code: 'MISSING_CHILD',
+          nodeId: node.id,
+          targetId: childId
+        });
     });
-    if (node.parent && !nodes.has(node.parent)) diagnostics.push({ level: 'warning', code: 'ORPHAN_NODE', nodeId: node.id, targetId: node.parent });
-    if (!LEVEL_DEFS[node.level]) diagnostics.push({ level: 'warning', code: 'UNKNOWN_LEVEL', nodeId: node.id, level: node.level });
+    if (node.parent && !nodes.has(node.parent))
+      diagnostics.push({
+        level: 'warning',
+        code: 'ORPHAN_NODE',
+        nodeId: node.id,
+        targetId: node.parent
+      });
+    if (!LEVEL_DEFS[node.level])
+      diagnostics.push({
+        level: 'warning',
+        code: 'UNKNOWN_LEVEL',
+        nodeId: node.id,
+        level: node.level
+      });
   });
 
   // Filter valid relations
@@ -169,9 +187,7 @@ export function getSiblingNodes(nodes, nodeId) {
   }
   const parent = nodes.get(current.parent);
   if (!parent) return [];
-  return parent.children
-    .filter(id => id !== nodeId && nodes.has(id))
-    .map(id => nodes.get(id));
+  return parent.children.filter(id => id !== nodeId && nodes.has(id)).map(id => nodes.get(id));
 }
 
 /**

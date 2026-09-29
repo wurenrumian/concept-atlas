@@ -1,12 +1,21 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateMdxSource, countBySeverity, detectFeatures, extractPageTitle, KNOWN_COMPONENT_SET } from '../src/model/validate-content.js';
+import {
+  validateMdxSource,
+  countBySeverity,
+  detectFeatures,
+  extractPageTitle,
+  KNOWN_COMPONENT_SET
+} from '../src/model/validate-content.js';
 
 const codes = result => result.diagnostics.map(item => item.code);
-const errorsOf = result => result.diagnostics.filter(item => item.severity === 'error').map(item => item.code);
-const warningsOf = result => result.diagnostics.filter(item => item.severity === 'warning').map(item => item.code);
+const errorsOf = result =>
+  result.diagnostics.filter(item => item.severity === 'error').map(item => item.code);
+const warningsOf = result =>
+  result.diagnostics.filter(item => item.severity === 'warning').map(item => item.code);
 
-const atlas = body => `<ExplainPage id="p" title="T" summary="S">\n  <ConceptGraph root="root">\n${body}\n  </ConceptGraph>\n</ExplainPage>`;
+const atlas = body =>
+  `<ExplainPage id="p" title="T" summary="S">\n  <ConceptGraph root="root">\n${body}\n  </ConceptGraph>\n</ExplainPage>`;
 
 const rootNode = `    <ConceptNode id="root" title="根" level="L0" summary="根">
       <Definition>定义。</Definition>
@@ -58,9 +67,15 @@ test('graph root must resolve', () => {
 });
 
 test('carrier errors: missing, conflict, and mode mismatch', () => {
-  assert.ok(errorsOf(validateMdxSource('<ConceptNode id="a" title="a" level="L0" summary="s" />')).includes('CARRIER_MISSING'));
+  assert.ok(
+    errorsOf(validateMdxSource('<ConceptNode id="a" title="a" level="L0" summary="s" />')).includes(
+      'CARRIER_MISSING'
+    )
+  );
 
-  const conflict = validateMdxSource(`<ExplainPage id="p" title="T" summary="S"><ConceptGraph root="r"><ConceptNode id="r" title="r" level="L0" summary="s"><Definition>d</Definition></ConceptNode></ConceptGraph><ScrollDocument><ScrollHeader title="T">x</ScrollHeader></ScrollDocument></ExplainPage>`);
+  const conflict = validateMdxSource(
+    `<ExplainPage id="p" title="T" summary="S"><ConceptGraph root="r"><ConceptNode id="r" title="r" level="L0" summary="s"><Definition>d</Definition></ConceptNode></ConceptGraph><ScrollDocument><ScrollHeader title="T">x</ScrollHeader></ScrollDocument></ExplainPage>`
+  );
   assert.ok(errorsOf(conflict).includes('CARRIER_CONFLICT'));
 
   const mismatch = validateMdxSource(atlas(rootNode), { mode: 'scroll' });
@@ -103,7 +118,7 @@ test('missing relative figure assets warn instead of failing', () => {
   const source = atlas(`${rootNode}\n    <Figure src="./missing.png" alt="x" />`);
   const result = validateMdxSource(source, {
     filePath: 'C:/tmp/doc.mdx',
-    assetExists: () => false,
+    assetExists: () => false
   });
   assert.ok(warningsOf(result).includes('ASSET_MISSING'));
   assert.deepEqual(errorsOf(result), []);
@@ -121,19 +136,25 @@ test('strict mode promotes structural warnings to errors and counts severities',
 });
 
 test('relation type and label are checked', () => {
-  const result = validateMdxSource(atlas(`${rootNode}
+  const result = validateMdxSource(
+    atlas(`${rootNode}
     <ConceptNode id="other" title="other" level="L1" parent="root"><Overview>o</Overview></ConceptNode>
-    <Relation from="root" to="other" type="supports" />`));
+    <Relation from="root" to="other" type="supports" />`)
+  );
   const warnings = warningsOf(result);
   assert.ok(warnings.includes('UNKNOWN_RELATION_TYPE'));
   assert.ok(warnings.includes('RELATION_MISSING_LABEL'));
 });
 
 test('data shapes written as prose braces are flagged as MDX expressions', () => {
-  const result = validateMdxSource(atlas(`${rootNode}\n    <Definition>data（{label, value} 数组）</Definition>`));
+  const result = validateMdxSource(
+    atlas(`${rootNode}\n    <Definition>data（{label, value} 数组）</Definition>`)
+  );
   assert.ok(warningsOf(result).includes('PROSE_EXPRESSION'));
 
-  const safe = validateMdxSource(atlas(`${rootNode}\n    <Definition>data（\`{label, value}\` 数组）</Definition>`));
+  const safe = validateMdxSource(
+    atlas(`${rootNode}\n    <Definition>data（\`{label, value}\` 数组）</Definition>`)
+  );
   assert.ok(!warningsOf(safe).includes('PROSE_EXPRESSION'));
 
   const literals = validateMdxSource(atlas(`${rootNode}\n    <Flow steps={[{title: 'a'}]} />`));
@@ -149,7 +170,9 @@ test('leading frontmatter is flagged because MDX renders it as text', () => {
 });
 
 test('detectFeatures reports which optional renderers a document needs', () => {
-  const proseOnly = detectFeatures(`<ScrollDocument><ScrollProse>一段话</ScrollProse></ScrollDocument>`);
+  const proseOnly = detectFeatures(
+    `<ScrollDocument><ScrollProse>一段话</ScrollProse></ScrollDocument>`
+  );
   assert.deepEqual(proseOnly, { math: false, mermaid: false });
 
   const mathOnly = detectFeatures(`${atlas(rootNode)}\n  <MathBlock formula="E = mc^2" />`);
@@ -158,65 +181,100 @@ test('detectFeatures reports which optional renderers a document needs', () => {
   const both = detectFeatures(`${atlas(rootNode)}\n  <Mermaid chart="flowchart LR; A-->B" />`);
   assert.deepEqual(both, { math: false, mermaid: true });
 
-  const inlineMath = detectFeatures(`${atlas(rootNode)}\n  <Overview>符号 <Math>x</Math> 表示变量。</Overview>`);
+  const inlineMath = detectFeatures(
+    `${atlas(rootNode)}\n  <Overview>符号 <Math>x</Math> 表示变量。</Overview>`
+  );
   assert.equal(inlineMath.math, true);
 });
 
 test('detectFeatures ignores samples inside code fences and inline code', () => {
-  const fenced = detectFeatures(`${atlas(rootNode)}\n\n\`\`\`mdx\n<Mermaid chart="flowchart LR; A-->B" />\n<MathBlock formula="E = mc^2" />\n\`\`\``);
+  const fenced = detectFeatures(
+    `${atlas(rootNode)}\n\n\`\`\`mdx\n<Mermaid chart="flowchart LR; A-->B" />\n<MathBlock formula="E = mc^2" />\n\`\`\``
+  );
   assert.deepEqual(fenced, { math: false, mermaid: false });
 
-  const inline = detectFeatures(`${atlas(rootNode)}\n  <Definition>写作 \`<Mermaid>\` 表示图表节点。</Definition>`);
+  const inline = detectFeatures(
+    `${atlas(rootNode)}\n  <Definition>写作 \`<Mermaid>\` 表示图表节点。</Definition>`
+  );
   assert.equal(inline.mermaid, false);
 });
 
 test('extractPageTitle reads the tab title from the carrier shell', () => {
   assert.equal(extractPageTitle(atlas(rootNode)), 'T');
-  assert.equal(extractPageTitle('<ScrollDocument>\n  <ScrollHeader title="用概念模型组织一次技术判断">intro</ScrollHeader>\n</ScrollDocument>'), '用概念模型组织一次技术判断');
+  assert.equal(
+    extractPageTitle(
+      '<ScrollDocument>\n  <ScrollHeader title="用概念模型组织一次技术判断">intro</ScrollHeader>\n</ScrollDocument>'
+    ),
+    '用概念模型组织一次技术判断'
+  );
 
   // Expression titles and missing shells fall back to null so the build keeps
   // the carrier's default <title>.
-  assert.equal(extractPageTitle('<ExplainPage id="p" title={dynamic} summary="S"></ExplainPage>'), null);
-  assert.equal(extractPageTitle('<ScrollDocument>\n  <ScrollProse>没有标题</ScrollProse>\n</ScrollDocument>'), null);
+  assert.equal(
+    extractPageTitle('<ExplainPage id="p" title={dynamic} summary="S"></ExplainPage>'),
+    null
+  );
+  assert.equal(
+    extractPageTitle('<ScrollDocument>\n  <ScrollProse>没有标题</ScrollProse>\n</ScrollDocument>'),
+    null
+  );
 });
 
 test('extractPageTitle decodes JSX entities without double-decoding', () => {
-  assert.equal(extractPageTitle('<ExplainPage id="p" title="A &amp; B" summary="S"></ExplainPage>'), 'A & B');
-  assert.equal(extractPageTitle('<ExplainPage id="p" title="&amp;lt;" summary="S"></ExplainPage>'), '&lt;');
+  assert.equal(
+    extractPageTitle('<ExplainPage id="p" title="A &amp; B" summary="S"></ExplainPage>'),
+    'A & B'
+  );
+  assert.equal(
+    extractPageTitle('<ExplainPage id="p" title="&amp;lt;" summary="S"></ExplainPage>'),
+    '&lt;'
+  );
 });
 
 test('node kind is validated against the registry', () => {
-  const valid = validateMdxSource(atlas(`    <ConceptNode id="root" title="根" level="L0" kind="system" summary="根">
+  const valid = validateMdxSource(
+    atlas(`    <ConceptNode id="root" title="根" level="L0" kind="system" summary="根">
       <Definition>定义。</Definition>
-    </ConceptNode>`));
+    </ConceptNode>`)
+  );
   assert.deepEqual(warningsOf(valid), []);
 
-  const invalid = validateMdxSource(atlas(`    <ConceptNode id="root" title="根" level="L0" kind="bogus" summary="根">
+  const invalid = validateMdxSource(
+    atlas(`    <ConceptNode id="root" title="根" level="L0" kind="bogus" summary="根">
       <Definition>定义。</Definition>
-    </ConceptNode>`));
+    </ConceptNode>`)
+  );
   assert.ok(warningsOf(invalid).includes('UNKNOWN_KIND'));
 });
 
 test('mechanism and failure kinds carry opt-in contracts', () => {
-  const bareMechanism = validateMdxSource(atlas(`    <ConceptNode id="root" title="根" level="L0" kind="mechanism" summary="根">
+  const bareMechanism = validateMdxSource(
+    atlas(`    <ConceptNode id="root" title="根" level="L0" kind="mechanism" summary="根">
       <Mechanism>状态如何变化。</Mechanism>
-    </ConceptNode>`));
+    </ConceptNode>`)
+  );
   assert.ok(warningsOf(bareMechanism).includes('MECHANISM_KIND_UNVERIFIED'));
 
-  const verifiedMechanism = validateMdxSource(atlas(`    <ConceptNode id="root" title="根" level="L0" kind="mechanism" summary="根">
+  const verifiedMechanism = validateMdxSource(
+    atlas(`    <ConceptNode id="root" title="根" level="L0" kind="mechanism" summary="根">
       <Mechanism>状态如何变化。</Mechanism>
       <Invariant>不变量。</Invariant>
-    </ConceptNode>`));
+    </ConceptNode>`)
+  );
   assert.ok(!warningsOf(verifiedMechanism).includes('MECHANISM_KIND_UNVERIFIED'));
 
-  const bareFailure = validateMdxSource(atlas(`    <ConceptNode id="root" title="根" level="L0" kind="failure" summary="根">
+  const bareFailure = validateMdxSource(
+    atlas(`    <ConceptNode id="root" title="根" level="L0" kind="failure" summary="根">
       <Boundary>边界。</Boundary>
-    </ConceptNode>`));
+    </ConceptNode>`)
+  );
   assert.ok(warningsOf(bareFailure).includes('FAILURE_KIND_UNSTRUCTURED'));
 
-  const structuredFailure = validateMdxSource(atlas(`    <ConceptNode id="root" title="根" level="L0" kind="failure" summary="根">
+  const structuredFailure = validateMdxSource(
+    atlas(`    <ConceptNode id="root" title="根" level="L0" kind="failure" summary="根">
       <FailureMode symptom="崩溃" cause="布局不一致" evidence="崩溃栈" remedy="固定布局" />
-    </ConceptNode>`));
+    </ConceptNode>`)
+  );
   assert.ok(!warningsOf(structuredFailure).includes('FAILURE_KIND_UNSTRUCTURED'));
 });
 
@@ -229,7 +287,8 @@ test('an empty self-closing FailureMode is flagged', () => {
 });
 
 test('strict mode promotes kind contracts to errors', () => {
-  const source = atlas(`    <ConceptNode id="root" title="根" level="L0" kind="mechanism" summary="根">
+  const source =
+    atlas(`    <ConceptNode id="root" title="根" level="L0" kind="mechanism" summary="根">
       <Mechanism>状态如何变化。</Mechanism>
     </ConceptNode>`);
   const strict = validateMdxSource(source, { strict: true });
@@ -238,40 +297,79 @@ test('strict mode promotes kind contracts to errors', () => {
 
 test('ScrollToc is registered (it is exported and documented as authorable)', () => {
   assert.ok(KNOWN_COMPONENT_SET.has('ScrollToc'));
-  const result = validateMdxSource(`<ScrollDocument>\n  <ScrollToc />\n  <ScrollHeader title="T">intro</ScrollHeader>\n  <ScrollSection title="A"><ScrollProse>p</ScrollProse></ScrollSection>\n</ScrollDocument>`);
+  const result = validateMdxSource(
+    `<ScrollDocument>\n  <ScrollToc />\n  <ScrollHeader title="T">intro</ScrollHeader>\n  <ScrollSection title="A"><ScrollProse>p</ScrollProse></ScrollSection>\n</ScrollDocument>`
+  );
   assert.ok(!errorsOf(result).includes('UNKNOWN_COMPONENT'));
 });
 
 test('figure ids and FigureRef are cross-checked', () => {
-  const ok = validateMdxSource(atlas(`${rootNode}
+  const ok = validateMdxSource(
+    atlas(`${rootNode}
     <Figure id="arch" src="./assets/sample-diagram.svg" caption="c" />
-    见 <FigureRef id="arch" />`));
-  assert.deepEqual(warningsOf(ok).filter(code => code.startsWith('FIGURE')), []);
+    见 <FigureRef id="arch" />`)
+  );
+  assert.deepEqual(
+    warningsOf(ok).filter(code => code.startsWith('FIGURE')),
+    []
+  );
 
-  assert.ok(warningsOf(validateMdxSource(atlas(`${rootNode}\n    <FigureRef id="ghost" />`))).includes('FIGURE_REF_UNRESOLVED'));
-  assert.ok(warningsOf(validateMdxSource(atlas(`${rootNode}\n    <FigureRef />`))).includes('FIGURE_REF_MISSING_ID'));
-  assert.ok(warningsOf(validateMdxSource(atlas(`${rootNode}\n    <Figure id="arch" src="./a.png" />\n    <Figure id="arch" src="./b.png" />`))).includes('FIGURE_DUPLICATE_ID'));
+  assert.ok(
+    warningsOf(validateMdxSource(atlas(`${rootNode}\n    <FigureRef id="ghost" />`))).includes(
+      'FIGURE_REF_UNRESOLVED'
+    )
+  );
+  assert.ok(
+    warningsOf(validateMdxSource(atlas(`${rootNode}\n    <FigureRef />`))).includes(
+      'FIGURE_REF_MISSING_ID'
+    )
+  );
+  assert.ok(
+    warningsOf(
+      validateMdxSource(
+        atlas(
+          `${rootNode}\n    <Figure id="arch" src="./a.png" />\n    <Figure id="arch" src="./b.png" />`
+        )
+      )
+    ).includes('FIGURE_DUPLICATE_ID')
+  );
 });
 
 test('remote images warn that they need the network', () => {
-  const result = validateMdxSource(atlas(`${rootNode}\n    <Figure src="https://example.com/a.png" />`));
+  const result = validateMdxSource(
+    atlas(`${rootNode}\n    <Figure src="https://example.com/a.png" />`)
+  );
   assert.ok(warningsOf(result).includes('ASSET_REMOTE'));
 });
 
 test('a large inlined asset warns, a small one does not', () => {
   const source = atlas(`${rootNode}\n    <Figure src="./assets/big.png" />`);
   const base = { filePath: 'x.mdx', inlineAssets: true, assetExists: () => true };
-  assert.ok(warningsOf(validateMdxSource(source, { ...base, assetSize: () => 2 * 1024 * 1024 })).includes('ASSET_LARGE'));
-  assert.ok(!warningsOf(validateMdxSource(source, { ...base, assetSize: () => 1024 })).includes('ASSET_LARGE'));
+  assert.ok(
+    warningsOf(validateMdxSource(source, { ...base, assetSize: () => 2 * 1024 * 1024 })).includes(
+      'ASSET_LARGE'
+    )
+  );
+  assert.ok(
+    !warningsOf(validateMdxSource(source, { ...base, assetSize: () => 1024 })).includes(
+      'ASSET_LARGE'
+    )
+  );
 });
 
 test('RelationMap item types are checked against the relation whitelist', () => {
-  const bad = validateMdxSource(atlas(`${rootNode}\n    <RelationMap items={[{from:'A',type:'supports',to:'B'}]} />`));
+  const bad = validateMdxSource(
+    atlas(`${rootNode}\n    <RelationMap items={[{from:'A',type:'supports',to:'B'}]} />`)
+  );
   assert.ok(warningsOf(bad).includes('UNKNOWN_RELATION_TYPE'));
 
-  const good = validateMdxSource(atlas(`${rootNode}\n    <RelationMap items={[{from:'A',type:'implements',to:'B'}]} />`));
+  const good = validateMdxSource(
+    atlas(`${rootNode}\n    <RelationMap items={[{from:'A',type:'implements',to:'B'}]} />`)
+  );
   assert.ok(!warningsOf(good).includes('UNKNOWN_RELATION_TYPE'));
 
-  const viaRelation = validateMdxSource(atlas(`${rootNode}\n    <Relation from="root" to="root" type="supports" label="x" />`));
+  const viaRelation = validateMdxSource(
+    atlas(`${rootNode}\n    <Relation from="root" to="root" type="supports" label="x" />`)
+  );
   assert.ok(warningsOf(viaRelation).includes('UNKNOWN_RELATION_TYPE'));
 });

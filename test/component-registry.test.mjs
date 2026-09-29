@@ -18,18 +18,20 @@ test('the component barrel and KNOWN_COMPONENTS stay in sync', async () => {
   const Components = await import('../src/components/index.js');
   const { KNOWN_COMPONENT_SET } = await import('../src/model/validate-content.js');
 
-  const exported = Object.keys(Components).filter(name => name !== 'default').sort();
+  const exported = Object.keys(Components)
+    .filter(name => name !== 'default')
+    .sort();
   const missingFromRegistry = exported.filter(name => !KNOWN_COMPONENT_SET.has(name));
   const notExported = [...KNOWN_COMPONENT_SET].filter(name => !exported.includes(name)).sort();
 
   assert.deepEqual(
     missingFromRegistry,
     [],
-    `exported but missing from KNOWN_COMPONENTS: ${missingFromRegistry.join(', ')}`,
+    `exported but missing from KNOWN_COMPONENTS: ${missingFromRegistry.join(', ')}`
   );
   assert.deepEqual(
     notExported,
     [],
-    `in KNOWN_COMPONENTS but not exported by the barrel: ${notExported.join(', ')}`,
+    `in KNOWN_COMPONENTS but not exported by the barrel: ${notExported.join(', ')}`
   );
 });

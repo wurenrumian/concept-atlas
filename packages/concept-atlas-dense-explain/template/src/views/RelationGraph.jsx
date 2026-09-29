@@ -10,18 +10,13 @@ import {
   forceCenter,
   forceCollide,
   hierarchy,
-  tree as treeLayout,
+  tree as treeLayout
 } from 'd3';
 import { Search, ArrowRight, Eye } from 'lucide-react';
 import { RELATION_TYPES, LEVEL_DEFS } from '../model/relation-types.js';
 import { NODE_KINDS, NODE_KIND_NAMES } from '../model/node-kinds.js';
 
-export function RelationGraph({
-  graph,
-  currentNodeId,
-  onSelectNode,
-  onSwitchView,
-}) {
+export function RelationGraph({ graph, currentNodeId, onSelectNode, onSwitchView }) {
   const { nodes, relations } = graph;
   const svgRef = useRef(null);
   const containerRef = useRef(null);
@@ -49,7 +44,7 @@ export function RelationGraph({
   // Kinds actually present in this document, for the filter and the legend.
   const presentKinds = useMemo(
     () => NODE_KIND_NAMES.filter(kind => allNodes.some(node => node.kind === kind)),
-    [allNodes],
+    [allNodes]
   );
 
   // Active focused node details
@@ -71,17 +66,19 @@ export function RelationGraph({
     }
 
     if (filterKind !== 'ALL') {
-      filteredNodes = filterKind === 'NONE'
-        ? filteredNodes.filter(n => !n.kind)
-        : filteredNodes.filter(n => n.kind === filterKind);
+      filteredNodes =
+        filterKind === 'NONE'
+          ? filteredNodes.filter(n => !n.kind)
+          : filteredNodes.filter(n => n.kind === filterKind);
     }
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      filteredNodes = filteredNodes.filter(n =>
-        n.title.toLowerCase().includes(q) ||
-        n.id.toLowerCase().includes(q) ||
-        (n.summary && n.summary.toLowerCase().includes(q))
+      filteredNodes = filteredNodes.filter(
+        n =>
+          n.title.toLowerCase().includes(q) ||
+          n.id.toLowerCase().includes(q) ||
+          (n.summary && n.summary.toLowerCase().includes(q))
       );
     }
 
@@ -182,7 +179,8 @@ export function RelationGraph({
     const defs = svg.append('defs');
     Object.keys(RELATION_TYPES).forEach(typeKey => {
       const typeDef = RELATION_TYPES[typeKey];
-      defs.append('marker')
+      defs
+        .append('marker')
         .attr('id', `arrow-${typeKey}`)
         .attr('viewBox', '0 -5 10 10')
         .attr('refX', 24)
@@ -200,12 +198,12 @@ export function RelationGraph({
 
     const zoomBehavior = zoom()
       .scaleExtent([0.2, 3])
-      .filter((event) => event.type !== 'wheel' || event.ctrlKey || event.metaKey)
-      .wheelDelta((event) => {
+      .filter(event => event.type !== 'wheel' || event.ctrlKey || event.metaKey)
+      .wheelDelta(event => {
         const delta = event.deltaMode === 1 ? event.deltaY * 16 : event.deltaY;
         return -delta * 0.003;
       })
-      .on('zoom', (event) => {
+      .on('zoom', event => {
         g.attr('transform', event.transform);
       });
 
@@ -213,7 +211,7 @@ export function RelationGraph({
     zoomBehaviorRef.current = zoomBehavior;
 
     // Plain wheel scrolls the canvas vertically; Ctrl/Cmd + wheel zooms.
-    const handleWheelPan = (event) => {
+    const handleWheelPan = event => {
       if (event.ctrlKey || event.metaKey) return;
       event.preventDefault();
       const current = zoomTransform(svgRef.current);
@@ -236,62 +234,76 @@ export function RelationGraph({
       ? graphNodes.map((node, index) => ({
           ...node,
           x: width / 2 + ((index % 4) - 1.5) * 80,
-          y: height / 2 + (Math.floor(index / 4) - 1) * 80,
+          y: height / 2 + (Math.floor(index / 4) - 1) * 80
         }))
       : layoutTree(graphNodes, width, height);
     const nodeById = new Map(positionedNodes.map(node => [node.id, node]));
     positionedNodesRef.current = positionedNodes;
-    const positionedLinks = decorateParallelLinks(visibleGraphLinks
-      .map(link => ({
-        ...link,
-        source: nodeById.get(typeof link.source === 'object' ? link.source.id : link.source),
-        target: nodeById.get(typeof link.target === 'object' ? link.target.id : link.target),
-      }))
-      .filter(link => link.source && link.target));
+    const positionedLinks = decorateParallelLinks(
+      visibleGraphLinks
+        .map(link => ({
+          ...link,
+          source: nodeById.get(typeof link.source === 'object' ? link.source.id : link.source),
+          target: nodeById.get(typeof link.target === 'object' ? link.target.id : link.target)
+        }))
+        .filter(link => link.source && link.target)
+    );
 
     const simulation = isConceptMode
       ? forceSimulation(positionedNodes)
-          .force('link', forceLink(positionedLinks).id(d => d.id).distance(185).strength(0.9))
+          .force(
+            'link',
+            forceLink(positionedLinks)
+              .id(d => d.id)
+              .distance(185)
+              .strength(0.9)
+          )
           // Keep semantic neighbours legible: connected pairs get a stronger
           // local push, while unrelated nodes only receive a gentle baseline
           // separation so the whole map does not balloon.
-          .force('adaptive-repel', createAdaptiveRepulsion(positionedLinks, {
-            connectedStrength: -560,
-            disconnectedStrength: -120,
-            distanceMax: 360,
-            distanceMin: 28,
-          }))
+          .force(
+            'adaptive-repel',
+            createAdaptiveRepulsion(positionedLinks, {
+              connectedStrength: -560,
+              disconnectedStrength: -120,
+              distanceMax: 360,
+              distanceMin: 28
+            })
+          )
           .force('center', forceCenter(width / 2, height / 2))
           .force('collision', forceCollide().radius(34).strength(0.35))
       : null;
 
     // Resolve the shared label stack once; SVG presentation attributes cannot
     // read CSS custom properties, so the graph mirrors the document font here.
-    const labelFont = getComputedStyle(document.documentElement).getPropertyValue('--font-sans').trim()
-      || "'Plus Jakarta Sans', -apple-system, sans-serif";
+    const labelFont =
+      getComputedStyle(document.documentElement).getPropertyValue('--font-sans').trim() ||
+      "'Plus Jakarta Sans', -apple-system, sans-serif";
 
     // Links group
     const linkGroup = g.append('g').attr('class', 'links');
-    const links = linkGroup.selectAll('g.link-item')
+    const links = linkGroup
+      .selectAll('g.link-item')
       .data(positionedLinks)
       .enter()
       .append('g')
       .attr('class', 'link-item');
 
-    const linkPaths = links.append('path')
+    const linkPaths = links
+      .append('path')
       .attr('class', 'graph-edge')
       .style('stroke', d => d.typeInfo?.color || 'var(--rel-default)')
-      .attr('stroke-width', d => d.type === 'parent-child' ? 2 : 1.5)
+      .attr('stroke-width', d => (d.type === 'parent-child' ? 2 : 1.5))
       .attr('stroke-dasharray', d => d.typeInfo?.strokeDasharray || 'none')
-      .attr('marker-end', d => d.typeInfo?.hasArrow ? `url(#arrow-${d.type})` : null)
-      .attr('opacity', d => d.type === 'parent-child' ? 0.9 : 0.48);
+      .attr('marker-end', d => (d.typeInfo?.hasArrow ? `url(#arrow-${d.type})` : null))
+      .attr('opacity', d => (d.type === 'parent-child' ? 0.9 : 0.48));
 
     // Keep the canvas uncluttered. Relation details remain available in the
     // inspector; a native SVG tooltip provides quick context on hover.
-    links.append('title')
-      .text(d => `${d.label}${d.description ? `：${d.description}` : ''}`);
+    links.append('title').text(d => `${d.label}${d.description ? `：${d.description}` : ''}`);
 
-    const linkLabels = links.append('text')
+    const linkLabels = links
+      .append('text')
       .attr('class', 'graph-edge-label')
       .style('fill', d => d.typeInfo?.color || 'var(--rel-default)')
       .attr('font-size', '10px')
@@ -299,11 +311,12 @@ export function RelationGraph({
       .attr('dy', -5)
       // Parent-child is visually self-explanatory and its repeated label
       // only creates collisions with actual semantic relation labels.
-      .text(d => d.type === 'parent-child' ? '' : d.label);
+      .text(d => (d.type === 'parent-child' ? '' : d.label));
 
     // Nodes group
     const nodeGroup = g.append('g').attr('class', 'nodes');
-    const nodesSelection = nodeGroup.selectAll('g.node-item')
+    const nodesSelection = nodeGroup
+      .selectAll('g.node-item')
       .data(positionedNodes)
       .enter()
       .append('g')
@@ -316,59 +329,65 @@ export function RelationGraph({
     nodesSelectionRef.current = nodesSelection;
 
     // Native SVG tooltip: level is always shown; kind is appended when set.
-    nodesSelection.append('title')
-      .text(d => {
-        const kind = d.kind && NODE_KINDS[d.kind] ? ` · ${NODE_KINDS[d.kind].label}` : '';
-        return `${d.title} · ${d.level}${kind}`;
-      });
+    nodesSelection.append('title').text(d => {
+      const kind = d.kind && NODE_KINDS[d.kind] ? ` · ${NODE_KINDS[d.kind].label}` : '';
+      return `${d.title} · ${d.level}${kind}`;
+    });
 
     if (isConceptMode) {
-      nodesSelection.call(drag()
-        .on('start', (event, d) => {
-          if (!event.active) simulation.alphaTarget(0.3).restart();
-          d.fx = d.x;
-          d.fy = d.y;
-        })
-        .on('drag', (event, d) => {
-          d.fx = event.x;
-          d.fy = event.y;
-        })
-        .on('end', (event, d) => {
-          if (!event.active) simulation.alphaTarget(0);
-          d.fx = null;
-          d.fy = null;
-        })
+      nodesSelection.call(
+        drag()
+          .on('start', (event, d) => {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+          })
+          .on('drag', (event, d) => {
+            d.fx = event.x;
+            d.fy = event.y;
+          })
+          .on('end', (event, d) => {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+          })
       );
     }
 
     // Outer glow for selected or level. When a knowledge kind is declared its
     // tone recolours the ring, so level (fill) and kind (ring) read together.
-    nodeHaloRef.current = nodesSelection.append('circle')
+    nodeHaloRef.current = nodesSelection
+      .append('circle')
       .attr('r', d => (d.level === 'L0' ? 24 : d.level === 'L1' ? 20 : 16))
       .style('fill', d => LEVEL_DEFS[d.level]?.color || 'var(--level-l0)')
       .attr('fill-opacity', 0.2)
-      .style('stroke', d => (d.kind && NODE_KINDS[d.kind]
-        ? NODE_KINDS[d.kind].tone
-        : (LEVEL_DEFS[d.level]?.color || 'var(--level-l0)')))
-      .attr('stroke-width', d => d.id === selectedNodeIdRef.current ? 3 : 1.5);
+      .style('stroke', d =>
+        d.kind && NODE_KINDS[d.kind]
+          ? NODE_KINDS[d.kind].tone
+          : LEVEL_DEFS[d.level]?.color || 'var(--level-l0)'
+      )
+      .attr('stroke-width', d => (d.id === selectedNodeIdRef.current ? 3 : 1.5));
 
     // Inner center dot
-    nodesSelection.append('circle')
+    nodesSelection
+      .append('circle')
       .attr('r', d => (d.level === 'L0' ? 10 : d.level === 'L1' ? 7 : 5))
       .style('fill', d => LEVEL_DEFS[d.level]?.color || 'var(--level-l0)');
 
     // Node Title Label
-    nodeLabelRef.current = nodesSelection.append('text')
+    nodeLabelRef.current = nodesSelection
+      .append('text')
       .attr('dy', d => (d.level === 'L0' ? 38 : 30))
       .attr('text-anchor', 'middle')
       .style('fill', 'var(--text-primary)')
       .attr('font-size', '12px')
       .attr('font-family', labelFont)
-      .attr('font-weight', d => d.id === selectedNodeIdRef.current ? '700' : '500')
+      .attr('font-weight', d => (d.id === selectedNodeIdRef.current ? '700' : '500'))
       .text(d => d.title);
 
     // Node Level Pill
-    nodesSelection.append('text')
+    nodesSelection
+      .append('text')
       .attr('dy', -22)
       .attr('text-anchor', 'middle')
       .style('fill', d => LEVEL_DEFS[d.level]?.color || 'var(--rel-default)')
@@ -381,7 +400,7 @@ export function RelationGraph({
       linkLabels
         .attr('x', d => d.labelX ?? linkMidpoint(d).x)
         .attr('y', d => d.labelY ?? linkMidpoint(d).y)
-        .attr('display', d => d.labelVisible ? null : 'none');
+        .attr('display', d => (d.labelVisible ? null : 'none'));
       nodesSelection.attr('transform', d => `translate(${d.x},${d.y})`);
     };
 
@@ -409,7 +428,14 @@ export function RelationGraph({
     nodeHaloRef.current?.attr('stroke-width', d => (d.id === selectedNodeId ? 3 : 1.5));
     nodeLabelRef.current?.attr('font-weight', d => (d.id === selectedNodeId ? '700' : '500'));
 
-    if (graphMode === 'concept' || !selectedNodeId || !svgRef.current || !containerRef.current || !zoomBehaviorRef.current) return;
+    if (
+      graphMode === 'concept' ||
+      !selectedNodeId ||
+      !svgRef.current ||
+      !containerRef.current ||
+      !zoomBehaviorRef.current
+    )
+      return;
     const targetNode = positionedNodesRef.current.find(node => node.id === selectedNodeId);
     if (!targetNode) return;
     const width = containerRef.current.clientWidth || 900;
@@ -417,7 +443,10 @@ export function RelationGraph({
     const transform = zoomIdentity
       .translate(width / 2 - targetNode.x, height / 2 - targetNode.y)
       .scale(1.1);
-    select(svgRef.current).transition().duration(500).call(zoomBehaviorRef.current.transform, transform);
+    select(svgRef.current)
+      .transition()
+      .duration(500)
+      .call(zoomBehaviorRef.current.transform, transform);
   }, [selectedNodeId, graphNodes, graphMode]);
 
   return (
@@ -459,7 +488,9 @@ export function RelationGraph({
             <select value={filterLevel} onChange={e => setFilterLevel(e.target.value)}>
               <option value="ALL">全部层级 (L0-L4)</option>
               {Object.keys(LEVEL_DEFS).map(lvl => (
-                <option key={lvl} value={lvl}>{lvl} · {LEVEL_DEFS[lvl].name}</option>
+                <option key={lvl} value={lvl}>
+                  {lvl} · {LEVEL_DEFS[lvl].name}
+                </option>
               ))}
             </select>
           </div>
@@ -470,7 +501,9 @@ export function RelationGraph({
               <select value={filterKind} onChange={e => setFilterKind(e.target.value)}>
                 <option value="ALL">全部类型</option>
                 {presentKinds.map(kindId => (
-                  <option key={kindId} value={kindId}>{NODE_KINDS[kindId].label} ({kindId})</option>
+                  <option key={kindId} value={kindId}>
+                    {NODE_KINDS[kindId].label} ({kindId})
+                  </option>
                 ))}
                 {allNodes.some(node => !node.kind) && <option value="NONE">未分类</option>}
               </select>
@@ -479,10 +512,15 @@ export function RelationGraph({
 
           <div className="filter-group">
             <span className="filter-label">关系类型:</span>
-            <select value={filterRelationType} onChange={e => setFilterRelationType(e.target.value)}>
+            <select
+              value={filterRelationType}
+              onChange={e => setFilterRelationType(e.target.value)}
+            >
               <option value="ALL">全部关系类型</option>
               {Object.keys(RELATION_TYPES).map(typeKey => (
-                <option key={typeKey} value={typeKey}>{RELATION_TYPES[typeKey].label} ({typeKey})</option>
+                <option key={typeKey} value={typeKey}>
+                  {RELATION_TYPES[typeKey].label} ({typeKey})
+                </option>
               ))}
             </select>
           </div>
@@ -492,19 +530,28 @@ export function RelationGraph({
         <div className="graph-legend-ribbon">
           <div className="legend-title">图例说明:</div>
           <div className="legend-items">
-            {Object.keys(RELATION_TYPES).filter(typeKey => graphMode !== 'concept' || typeKey !== 'parent-child').slice(0, 7).map(typeKey => (
-              <div key={typeKey} className="legend-item">
-                <span className="legend-dot" style={{ backgroundColor: RELATION_TYPES[typeKey].color }} />
-                <span>{RELATION_TYPES[typeKey].label}</span>
-              </div>
-            ))}
+            {Object.keys(RELATION_TYPES)
+              .filter(typeKey => graphMode !== 'concept' || typeKey !== 'parent-child')
+              .slice(0, 7)
+              .map(typeKey => (
+                <div key={typeKey} className="legend-item">
+                  <span
+                    className="legend-dot"
+                    style={{ backgroundColor: RELATION_TYPES[typeKey].color }}
+                  />
+                  <span>{RELATION_TYPES[typeKey].label}</span>
+                </div>
+              ))}
           </div>
           {presentKinds.length > 0 && (
             <div className="legend-items legend-kinds">
               <div className="legend-title">知识类型:</div>
               {presentKinds.map(kindId => (
                 <div key={kindId} className="legend-item">
-                  <span className="legend-dot legend-ring" style={{ borderColor: NODE_KINDS[kindId].tone }} />
+                  <span
+                    className="legend-dot legend-ring"
+                    style={{ borderColor: NODE_KINDS[kindId].tone }}
+                  />
                   <span>{NODE_KINDS[kindId].label}</span>
                 </div>
               ))}
@@ -537,11 +584,17 @@ export function RelationGraph({
             <h2 className="panel-node-title">{focusedNode.title}</h2>
             <p className="panel-summary">{focusedNode.summary || '暂无一句话概览'}</p>
 
-            {(focusedNode.invariants.length > 0 || focusedNode.failureModes.length > 0 || focusedNode.evidence.length > 0) && (
+            {(focusedNode.invariants.length > 0 ||
+              focusedNode.failureModes.length > 0 ||
+              focusedNode.evidence.length > 0) && (
               <div className="panel-verified">
-                {focusedNode.invariants.length > 0 && <span>不变量 {focusedNode.invariants.length}</span>}
+                {focusedNode.invariants.length > 0 && (
+                  <span>不变量 {focusedNode.invariants.length}</span>
+                )}
                 {focusedNode.evidence.length > 0 && <span>证据 {focusedNode.evidence.length}</span>}
-                {focusedNode.failureModes.length > 0 && <span>故障模式 {focusedNode.failureModes.length}</span>}
+                {focusedNode.failureModes.length > 0 && (
+                  <span>故障模式 {focusedNode.failureModes.length}</span>
+                )}
               </div>
             )}
 
@@ -599,8 +652,18 @@ export function RelationGraph({
               <div className="panel-section">
                 <div className="section-title">数据流转 (I/O)</div>
                 <div className="io-capsule">
-                  {focusedNode.input && <div><b>输入：</b>{focusedNode.input}</div>}
-                  {focusedNode.output && <div><b>输出：</b>{focusedNode.output}</div>}
+                  {focusedNode.input && (
+                    <div>
+                      <b>输入：</b>
+                      {focusedNode.input}
+                    </div>
+                  )}
+                  {focusedNode.output && (
+                    <div>
+                      <b>输出：</b>
+                      {focusedNode.output}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -626,7 +689,9 @@ function layoutTree(nodes, width, height) {
     }
   });
 
-  const roots = Array.from(nodeMap.values()).filter(node => !node.parent || !nodeMap.has(node.parent));
+  const roots = Array.from(nodeMap.values()).filter(
+    node => !node.parent || !nodeMap.has(node.parent)
+  );
   const treeData = { id: '__atlas-root__', children: roots };
   const root = hierarchy(treeData);
   const tree = treeLayout().nodeSize([110, 155]);
@@ -642,7 +707,7 @@ function layoutTree(nodes, width, height) {
   return visible.map(node => ({
     ...node.data,
     x: node.x + offsetX,
-    y: node.depth * 155 + offsetY,
+    y: node.depth * 155 + offsetY
   }));
 }
 
@@ -673,12 +738,10 @@ function decorateParallelLinks(links) {
  * need a little more nuance: nodes that are explicitly related should have
  * room for their edge and label, while unrelated nodes should stay compact.
  */
-function createAdaptiveRepulsion(links, {
-  connectedStrength = -420,
-  disconnectedStrength = -48,
-  distanceMin = 28,
-  distanceMax = 360,
-} = {}) {
+function createAdaptiveRepulsion(
+  links,
+  { connectedStrength = -420, disconnectedStrength = -48, distanceMin = 28, distanceMax = 360 } = {}
+) {
   let nodes = [];
   let relatedPairs = new Set();
 
@@ -723,7 +786,7 @@ function createAdaptiveRepulsion(links, {
     }
   }
 
-  force.initialize = (initializedNodes) => {
+  force.initialize = initializedNodes => {
     nodes = initializedNodes;
     relatedPairs = new Set(links.map(link => pairKey(link.source, link.target)));
   };
@@ -755,7 +818,7 @@ function positionEdgeLabels(links, nodes, width, height) {
     left: node.x - 28,
     right: node.x + 28,
     top: node.y - 28,
-    bottom: node.y + 28,
+    bottom: node.y + 28
   }));
 
   links.forEach(link => {
@@ -779,12 +842,13 @@ function positionEdgeLabels(links, nodes, width, height) {
       [midpoint.x - 28, midpoint.y],
       [midpoint.x + 28, midpoint.y],
       [midpoint.x, midpoint.y - 38],
-      [midpoint.x, midpoint.y + 38],
+      [midpoint.x, midpoint.y + 38]
     ];
 
     const position = positions.find(([x, y]) => {
       const box = { left: x - halfWidth, right: x + halfWidth, top: y - 8, bottom: y + 8 };
-      if (box.left < 8 || box.right > width - 8 || box.top < 70 || box.bottom > height - 8) return false;
+      if (box.left < 8 || box.right > width - 8 || box.top < 70 || box.bottom > height - 8)
+        return false;
       if (occupied.some(other => boxesOverlap(box, other, 6))) return false;
       if (nodeBoxes.some(node => boxesOverlap(box, node, 4))) return false;
       return true;
@@ -818,7 +882,7 @@ function linkMidpoint(link) {
   if (link.type === 'parent-child') {
     return {
       x: (link.source.x + link.target.x) / 2,
-      y: (link.source.y + link.target.y) / 2,
+      y: (link.source.y + link.target.y) / 2
     };
   }
 
@@ -828,6 +892,6 @@ function linkMidpoint(link) {
   const offset = ((link.parallelIndex ?? 0) - ((link.parallelCount ?? 1) - 1) / 2) * 26;
   return {
     x: (link.source.x + link.target.x) / 2 - (dy / length) * offset,
-    y: (link.source.y + link.target.y) / 2 + (dx / length) * offset,
+    y: (link.source.y + link.target.y) / 2 + (dx / length) * offset
   };
 }

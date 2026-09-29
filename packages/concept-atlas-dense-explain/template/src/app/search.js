@@ -10,7 +10,8 @@ const MAX_LENGTH = 4000;
  * a pathological tree cannot stall the search box.
  */
 export function collectText(value, depth = 0) {
-  if (depth > MAX_DEPTH || value === null || value === undefined || typeof value === 'boolean') return '';
+  if (depth > MAX_DEPTH || value === null || value === undefined || typeof value === 'boolean')
+    return '';
   if (typeof value === 'string' || typeof value === 'number') return String(value);
   if (Array.isArray(value)) {
     return value.map(item => collectText(item, depth + 1)).join(' ');
@@ -28,7 +29,9 @@ export function collectText(value, depth = 0) {
     return parts.join(' ');
   }
   if (typeof value === 'object') {
-    return Object.values(value).map(item => collectText(item, depth + 1)).join(' ');
+    return Object.values(value)
+      .map(item => collectText(item, depth + 1))
+      .join(' ');
   }
   return '';
 }
@@ -66,14 +69,20 @@ export function nodeSearchText(node) {
     node.invariants,
     node.failureModes,
     node.tradeoffs,
-    node.customSections,
+    node.customSections
   ];
-  return parts.map(part => collectText(part)).join(' ').slice(0, MAX_LENGTH).toLowerCase();
+  return parts
+    .map(part => collectText(part))
+    .join(' ')
+    .slice(0, MAX_LENGTH)
+    .toLowerCase();
 }
 
 /** Rank-free substring search returning at most `limit` nodes. */
 export function searchNodes(nodes, query, limit = 8) {
-  const needle = String(query || '').trim().toLowerCase();
+  const needle = String(query || '')
+    .trim()
+    .toLowerCase();
   if (!needle) return [];
   const results = [];
   for (const node of nodes) {

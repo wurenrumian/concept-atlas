@@ -16,14 +16,20 @@ function loadModule(defines, source) {
 }
 
 test('missing <Mermaid> resolves to the throwing stub', () => {
-  const code = loadModule({ __ATLAS_FEATURES__: JSON.stringify({ math: true, mermaid: false }) }, 'mermaid');
+  const code = loadModule(
+    { __ATLAS_FEATURES__: JSON.stringify({ math: true, mermaid: false }) },
+    'mermaid'
+  );
   assert.match(code, /is not bundled in this build/);
 });
 
 test('cdn mode resolves mermaid to the runtime CDN loader', () => {
   const code = loadModule(
-    { __ATLAS_FEATURES__: JSON.stringify({ math: true, mermaid: true }), __ATLAS_MERMAID_MODE__: '"cdn"' },
-    'mermaid',
+    {
+      __ATLAS_FEATURES__: JSON.stringify({ math: true, mermaid: true }),
+      __ATLAS_MERMAID_MODE__: '"cdn"'
+    },
+    'mermaid'
   );
   assert.match(code, /cdn\.jsdelivr\.net\/npm\/mermaid@11\/dist\/mermaid\.min\.js/);
   assert.match(code, /document\.createElement\('script'\)/);
@@ -32,7 +38,12 @@ test('cdn mode resolves mermaid to the runtime CDN loader', () => {
 
 test('inline mode keeps the real mermaid import (bundled)', () => {
   const id = (() => {
-    plugin.configResolved({ define: { __ATLAS_FEATURES__: JSON.stringify({ math: true, mermaid: true }), __ATLAS_MERMAID_MODE__: '"inline"' } });
+    plugin.configResolved({
+      define: {
+        __ATLAS_FEATURES__: JSON.stringify({ math: true, mermaid: true }),
+        __ATLAS_MERMAID_MODE__: '"inline"'
+      }
+    });
     return plugin.resolveId('mermaid');
   })();
   assert.equal(id, null);
@@ -43,14 +54,17 @@ test('--mermaid-cdn overrides the loader URL', () => {
     {
       __ATLAS_FEATURES__: JSON.stringify({ math: true, mermaid: true }),
       __ATLAS_MERMAID_MODE__: '"cdn"',
-      __ATLAS_MERMAID_CDN_URL__: '"https://cdn.example.com/mmd.min.js"',
+      __ATLAS_MERMAID_CDN_URL__: '"https://cdn.example.com/mmd.min.js"'
     },
-    'mermaid',
+    'mermaid'
   );
   assert.match(code, /https:\/\/cdn\.example\.com\/mmd\.min\.js/);
 });
 
 test('unused KaTeX still resolves to an empty stylesheet stub', () => {
-  const code = loadModule({ __ATLAS_FEATURES__: JSON.stringify({ math: false, mermaid: true }) }, 'katex/dist/katex.min.css');
+  const code = loadModule(
+    { __ATLAS_FEATURES__: JSON.stringify({ math: false, mermaid: true }) },
+    'katex/dist/katex.min.css'
+  );
   assert.equal(code, '');
 });

@@ -13,15 +13,19 @@ function normalizeMode(value, fallback = 'dark') {
  * Compile-time defaults injected via Vite `define` (CLI --skin/--default-mode
  * or CONCEPT_ATLAS_* env vars). Absent defines resolve to the carrier fallbacks.
  */
-const BUILD_DEFAULT_SKIN = typeof __ATLAS_DEFAULT_SKIN__ === 'string'
-  ? (normalizeSkin(__ATLAS_DEFAULT_SKIN__) || DEFAULT_SKIN)
-  : DEFAULT_SKIN;
-const BUILD_DEFAULT_MODE = typeof __ATLAS_DEFAULT_MODE__ === 'string' && (__ATLAS_DEFAULT_MODE__ === 'dark' || __ATLAS_DEFAULT_MODE__ === 'light')
-  ? __ATLAS_DEFAULT_MODE__
-  : null;
-const BUILD_DEFAULT_STYLE = typeof __ATLAS_DEFAULT_STYLE__ === 'string'
-  ? (normalizeStyle(__ATLAS_DEFAULT_STYLE__) || DEFAULT_STYLE)
-  : DEFAULT_STYLE;
+const BUILD_DEFAULT_SKIN =
+  typeof __ATLAS_DEFAULT_SKIN__ === 'string'
+    ? normalizeSkin(__ATLAS_DEFAULT_SKIN__) || DEFAULT_SKIN
+    : DEFAULT_SKIN;
+const BUILD_DEFAULT_MODE =
+  typeof __ATLAS_DEFAULT_MODE__ === 'string' &&
+  (__ATLAS_DEFAULT_MODE__ === 'dark' || __ATLAS_DEFAULT_MODE__ === 'light')
+    ? __ATLAS_DEFAULT_MODE__
+    : null;
+const BUILD_DEFAULT_STYLE =
+  typeof __ATLAS_DEFAULT_STYLE__ === 'string'
+    ? normalizeStyle(__ATLAS_DEFAULT_STYLE__) || DEFAULT_STYLE
+    : DEFAULT_STYLE;
 
 function readStoredAppearance(fallbackMode) {
   const fallback = normalizeMode(fallbackMode, 'dark');
@@ -34,7 +38,7 @@ function readStoredAppearance(fallbackMode) {
         // Corrupt/missing mode falls back to the carrier default instead of
         // silently coercing to dark.
         mode: normalizeMode(parsed?.mode, fallback),
-        style: normalizeStyle(parsed?.style) || BUILD_DEFAULT_STYLE,
+        style: normalizeStyle(parsed?.style) || BUILD_DEFAULT_STYLE
       };
     }
   } catch {
@@ -67,7 +71,9 @@ export { readStoredAppearance, normalizeMode };
  * localStorage key so both pages stay in sync.
  */
 export function useAppearance({ defaultMode = 'dark' } = {}) {
-  const [appearance, setAppearance] = useState(() => readStoredAppearance(BUILD_DEFAULT_MODE || defaultMode));
+  const [appearance, setAppearance] = useState(() =>
+    readStoredAppearance(BUILD_DEFAULT_MODE || defaultMode)
+  );
 
   useEffect(() => {
     document.documentElement.setAttribute('data-skin', appearance.skin);
@@ -80,18 +86,26 @@ export function useAppearance({ defaultMode = 'dark' } = {}) {
     }
   }, [appearance]);
 
-  const setSkin = useCallback((skin) => {
+  const setSkin = useCallback(skin => {
     setAppearance(prev => ({ ...prev, skin: normalizeSkin(skin) || prev.skin }));
   }, []);
-  const setMode = useCallback((mode) => {
+  const setMode = useCallback(mode => {
     setAppearance(prev => ({ ...prev, mode: normalizeMode(mode, prev.mode) }));
   }, []);
   const toggleMode = useCallback(() => {
     setAppearance(prev => ({ ...prev, mode: prev.mode === 'dark' ? 'light' : 'dark' }));
   }, []);
-  const setStyle = useCallback((style) => {
+  const setStyle = useCallback(style => {
     setAppearance(prev => ({ ...prev, style: normalizeStyle(style) || prev.style }));
   }, []);
 
-  return { skin: appearance.skin, mode: appearance.mode, style: appearance.style, setSkin, setMode, toggleMode, setStyle };
+  return {
+    skin: appearance.skin,
+    mode: appearance.mode,
+    style: appearance.style,
+    setSkin,
+    setMode,
+    toggleMode,
+    setStyle
+  };
 }

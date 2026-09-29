@@ -51,7 +51,8 @@ export function auditCss({ root = process.cwd() } = {}) {
     const rootNode = postcss.parse(fs.readFileSync(file, 'utf8'), { from: file });
     rootNode.walkRules(rule => {
       // Keyframe steps (`from`, `0%`) are not class selectors.
-      if (rule.parent && rule.parent.type === 'atrule' && /keyframes$/i.test(rule.parent.name)) return;
+      if (rule.parent && rule.parent.type === 'atrule' && /keyframes$/i.test(rule.parent.name))
+        return;
       for (const selector of rule.selectors || []) {
         for (const match of selector.matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)) {
           const cls = match[1];
@@ -81,7 +82,18 @@ export function auditCss({ root = process.cwd() } = {}) {
       });
     }
     for (const key of Object.keys(node)) {
-      if (['loc', 'start', 'end', 'range', 'leadingComments', 'trailingComments', 'innerComments'].includes(key)) continue;
+      if (
+        [
+          'loc',
+          'start',
+          'end',
+          'range',
+          'leadingComments',
+          'trailingComments',
+          'innerComments'
+        ].includes(key)
+      )
+        continue;
       const value = node[key];
       if (Array.isArray(value)) value.forEach(walkAst);
       else if (value && typeof value === 'object' && typeof value.type === 'string') walkAst(value);
@@ -91,7 +103,7 @@ export function auditCss({ root = process.cwd() } = {}) {
   const codeFiles = [
     ...walk(path.join(root, 'src'), ['.js', '.jsx']),
     path.join(root, 'index.html'),
-    path.join(root, 'scroll.html'),
+    path.join(root, 'scroll.html')
   ];
   for (const file of codeFiles) {
     if (!fs.existsSync(file)) continue;
@@ -115,9 +127,7 @@ export function auditCss({ root = process.cwd() } = {}) {
 
   // Classes injected by third-party renderers (KaTeX, Mermaid) or by the browser
   // itself; they never appear in our source but are legitimately used.
-  const ALLOW = new Set([
-    'katex', 'katex-display', 'katex-html', 'katex-mathml',
-  ]);
+  const ALLOW = new Set(['katex', 'katex-display', 'katex-html', 'katex-mathml']);
 
   const orphans = [...cssClasses.keys()]
     .filter(cls => !ALLOW.has(cls))
@@ -133,16 +143,29 @@ function main() {
   const { cssClasses, referenced, dynamicPrefixes, orphans } = auditCss();
 
   if (asJson) {
-    console.log(JSON.stringify({
-      cssClasses: cssClasses.size,
-      referenced: referenced.size,
-      dynamicPrefixes: [...dynamicPrefixes].filter(p => p.length > 1).sort(),
-      orphans: orphans.map(cls => ({ cls, files: [...cssClasses.get(cls)] })),
-    }, null, 2));
+    console.log(
+      JSON.stringify(
+        {
+          cssClasses: cssClasses.size,
+          referenced: referenced.size,
+          dynamicPrefixes: [...dynamicPrefixes].filter(p => p.length > 1).sort(),
+          orphans: orphans.map(cls => ({ cls, files: [...cssClasses.get(cls)] }))
+        },
+        null,
+        2
+      )
+    );
   } else {
     console.log(`css class selectors : ${cssClasses.size}`);
     console.log(`referenced tokens   : ${referenced.size}`);
-    console.log(`dynamic prefixes    : ${[...dynamicPrefixes].filter(p => p.length > 1).sort().join(', ') || '(none)'}`);
+    console.log(
+      `dynamic prefixes    : ${
+        [...dynamicPrefixes]
+          .filter(p => p.length > 1)
+          .sort()
+          .join(', ') || '(none)'
+      }`
+    );
     console.log(`orphan candidates   : ${orphans.length}`);
     for (const cls of orphans) {
       console.log(`  - .${cls}  (${[...cssClasses.get(cls)].join(', ')})`);

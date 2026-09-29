@@ -1,16 +1,22 @@
 import React from 'react';
-import { ChevronRight, ArrowUpRight, CornerDownRight, ArrowLeft, Network, CornerLeftUp, ZoomIn, ZoomOut, RotateCcw, Link as LinkIcon } from 'lucide-react';
+import {
+  ChevronRight,
+  ArrowUpRight,
+  CornerDownRight,
+  ArrowLeft,
+  Network,
+  CornerLeftUp,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  Link as LinkIcon
+} from 'lucide-react';
 import { getAncestorPath, getSiblingNodes } from '../model/concept-schema.js';
 import { LEVEL_DEFS } from '../model/relation-types.js';
 import { NODE_KINDS } from '../model/node-kinds.js';
 import { FigureScopeProvider } from '../components/FigureScope.jsx';
 
-export function NodeExplorer({
-  graph,
-  currentNodeId,
-  onSelectNode,
-  onSwitchView,
-}) {
+export function NodeExplorer({ graph, currentNodeId, onSelectNode, onSwitchView }) {
   const { nodes, relations } = graph;
   const [canvasScale, setCanvasScale] = React.useState(1);
   const [canvasPan, setCanvasPan] = React.useState({ x: 0, y: 0 });
@@ -24,7 +30,7 @@ export function NodeExplorer({
   canvasScaleRef.current = canvasScale;
   canvasPanRef.current = canvasPan;
 
-  const updateScale = (nextScale) => {
+  const updateScale = nextScale => {
     const scale = Math.max(0.65, Math.min(1.6, +nextScale.toFixed(2)));
     setCanvasScale(scale);
   };
@@ -39,7 +45,7 @@ export function NodeExplorer({
       Math.max(Math.min(view - content, 0) - margin, Math.min(margin, value));
     return {
       x: clampAxis(x, board.offsetWidth * scale, viewport.clientWidth),
-      y: clampAxis(y, board.offsetHeight * scale, viewport.clientHeight),
+      y: clampAxis(y, board.offsetHeight * scale, viewport.clientHeight)
     };
   };
 
@@ -49,7 +55,7 @@ export function NodeExplorer({
     const viewport = viewportRef.current;
     if (!viewport) return undefined;
 
-    const handleWheel = (event) => {
+    const handleWheel = event => {
       if (event.ctrlKey || event.metaKey) {
         event.preventDefault();
         const scale = canvasScaleRef.current;
@@ -62,7 +68,9 @@ export function NodeExplorer({
         const contentX = (focusX - pan.x) / scale;
         const contentY = (focusY - pan.y) / scale;
         setCanvasScale(nextScale);
-        setCanvasPan(clampCanvasPan(focusX - contentX * nextScale, focusY - contentY * nextScale, nextScale));
+        setCanvasPan(
+          clampCanvasPan(focusX - contentX * nextScale, focusY - contentY * nextScale, nextScale)
+        );
         return;
       }
 
@@ -77,7 +85,7 @@ export function NodeExplorer({
     return () => viewport.removeEventListener('wheel', handleWheel);
   }, []);
 
-  const handleCanvasPointerDown = (event) => {
+  const handleCanvasPointerDown = event => {
     if (event.target.closest('button, a, input, select, textarea')) return;
     dragRef.current = {
       pointerId: event.pointerId,
@@ -85,26 +93,31 @@ export function NodeExplorer({
       startY: event.clientY,
       panX: canvasPan.x,
       panY: canvasPan.y,
-      moved: false,
+      moved: false
     };
     setIsDragging(true);
     event.currentTarget.setPointerCapture(event.pointerId);
   };
 
-  const handleCanvasPointerMove = (event) => {
+  const handleCanvasPointerMove = event => {
     if (!dragRef.current || dragRef.current.pointerId !== event.pointerId) return;
     event.preventDefault();
-    const distance = Math.hypot(event.clientX - dragRef.current.startX, event.clientY - dragRef.current.startY);
+    const distance = Math.hypot(
+      event.clientX - dragRef.current.startX,
+      event.clientY - dragRef.current.startY
+    );
     if (distance < 6) return;
     dragRef.current.moved = true;
-    setCanvasPan(clampCanvasPan(
-      dragRef.current.panX + event.clientX - dragRef.current.startX,
-      dragRef.current.panY + event.clientY - dragRef.current.startY,
-      canvasScale
-    ));
+    setCanvasPan(
+      clampCanvasPan(
+        dragRef.current.panX + event.clientX - dragRef.current.startX,
+        dragRef.current.panY + event.clientY - dragRef.current.startY,
+        canvasScale
+      )
+    );
   };
 
-  const handleCanvasPointerUp = (event) => {
+  const handleCanvasPointerUp = event => {
     if (dragRef.current?.pointerId === event.pointerId) {
       suppressClickRef.current = dragRef.current.moved;
       dragRef.current = null;
@@ -121,16 +134,18 @@ export function NodeExplorer({
   const ancestorPath = getAncestorPath(nodes, currentNode.id);
   const siblings = getSiblingNodes(nodes, currentNode.id);
   const parentNode = currentNode.parent ? nodes.get(currentNode.parent) : null;
-  const childNodes = currentNode.children
-    .filter(id => nodes.has(id))
-    .map(id => nodes.get(id));
+  const childNodes = currentNode.children.filter(id => nodes.has(id)).map(id => nodes.get(id));
 
   // Node-specific relations
   const outgoingRelations = relations.filter(r => r.from === currentNode.id);
   const incomingRelations = relations.filter(r => r.to === currentNode.id);
 
   // Level definition
-  const levelInfo = LEVEL_DEFS[currentNode.level] || { name: currentNode.level, tag: currentNode.level, color: 'var(--level-l0)' };
+  const levelInfo = LEVEL_DEFS[currentNode.level] || {
+    name: currentNode.level,
+    tag: currentNode.level,
+    color: 'var(--level-l0)'
+  };
   const kindDef = currentNode.kind ? NODE_KINDS[currentNode.kind] || null : null;
 
   return (
@@ -151,11 +166,16 @@ export function NodeExplorer({
                   title={node.title}
                   aria-current={isCurrent ? 'page' : undefined}
                 >
-                  <span className="bc-level-pill" style={{ borderColor: LEVEL_DEFS[node.level]?.color }}>
+                  <span
+                    className="bc-level-pill"
+                    style={{ borderColor: LEVEL_DEFS[node.level]?.color }}
+                  >
                     {node.level}
                   </span>
                   <span className="bc-title">{node.title}</span>
-                  {index < ancestorPath.length - 1 && <ChevronRight size={14} className="bc-arrow" />}
+                  {index < ancestorPath.length - 1 && (
+                    <ChevronRight size={14} className="bc-arrow" />
+                  )}
                 </button>
               );
             })}
@@ -167,12 +187,11 @@ export function NodeExplorer({
           <div className="sibling-list">
             {siblings.length > 0 ? (
               siblings.map(sib => (
-                <button
-                  key={sib.id}
-                  className="sibling-btn"
-                  onClick={() => onSelectNode(sib.id)}
-                >
-                  <span className="sib-dot" style={{ backgroundColor: LEVEL_DEFS[sib.level]?.color }} />
+                <button key={sib.id} className="sibling-btn" onClick={() => onSelectNode(sib.id)}>
+                  <span
+                    className="sib-dot"
+                    style={{ backgroundColor: LEVEL_DEFS[sib.level]?.color }}
+                  />
                   <span className="sib-title">{sib.title}</span>
                   <span className="sib-lvl">{sib.level}</span>
                 </button>
@@ -193,251 +212,261 @@ export function NodeExplorer({
 
       {/* 2. Middle Column: Current Node Explanation Card */}
       <FigureScopeProvider scope={currentNode.id}>
-      <main className="explorer-center">
-        <HierarchyStrip
-          ancestorPath={ancestorPath}
-          currentNode={currentNode}
-          childNodes={childNodes}
-          onSelectNode={onSelectNode}
-        />
-        <div className="center-scrollable">
-          <div
-            ref={viewportRef}
-            className={`draft-viewport ${isDragging ? 'is-dragging' : ''}`}
-            onPointerDown={handleCanvasPointerDown}
-            onPointerMove={handleCanvasPointerMove}
-            onPointerUp={handleCanvasPointerUp}
-            onPointerCancel={handleCanvasPointerUp}
-            onClickCapture={(event) => {
-              if (!suppressClickRef.current) return;
-              event.preventDefault();
-              event.stopPropagation();
-              suppressClickRef.current = false;
-            }}
-          >
-            <div className="draft-floating-tools">
-              <button
-                className="view-graph-btn"
-                onClick={() => onSwitchView('graph')}
-                title="在图谱中聚焦此节点"
-              >
-                <Network size={14} />
-                <span>查看全局关系</span>
-              </button>
-              <div className="draft-zoom-controls" aria-label="草稿缩放">
-                <button onClick={() => updateScale(canvasScale - 0.1)} title="缩小">
-                  <ZoomOut size={14} />
-                </button>
-                <span>{Math.round(canvasScale * 100)}%</span>
-                <button onClick={() => updateScale(canvasScale + 0.1)} title="放大">
-                  <ZoomIn size={14} />
-                </button>
-                <button onClick={() => { setCanvasScale(1); setCanvasPan({ x: 0, y: 0 }); }} title="重置画布">
-                  <RotateCcw size={13} />
-                </button>
-              </div>
-            </div>
-            <div
-              ref={boardRef}
-              className="draft-board"
-              style={{
-                transform: `translate(${canvasPan.x}px, ${canvasPan.y}px) scale(${canvasScale})`,
-              }}
-            >
-          {/* Compact concept note header */}
-          <article className="concept-hero-card">
-            <div className="hero-level-banner" style={{ color: levelInfo.color }}>
-              <span className="badge">{levelInfo.tag}</span>
-              {kindDef && (
-                <span
-                  className="kind-badge"
-                  style={{ color: kindDef.tone, borderColor: kindDef.tone }}
-                  title={kindDef.description}
-                >
-                  {kindDef.label}
-                </span>
-              )}
-              <span className="desc">{levelInfo.desc}</span>
-            </div>
-
-            <h1 className="hero-title">{currentNode.title}</h1>
-
-            {currentNode.summary && (
-              <p className="hero-summary">{currentNode.summary}</p>
-            )}
-
-            {/* I/O and Path chips */}
-            <div className="hero-meta-chips">
-              {currentNode.input && (
-                <div className="meta-chip">
-                  <span className="chip-label">输入</span>
-                  <span className="chip-value">{currentNode.input}</span>
-                </div>
-              )}
-              {currentNode.output && (
-                <div className="meta-chip">
-                  <span className="chip-label">输出</span>
-                  <span className="chip-value">{currentNode.output}</span>
-                </div>
-              )}
-              {currentNode.invariants.length > 0 && (
-                <div className="meta-chip">
-                  <span className="chip-label">不变量</span>
-                  <span className="chip-value">{currentNode.invariants.length}</span>
-                </div>
-              )}
-              {currentNode.evidence.length > 0 && (
-                <div className="meta-chip">
-                  <span className="chip-label">证据</span>
-                  <span className="chip-value">{currentNode.evidence.length}</span>
-                </div>
-              )}
-              {currentNode.failureModes.length > 0 && (
-                <div className="meta-chip">
-                  <span className="chip-label">故障模式</span>
-                  <span className="chip-value">{currentNode.failureModes.length}</span>
-                </div>
-              )}
-              <div className="meta-chip">
-                <span className="chip-label">完整路径</span>
-                <span className="chip-value">{ancestorPath.map(n => n.title).join(' / ')}</span>
-              </div>
-            </div>
-
-          </article>
-
-          {/* Core Mechanism / Definition Section */}
-          <div className="content-blocks">
-            {currentNode.overview && (
-              <section className="node-block">
-                <div className="block-head">
-                  <h2>概览理解</h2>
-                  <small>一句话宏观认知</small>
-                </div>
-                <div className="block-body">{currentNode.overview}</div>
-              </section>
-            )}
-
-            {currentNode.definition && (
-              <section className="node-block">
-                <div className="block-head">
-                  <h2>概念定义</h2>
-                  <small>准确定义与本质属性</small>
-                </div>
-                <div className="block-body">{currentNode.definition}</div>
-              </section>
-            )}
-
-            {currentNode.mechanism && (
-              <section className="node-block">
-                <div className="block-head">
-                  <h2>核心机制</h2>
-                  <small>工作原理与状态流转</small>
-                </div>
-                <div className="block-body">{currentNode.mechanism}</div>
-              </section>
-            )}
-
-            {/* Implementation code if present */}
-            {currentNode.implementation && (
-              <section className="node-block">
-                <div className="block-head">
-                  <h2>{currentNode.implementation.title}</h2>
-                  <span className="impl-lang">{currentNode.implementation.language}</span>
-                </div>
-                <div className="block-body">
-                  <pre className="code-block">
-                    <code>{currentNode.implementation.code}</code>
-                  </pre>
-                </div>
-              </section>
-            )}
-
-            {/* Examples & Counterexamples */}
-            {currentNode.examples.length > 0 && (
-              <section className="node-block">
-                <div className="block-head">
-                  <h2>典型示例</h2>
-                  <small>具象化阐释</small>
-                </div>
-                <div className="block-body">
-                  {currentNode.examples.map((ex, i) => (
-                    <div key={i} className="example-item">
-                      <div className="ex-title">{ex.title}</div>
-                      <div className="ex-content">{ex.content}</div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {currentNode.counterexamples.length > 0 && (
-              <section className="node-block highlight-warn">
-                <div className="block-head">
-                  <h2>反例与常见误区</h2>
-                  <small>加深概念边界的辨析</small>
-                </div>
-                <div className="block-body">
-                  {currentNode.counterexamples.map((cex, i) => (
-                    <div key={i} className="counterexample-item">
-                      <div className="cex-title">✕ {cex.title}</div>
-                      <div className="cex-content">{cex.content}</div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Custom presentation sections (Compare, Flow, etc.) */}
-            {currentNode.customSections.map((sec, i) => (
-              sec?.props?.position === 'absolute' ? (
-                <React.Fragment key={i}>{sec}</React.Fragment>
-              ) : (
-                <section key={i} className="node-block custom-section">
-                  {sec}
-                </section>
-              )
-            ))}
-
-            {/* Sub-node Exploration Cards (Drill Down Entrance) */}
-            {childNodes.length > 0 && (
-              <section className="node-block drill-down-section">
-                <div className="block-head">
-                  <h2>深入下钻：子概念节点</h2>
-                  <small>点击卡片探索更深机制</small>
-                </div>
-                <div className="subnodes-grid">
-                  {childNodes.map(child => (
-                    <button
-                      key={child.id}
-                      className="subnode-card"
-                      onClick={() => onSelectNode(child.id)}
-                    >
-                      <div className="sn-header">
-                        <span className="sn-level" style={{ color: LEVEL_DEFS[child.level]?.color }}>
-                          {child.level}
-                        </span>
-                        <ArrowUpRight size={16} className="sn-arrow" />
-                      </div>
-                      <h3 className="sn-title">{child.title}</h3>
-                      <p className="sn-summary">{child.summary || '点击进入该概念下钻探索…'}</p>
-                    </button>
-                  ))}
-                </div>
-              </section>
-            )}
-          </div>
-          <NodeInspector
+        <main className="explorer-center">
+          <HierarchyStrip
+            ancestorPath={ancestorPath}
             currentNode={currentNode}
-            nodes={nodes}
-            outgoingRelations={outgoingRelations}
-            incomingRelations={incomingRelations}
+            childNodes={childNodes}
             onSelectNode={onSelectNode}
           />
+          <div className="center-scrollable">
+            <div
+              ref={viewportRef}
+              className={`draft-viewport ${isDragging ? 'is-dragging' : ''}`}
+              onPointerDown={handleCanvasPointerDown}
+              onPointerMove={handleCanvasPointerMove}
+              onPointerUp={handleCanvasPointerUp}
+              onPointerCancel={handleCanvasPointerUp}
+              onClickCapture={event => {
+                if (!suppressClickRef.current) return;
+                event.preventDefault();
+                event.stopPropagation();
+                suppressClickRef.current = false;
+              }}
+            >
+              <div className="draft-floating-tools">
+                <button
+                  className="view-graph-btn"
+                  onClick={() => onSwitchView('graph')}
+                  title="在图谱中聚焦此节点"
+                >
+                  <Network size={14} />
+                  <span>查看全局关系</span>
+                </button>
+                <div className="draft-zoom-controls" aria-label="草稿缩放">
+                  <button onClick={() => updateScale(canvasScale - 0.1)} title="缩小">
+                    <ZoomOut size={14} />
+                  </button>
+                  <span>{Math.round(canvasScale * 100)}%</span>
+                  <button onClick={() => updateScale(canvasScale + 0.1)} title="放大">
+                    <ZoomIn size={14} />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setCanvasScale(1);
+                      setCanvasPan({ x: 0, y: 0 });
+                    }}
+                    title="重置画布"
+                  >
+                    <RotateCcw size={13} />
+                  </button>
+                </div>
+              </div>
+              <div
+                ref={boardRef}
+                className="draft-board"
+                style={{
+                  transform: `translate(${canvasPan.x}px, ${canvasPan.y}px) scale(${canvasScale})`
+                }}
+              >
+                {/* Compact concept note header */}
+                <article className="concept-hero-card">
+                  <div className="hero-level-banner" style={{ color: levelInfo.color }}>
+                    <span className="badge">{levelInfo.tag}</span>
+                    {kindDef && (
+                      <span
+                        className="kind-badge"
+                        style={{ color: kindDef.tone, borderColor: kindDef.tone }}
+                        title={kindDef.description}
+                      >
+                        {kindDef.label}
+                      </span>
+                    )}
+                    <span className="desc">{levelInfo.desc}</span>
+                  </div>
+
+                  <h1 className="hero-title">{currentNode.title}</h1>
+
+                  {currentNode.summary && <p className="hero-summary">{currentNode.summary}</p>}
+
+                  {/* I/O and Path chips */}
+                  <div className="hero-meta-chips">
+                    {currentNode.input && (
+                      <div className="meta-chip">
+                        <span className="chip-label">输入</span>
+                        <span className="chip-value">{currentNode.input}</span>
+                      </div>
+                    )}
+                    {currentNode.output && (
+                      <div className="meta-chip">
+                        <span className="chip-label">输出</span>
+                        <span className="chip-value">{currentNode.output}</span>
+                      </div>
+                    )}
+                    {currentNode.invariants.length > 0 && (
+                      <div className="meta-chip">
+                        <span className="chip-label">不变量</span>
+                        <span className="chip-value">{currentNode.invariants.length}</span>
+                      </div>
+                    )}
+                    {currentNode.evidence.length > 0 && (
+                      <div className="meta-chip">
+                        <span className="chip-label">证据</span>
+                        <span className="chip-value">{currentNode.evidence.length}</span>
+                      </div>
+                    )}
+                    {currentNode.failureModes.length > 0 && (
+                      <div className="meta-chip">
+                        <span className="chip-label">故障模式</span>
+                        <span className="chip-value">{currentNode.failureModes.length}</span>
+                      </div>
+                    )}
+                    <div className="meta-chip">
+                      <span className="chip-label">完整路径</span>
+                      <span className="chip-value">
+                        {ancestorPath.map(n => n.title).join(' / ')}
+                      </span>
+                    </div>
+                  </div>
+                </article>
+
+                {/* Core Mechanism / Definition Section */}
+                <div className="content-blocks">
+                  {currentNode.overview && (
+                    <section className="node-block">
+                      <div className="block-head">
+                        <h2>概览理解</h2>
+                        <small>一句话宏观认知</small>
+                      </div>
+                      <div className="block-body">{currentNode.overview}</div>
+                    </section>
+                  )}
+
+                  {currentNode.definition && (
+                    <section className="node-block">
+                      <div className="block-head">
+                        <h2>概念定义</h2>
+                        <small>准确定义与本质属性</small>
+                      </div>
+                      <div className="block-body">{currentNode.definition}</div>
+                    </section>
+                  )}
+
+                  {currentNode.mechanism && (
+                    <section className="node-block">
+                      <div className="block-head">
+                        <h2>核心机制</h2>
+                        <small>工作原理与状态流转</small>
+                      </div>
+                      <div className="block-body">{currentNode.mechanism}</div>
+                    </section>
+                  )}
+
+                  {/* Implementation code if present */}
+                  {currentNode.implementation && (
+                    <section className="node-block">
+                      <div className="block-head">
+                        <h2>{currentNode.implementation.title}</h2>
+                        <span className="impl-lang">{currentNode.implementation.language}</span>
+                      </div>
+                      <div className="block-body">
+                        <pre className="code-block">
+                          <code>{currentNode.implementation.code}</code>
+                        </pre>
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Examples & Counterexamples */}
+                  {currentNode.examples.length > 0 && (
+                    <section className="node-block">
+                      <div className="block-head">
+                        <h2>典型示例</h2>
+                        <small>具象化阐释</small>
+                      </div>
+                      <div className="block-body">
+                        {currentNode.examples.map((ex, i) => (
+                          <div key={i} className="example-item">
+                            <div className="ex-title">{ex.title}</div>
+                            <div className="ex-content">{ex.content}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {currentNode.counterexamples.length > 0 && (
+                    <section className="node-block highlight-warn">
+                      <div className="block-head">
+                        <h2>反例与常见误区</h2>
+                        <small>加深概念边界的辨析</small>
+                      </div>
+                      <div className="block-body">
+                        {currentNode.counterexamples.map((cex, i) => (
+                          <div key={i} className="counterexample-item">
+                            <div className="cex-title">✕ {cex.title}</div>
+                            <div className="cex-content">{cex.content}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Custom presentation sections (Compare, Flow, etc.) */}
+                  {currentNode.customSections.map((sec, i) =>
+                    sec?.props?.position === 'absolute' ? (
+                      <React.Fragment key={i}>{sec}</React.Fragment>
+                    ) : (
+                      <section key={i} className="node-block custom-section">
+                        {sec}
+                      </section>
+                    )
+                  )}
+
+                  {/* Sub-node Exploration Cards (Drill Down Entrance) */}
+                  {childNodes.length > 0 && (
+                    <section className="node-block drill-down-section">
+                      <div className="block-head">
+                        <h2>深入下钻：子概念节点</h2>
+                        <small>点击卡片探索更深机制</small>
+                      </div>
+                      <div className="subnodes-grid">
+                        {childNodes.map(child => (
+                          <button
+                            key={child.id}
+                            className="subnode-card"
+                            onClick={() => onSelectNode(child.id)}
+                          >
+                            <div className="sn-header">
+                              <span
+                                className="sn-level"
+                                style={{ color: LEVEL_DEFS[child.level]?.color }}
+                              >
+                                {child.level}
+                              </span>
+                              <ArrowUpRight size={16} className="sn-arrow" />
+                            </div>
+                            <h3 className="sn-title">{child.title}</h3>
+                            <p className="sn-summary">
+                              {child.summary || '点击进入该概念下钻探索…'}
+                            </p>
+                          </button>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+                </div>
+                <NodeInspector
+                  currentNode={currentNode}
+                  nodes={nodes}
+                  outgoingRelations={outgoingRelations}
+                  incomingRelations={incomingRelations}
+                  onSelectNode={onSelectNode}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
       </FigureScopeProvider>
     </div>
   );
@@ -451,12 +480,21 @@ function HierarchyStrip({ ancestorPath, currentNode, childNodes, onSelectNode })
       <div className="hierarchy-strip-main">
         <span className="hierarchy-strip-label">当前位置</span>
         <div className="hierarchy-strip-path">
-        {ancestorPath.slice(0, -1).map(node => (
-          <button key={node.id} onClick={() => onSelectNode(node.id)} title={`返回 ${node.title}`}>
-            <span>{node.level}</span>{node.title}<ChevronRight size={11} />
-          </button>
-        ))}
-        <strong><span>{currentNode.level}</span>{currentNode.title}</strong>
+          {ancestorPath.slice(0, -1).map(node => (
+            <button
+              key={node.id}
+              onClick={() => onSelectNode(node.id)}
+              title={`返回 ${node.title}`}
+            >
+              <span>{node.level}</span>
+              {node.title}
+              <ChevronRight size={11} />
+            </button>
+          ))}
+          <strong>
+            <span>{currentNode.level}</span>
+            {currentNode.title}
+          </strong>
         </div>
         {parent && (
           <button className="hierarchy-parent-link" onClick={() => onSelectNode(parent.id)}>
@@ -464,14 +502,23 @@ function HierarchyStrip({ ancestorPath, currentNode, childNodes, onSelectNode })
           </button>
         )}
       </div>
-      {childNodes.length > 0 && <div className="hierarchy-strip-children">
-        <span className="hierarchy-strip-label">继续下钻</span>
-        <div className="hierarchy-child-scroll">{childNodes.map(child => (
-          <button key={child.id} onClick={() => onSelectNode(child.id)} title={`进入 ${child.title}`}>
-            {child.title}<ChevronRight size={12} />
-          </button>
-        ))}</div>
-      </div>}
+      {childNodes.length > 0 && (
+        <div className="hierarchy-strip-children">
+          <span className="hierarchy-strip-label">继续下钻</span>
+          <div className="hierarchy-child-scroll">
+            {childNodes.map(child => (
+              <button
+                key={child.id}
+                onClick={() => onSelectNode(child.id)}
+                title={`进入 ${child.title}`}
+              >
+                {child.title}
+                <ChevronRight size={12} />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
@@ -480,8 +527,14 @@ function NodeInspector({ currentNode, nodes, outgoingRelations, incomingRelation
   const relationCard = (rel, targetId, direction) => {
     const target = nodes.get(targetId);
     return (
-      <button className="inline-relation" key={`${direction}-${rel.from}-${rel.to}-${rel.type}`} onClick={() => target && onSelectNode(target.id)}>
-        <span className="inline-relation-type" style={{ color: rel.typeInfo?.color }}>{rel.typeLabel}</span>
+      <button
+        className="inline-relation"
+        key={`${direction}-${rel.from}-${rel.to}-${rel.type}`}
+        onClick={() => target && onSelectNode(target.id)}
+      >
+        <span className="inline-relation-type" style={{ color: rel.typeInfo?.color }}>
+          {rel.typeLabel}
+        </span>
         <span className="inline-relation-main">
           <b>{target ? target.title : targetId}</b>
           {direction === 'out' ? <CornerDownRight size={13} /> : <ArrowLeft size={13} />}
@@ -498,14 +551,20 @@ function NodeInspector({ currentNode, nodes, outgoingRelations, incomingRelation
           <span className="side-label">当前节点的延伸笔记</span>
           <h2>关联、边界与前置知识</h2>
         </div>
-        <span className="inline-inspector-count">{outgoingRelations.length + incomingRelations.length} 条关系</span>
+        <span className="inline-inspector-count">
+          {outgoingRelations.length + incomingRelations.length} 条关系
+        </span>
       </div>
       <div className="inline-inspector-grid">
         {currentNode.prerequisites.length > 0 && (
           <div className="inline-note-block">
             <span className="insp-label">前置知识</span>
             <div className="inline-pill-flow">
-              {currentNode.prerequisites.map((item, index) => <span className="insp-pill" key={index}>{item}</span>)}
+              {currentNode.prerequisites.map((item, index) => (
+                <span className="insp-pill" key={index}>
+                  {item}
+                </span>
+              ))}
             </div>
           </div>
         )}
@@ -513,17 +572,28 @@ function NodeInspector({ currentNode, nodes, outgoingRelations, incomingRelation
           <div className="inline-note-block">
             <span className="insp-label">边界条件</span>
             {currentNode.boundaries.map((boundary, index) => (
-              <div className="inline-boundary" key={index}><b>{boundary.title}</b><span>{boundary.content}</span></div>
+              <div className="inline-boundary" key={index}>
+                <b>{boundary.title}</b>
+                <span>{boundary.content}</span>
+              </div>
             ))}
           </div>
         )}
         <div className="inline-note-block relation-column">
           <span className="insp-label">延伸关系 · 出</span>
-          {outgoingRelations.length > 0 ? outgoingRelations.map(rel => relationCard(rel, rel.to, 'out')) : <span className="empty-subtext">暂无向外关联</span>}
+          {outgoingRelations.length > 0 ? (
+            outgoingRelations.map(rel => relationCard(rel, rel.to, 'out'))
+          ) : (
+            <span className="empty-subtext">暂无向外关联</span>
+          )}
         </div>
         <div className="inline-note-block relation-column">
           <span className="insp-label">前驱关系 · 入</span>
-          {incomingRelations.length > 0 ? incomingRelations.map(rel => relationCard(rel, rel.from, 'in')) : <span className="empty-subtext">暂无前驱来源</span>}
+          {incomingRelations.length > 0 ? (
+            incomingRelations.map(rel => relationCard(rel, rel.from, 'in'))
+          ) : (
+            <span className="empty-subtext">暂无前驱来源</span>
+          )}
         </div>
         {currentNode.glossary.length > 0 && (
           <div className="inline-note-block">
@@ -561,7 +631,10 @@ function renderNavTree(nodes, rootId, currentNodeId, onSelectNode) {
           style={{ paddingLeft: `${12 + depth * 14}px` }}
           onClick={() => onSelectNode(id)}
         >
-          <span className="node-bullet" style={{ backgroundColor: LEVEL_DEFS[node.level]?.color || 'var(--level-l0)' }} />
+          <span
+            className="node-bullet"
+            style={{ backgroundColor: LEVEL_DEFS[node.level]?.color || 'var(--level-l0)' }}
+          />
           <span className="tree-title">{node.title}</span>
           <span className="tree-level">{node.level}</span>
         </button>

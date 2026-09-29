@@ -16,7 +16,7 @@ export function extractConceptData(explainPageElement) {
       summary: explainPageElement.props.summary || '',
       rootId: null,
       layout: explainPageElement.props.layout || 'editorial',
-      density: explainPageElement.props.density || 'reading',
+      density: explainPageElement.props.density || 'reading'
     },
     nodes: [],
     relations: []
@@ -124,7 +124,7 @@ function parseConceptNode(nodeElement) {
     evidence: [],
     invariants: [],
     failureModes: [],
-    tradeoffs: [],
+    tradeoffs: []
   };
 
   Children.forEach(props.children, child => {
@@ -207,7 +207,7 @@ function parseConceptNode(nodeElement) {
       // original element in customSections so existing rendering is unchanged.
       case 'LearningObjectives':
         node.learningObjectives.push(
-          ...(Array.isArray(child.props.items) ? child.props.items.filter(Boolean) : []),
+          ...(Array.isArray(child.props.items) ? child.props.items.filter(Boolean) : [])
         );
         node.customSections.push(child);
         break;
@@ -219,14 +219,14 @@ function parseConceptNode(nodeElement) {
         node.evidence.push({
           command: child.props.command || '',
           observes: child.props.observes || '',
-          content: child.props.children,
+          content: child.props.children
         });
         node.customSections.push(child);
         break;
       case 'Invariant':
         node.invariants.push({
           title: child.props.title || '不变量',
-          content: child.props.children,
+          content: child.props.children
         });
         node.customSections.push(child);
         break;
@@ -236,14 +236,14 @@ function parseConceptNode(nodeElement) {
           cause: child.props.cause || '',
           evidence: child.props.evidence || '',
           remedy: child.props.remedy || '',
-          content: child.props.children,
+          content: child.props.children
         });
         node.customSections.push(child);
         break;
       case 'Tradeoff':
         node.tradeoffs.push({
           title: child.props.title || '工程权衡',
-          options: Array.isArray(child.props.options) ? child.props.options : [],
+          options: Array.isArray(child.props.options) ? child.props.options : []
         });
         node.customSections.push(child);
         break;

@@ -20,7 +20,7 @@ const { readStoredAppearance, normalizeMode } = await import('../src/app/use-app
 
 test('corrupt payload falls back to the carrier default mode, not dark', () => {
   freshStorage({
-    getItem: key => (key === 'concept_atlas_appearance' ? '{not json' : null),
+    getItem: key => (key === 'concept_atlas_appearance' ? '{not json' : null)
   });
   assert.equal(readStoredAppearance('light').mode, 'light');
   assert.equal(readStoredAppearance('dark').mode, 'dark');
@@ -32,22 +32,26 @@ test('a valid legacy key still wins after the main payload corrupts', () => {
       if (key === 'concept_atlas_appearance') return '{not json';
       if (key === 'concept_atlas_theme') return 'dark';
       return null;
-    },
+    }
   });
   assert.equal(readStoredAppearance('light').mode, 'dark');
 });
 
 test('a stored payload with a garbage mode honours the fallback', () => {
   freshStorage({
-    getItem: key => (key === 'concept_atlas_appearance' ? JSON.stringify({ mode: 'banana' }) : null),
+    getItem: key => (key === 'concept_atlas_appearance' ? JSON.stringify({ mode: 'banana' }) : null)
   });
   assert.equal(readStoredAppearance('light').mode, 'light');
 });
 
 test('throwing localStorage does not crash the reader', () => {
   freshStorage({
-    getItem() { throw new Error('access denied'); },
-    setItem() { throw new Error('access denied'); },
+    getItem() {
+      throw new Error('access denied');
+    },
+    setItem() {
+      throw new Error('access denied');
+    }
   });
   const appearance = readStoredAppearance('light');
   assert.equal(appearance.mode, 'light');

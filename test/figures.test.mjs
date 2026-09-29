@@ -39,7 +39,9 @@ test('a registered Figure numbers itself and resolves its FigureRef', async () =
   const React = await import('react');
   const { Figure, FigureRef } = await import('../src/components/index.js');
 
-  const figure = await render(React.createElement(Figure, { id: 'arch', src: './a.png', caption: '架构' }));
+  const figure = await render(
+    React.createElement(Figure, { id: 'arch', src: './a.png', caption: '架构' })
+  );
   assert.match(figure, /id="fig-arch"/);
   assert.match(figure, /figure-label">图 1</);
 
@@ -54,7 +56,9 @@ test('an explicit label wins over the automatic number', async () => {
   registerFigure('document', 'arch');
   const React = await import('react');
   const { Figure } = await import('../src/components/index.js');
-  const html = await render(React.createElement(Figure, { id: 'arch', src: './a.png', label: '图 A' }));
+  const html = await render(
+    React.createElement(Figure, { id: 'arch', src: './a.png', label: '图 A' })
+  );
   assert.match(html, /figure-label">图 A</);
   assert.doesNotMatch(html, /图 1</);
 });

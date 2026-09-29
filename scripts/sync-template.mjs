@@ -17,11 +17,11 @@ const check = process.argv.includes('--check');
 // template directory (used by the shipped skill copy).
 const ALIAS_ATLAS = [
   [/\bAtlasGuideDoc\b/g, 'UserDocument'],
-  [/'\.\.\/content\/atlas-guide\.mdx'/, "'@concept-atlas/content'"],
+  [/'\.\.\/content\/atlas-guide\.mdx'/, "'@concept-atlas/content'"]
 ];
 const ALIAS_SCROLL = [
   [/\bScrollGuideDoc\b/g, 'UserDocument'],
-  [/'\.\.\/content\/scroll-guide\.mdx'/, "'@concept-atlas/content'"],
+  [/'\.\.\/content\/scroll-guide\.mdx'/, "'@concept-atlas/content'"]
 ];
 
 const MANIFEST = [
@@ -43,15 +43,37 @@ const MANIFEST = [
   // The installed skill ships its own copy of the guides plus the sample asset
   // they reference, so an agent can learn every component with no CLI call and
   // no network. Generated from content/ like the package guides above.
-  { from: 'content/atlas-guide.mdx', to: 'skills/concept-atlas-dense-explain/references/atlas-guide.mdx', base: 'repo' },
-  { from: 'content/scroll-guide.mdx', to: 'skills/concept-atlas-dense-explain/references/scroll-guide.mdx', base: 'repo' },
-  { from: 'content/assets', to: 'skills/concept-atlas-dense-explain/references/assets', base: 'repo' },
+  {
+    from: 'content/atlas-guide.mdx',
+    to: 'skills/concept-atlas-dense-explain/references/atlas-guide.mdx',
+    base: 'repo'
+  },
+  {
+    from: 'content/scroll-guide.mdx',
+    to: 'skills/concept-atlas-dense-explain/references/scroll-guide.mdx',
+    base: 'repo'
+  },
+  {
+    from: 'content/assets',
+    to: 'skills/concept-atlas-dense-explain/references/assets',
+    base: 'repo'
+  },
   // prepack-only copy for the npm tarball; the name states it is generated so it
   // cannot be confused with the `skills/` source. Ignored by git, so it is
   // absent from a clean clone: `--check` skips these entries (a missing target
   // is the expected state, not drift). `prepack` regenerates them before packing.
-  { from: 'skills/concept-atlas-dense-explain/SKILL.md', to: 'packaged-skill/SKILL.md', base: 'package', prepack: true },
-  { from: 'skills/concept-atlas-dense-explain/references', to: 'packaged-skill/references', base: 'package', prepack: true },
+  {
+    from: 'skills/concept-atlas-dense-explain/SKILL.md',
+    to: 'packaged-skill/SKILL.md',
+    base: 'package',
+    prepack: true
+  },
+  {
+    from: 'skills/concept-atlas-dense-explain/references',
+    to: 'packaged-skill/references',
+    base: 'package',
+    prepack: true
+  }
 ];
 
 // Entry targets: the npm template by default, the package root for the shipped
@@ -77,7 +99,7 @@ async function collectFiles(relative) {
   const files = [];
   for (const entry of entries) {
     if (entry.name === 'node_modules' || entry.name.startsWith('.')) continue;
-    files.push(...await collectFiles(path.join(relative, entry.name)));
+    files.push(...(await collectFiles(path.join(relative, entry.name))));
   }
   return files;
 }
@@ -126,4 +148,6 @@ if (check) {
   process.exit(0);
 }
 
-console.log(copied ? `Synced ${copied} file(s) into the package template.` : 'Template already up to date.');
+console.log(
+  copied ? `Synced ${copied} file(s) into the package template.` : 'Template already up to date.'
+);

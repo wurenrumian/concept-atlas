@@ -17,7 +17,9 @@ const node = {
   boundaries: [{ title: '版本不兼容', content: '符号版本不匹配时启动失败' }],
   glossary: [{ term: '重定位', definition: '把符号引用绑定到实际地址' }],
   implementation: { language: 'c', title: '代码', code: 'dlopen("libm.so")' },
-  customSections: [{ props: { symptom: '启动即退出', cause: '共享库缺失', evidence: 'loader error / ldd' } }],
+  customSections: [
+    { props: { symptom: '启动即退出', cause: '共享库缺失', evidence: 'loader error / ldd' } }
+  ]
 };
 
 test('nodeSearchText indexes semantic fields', () => {
@@ -37,7 +39,10 @@ test('nodeSearchText reaches into customSections (failure symptoms)', () => {
 
 test('searchNodes matches by substring and respects the limit', () => {
   const other = { id: 'cpu', title: 'CPU 取指', summary: '无关内容' };
-  assert.deepEqual(searchNodes([node, other], '动态').map(n => n.id), ['loader']);
+  assert.deepEqual(
+    searchNodes([node, other], '动态').map(n => n.id),
+    ['loader']
+  );
   assert.equal(searchNodes([node, other], '').length, 0);
   assert.equal(searchNodes([node, other], 'elf').length, 1);
   assert.equal(searchNodes([node, other], '无关', 1).length, 1);
@@ -58,11 +63,15 @@ test('nodeSearchText indexes structured evidence fields and the kind label', () 
     level: 'L4',
     invariants: [{ title: '链接不变量', content: '符号引用必须唯一确定' }],
     evidence: [{ command: 'readelf -Ws', observes: '查看符号版本' }],
-    failureModes: [{ symptom: '首次调用崩溃', cause: '布局不一致', evidence: 'sizeof 差异', remedy: '固定布局' }],
-    tradeoffs: [{ title: '兼容性', options: [{ name: '重新编译', benefit: '简单', cost: '需重新发布' }] }],
+    failureModes: [
+      { symptom: '首次调用崩溃', cause: '布局不一致', evidence: 'sizeof 差异', remedy: '固定布局' }
+    ],
+    tradeoffs: [
+      { title: '兼容性', options: [{ name: '重新编译', benefit: '简单', cost: '需重新发布' }] }
+    ],
     learningObjectives: ['识别 ABI 边界'],
     keyQuestions: [{ content: '为什么能链接却不能调用？' }],
-    customSections: [],
+    customSections: []
   };
   const text = nodeSearchText(structured);
   assert.match(text, /符号引用必须唯一确定/);
@@ -73,5 +82,8 @@ test('nodeSearchText indexes structured evidence fields and the kind label', () 
   assert.match(text, /为什么能链接却不能调用/);
   assert.match(text, /failure/);
   assert.match(text, /故障/);
-  assert.deepEqual(searchNodes([structured], '故障').map(n => n.id), ['abi-break']);
+  assert.deepEqual(
+    searchNodes([structured], '故障').map(n => n.id),
+    ['abi-break']
+  );
 });

@@ -15,7 +15,7 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'
 test('the committed package template is in sync with src/', () => {
   const output = execFileSync(process.execPath, ['scripts/sync-template.mjs', '--check'], {
     cwd: repoRoot,
-    encoding: 'utf8',
+    encoding: 'utf8'
   });
   assert.match(output, /in sync/);
 });

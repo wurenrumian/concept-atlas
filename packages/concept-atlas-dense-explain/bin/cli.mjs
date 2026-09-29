@@ -1,11 +1,31 @@
 #!/usr/bin/env node
-import { access, constants, copyFile, cp, mkdir, readFile, rm, rename, writeFile } from 'node:fs/promises';
+import {
+  access,
+  constants,
+  copyFile,
+  cp,
+  mkdir,
+  readFile,
+  rm,
+  rename,
+  writeFile
+} from 'node:fs/promises';
 import { existsSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { build } from 'vite';
 import { fileURLToPath } from 'node:url';
-import { validateMdxSource, countBySeverity, detectFeatures, extractPageTitle } from '../template/src/model/validate-content.js';
-import { SKINS, normalizeSkin, COMPONENT_STYLES, normalizeStyle } from '../template/src/model/skins.js';
+import {
+  validateMdxSource,
+  countBySeverity,
+  detectFeatures,
+  extractPageTitle
+} from '../template/src/model/validate-content.js';
+import {
+  SKINS,
+  normalizeSkin,
+  COMPONENT_STYLES,
+  normalizeStyle
+} from '../template/src/model/skins.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const templateRoot = path.join(packageRoot, 'template');
@@ -14,26 +34,51 @@ let buildCounter = 0;
 
 function usage() {
   console.log('Usage:');
-  console.log('  npx concept-atlas-dense-explain <input.mdx>... [--mode atlas|scroll] [--skin <id>] [--default-mode dark|light|system] [--style <id>] [-o output.html|dir] [--force] [--concurrency N] [--inline-assets] [--inline-mermaid] [--mermaid-cdn <url>] [--json] [--no-validate]');
+  console.log(
+    '  npx concept-atlas-dense-explain <input.mdx>... [--mode atlas|scroll] [--skin <id>] [--default-mode dark|light|system] [--style <id>] [-o output.html|dir] [--force] [--concurrency N] [--inline-assets] [--inline-mermaid] [--mermaid-cdn <url>] [--json] [--no-validate]'
+  );
   console.log('  npx concept-atlas-dense-explain render <input.mdx>... [-o output.html|dir]');
-  console.log('  npx concept-atlas-dense-explain validate <input.mdx> [--mode atlas|scroll] [--strict] [--json]');
-  console.log('  npx concept-atlas-dense-explain create <output.mdx> [--mode atlas|scroll] [--force]');
-  console.log('  npx concept-atlas-dense-explain guide [--mode atlas|scroll] [-o output.mdx] [--force]');
+  console.log(
+    '  npx concept-atlas-dense-explain validate <input.mdx> [--mode atlas|scroll] [--strict] [--json]'
+  );
+  console.log(
+    '  npx concept-atlas-dense-explain create <output.mdx> [--mode atlas|scroll] [--force]'
+  );
+  console.log(
+    '  npx concept-atlas-dense-explain guide [--mode atlas|scroll] [-o output.mdx] [--force]'
+  );
   console.log('');
   console.log('  --help shows this text; --version prints the package version.');
-  console.log('  Multiple inputs build in parallel (default 2 at a time, cap 4); -o is then a directory.');
-  console.log('  Figures are kept as relative links by default (small HTML; ship the assets/ dir beside it). --inline-assets bakes every local image into the HTML as base64 instead; a per-tag inline={true|false} on <Figure> overrides that for one image. --link-assets is kept as an explicit alias for the default.');
-  console.log('  Mermaid diagrams load from a CDN at runtime by default (fast builds, needs network); --inline-mermaid bakes Mermaid into the HTML for a fully offline single file; --mermaid-cdn overrides the CDN URL.');
-  console.log(`  --skin bakes a default palette (${SKINS.map(skin => skin.id).join(', ')}); --default-mode bakes a default dark/light mode; --style bakes a default component style (${COMPONENT_STYLES.map(style => style.id).join(', ')}). Readers can still switch in the UI.`);
+  console.log(
+    '  Multiple inputs build in parallel (default 2 at a time, cap 4); -o is then a directory.'
+  );
+  console.log(
+    '  Figures are kept as relative links by default (small HTML; ship the assets/ dir beside it). --inline-assets bakes every local image into the HTML as base64 instead; a per-tag inline={true|false} on <Figure> overrides that for one image. --link-assets is kept as an explicit alias for the default.'
+  );
+  console.log(
+    '  Mermaid diagrams load from a CDN at runtime by default (fast builds, needs network); --inline-mermaid bakes Mermaid into the HTML for a fully offline single file; --mermaid-cdn overrides the CDN URL.'
+  );
+  console.log(
+    `  --skin bakes a default palette (${SKINS.map(skin => skin.id).join(', ')}); --default-mode bakes a default dark/light mode; --style bakes a default component style (${COMPONENT_STYLES.map(style => style.id).join(', ')}). Readers can still switch in the UI.`
+  );
 }
 
 async function exists(filePath) {
-  try { await access(filePath, constants.F_OK); return true; } catch { return false; }
+  try {
+    await access(filePath, constants.F_OK);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /** Byte size of an asset, or null when it does not exist. */
 function assetByteSize(filePath) {
-  try { return statSync(filePath).size; } catch { return null; }
+  try {
+    return statSync(filePath).size;
+  } catch {
+    return null;
+  }
 }
 
 function flagValue(flags, names) {
@@ -50,8 +95,29 @@ function fail(message) {
   process.exit(1);
 }
 
-const VALUE_FLAGS = new Set(['--mode', '-o', '--output', '--concurrency', '--skin', '--default-mode', '--style', '--mermaid-cdn']);
-const BOOLEAN_FLAGS = new Set(['--force', '--json', '--strict', '--no-validate', '--link-assets', '--inline-assets', '--inline-mermaid', '--help', '-h', '--version', '-v']);
+const VALUE_FLAGS = new Set([
+  '--mode',
+  '-o',
+  '--output',
+  '--concurrency',
+  '--skin',
+  '--default-mode',
+  '--style',
+  '--mermaid-cdn'
+]);
+const BOOLEAN_FLAGS = new Set([
+  '--force',
+  '--json',
+  '--strict',
+  '--no-validate',
+  '--link-assets',
+  '--inline-assets',
+  '--inline-mermaid',
+  '--help',
+  '-h',
+  '--version',
+  '-v'
+]);
 const COMMAND_NAMES = ['help', 'create', 'new', 'render', 'validate', 'guide'];
 
 /** Splits argv into flags, flag values and positional arguments. */
@@ -82,7 +148,10 @@ function extractCommand(argv) {
   const rest = [...argv];
   for (let i = 0; i < rest.length; i += 1) {
     const arg = rest[i];
-    if (VALUE_FLAGS.has(arg)) { i += 1; continue; }
+    if (VALUE_FLAGS.has(arg)) {
+      i += 1;
+      continue;
+    }
     if (arg.startsWith('-') && arg.length > 1) continue;
     if (COMMAND_NAMES.includes(arg)) {
       rest.splice(i, 1);
@@ -105,7 +174,9 @@ function resolveOutputs(inputs, explicit) {
   if (path.extname(target).toLowerCase() === '.html') {
     fail('`-o` must be a directory when building more than one input.');
   }
-  return inputs.map(input => path.join(target, `${path.basename(input, path.extname(input))}.html`));
+  return inputs.map(input =>
+    path.join(target, `${path.basename(input, path.extname(input))}.html`)
+  );
 }
 
 function printDiagnostics(source, options, { json, label = null, quiet = false }) {
@@ -123,7 +194,9 @@ function printDiagnostics(source, options, { json, label = null, quiet = false }
     console.error(`${severity} ${where}  ${item.code}  ${item.message}`);
   }
   const { error, warning } = countBySeverity(diagnostics);
-  const scope = carrier ? `${carrier} · ${stats.nodes} 节点 / ${stats.relations} 关系` : '未识别载体';
+  const scope = carrier
+    ? `${carrier} · ${stats.nodes} 节点 / ${stats.relations} 关系`
+    : '未识别载体';
   if (error) console.error(`校验失败：${error} 个错误，${warning} 个警告（${scope}）`);
   else if (warning) console.error(`校验通过：${warning} 个警告（${scope}）`);
   else console.error(`校验通过：无问题（${scope}）`);
@@ -133,7 +206,10 @@ function printDiagnostics(source, options, { json, label = null, quiet = false }
 const { command, rest } = extractCommand(args);
 args = rest;
 
-if (args.includes('--help') || args.includes('-h')) { usage(); process.exit(0); }
+if (args.includes('--help') || args.includes('-h')) {
+  usage();
+  process.exit(0);
+}
 if (args.includes('--version') || args.includes('-v')) {
   const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
   console.log(pkg.version);
@@ -155,13 +231,18 @@ for (let i = 0; i < args.length; i += 1) {
   }
 }
 
-if (command === 'help') { usage(); process.exit(0); }
+if (command === 'help') {
+  usage();
+  process.exit(0);
+}
 
 if (command === 'guide') {
   const mode = flagValue(args, ['--mode']) || 'atlas';
   if (!['atlas', 'scroll'].includes(mode)) fail(`Unknown mode: ${mode}`);
-  const output = path.resolve(flagValue(args, ['-o', '--output']) || `concept-atlas-${mode}-guide.mdx`);
-  if (await exists(output) && !args.includes('--force')) {
+  const output = path.resolve(
+    flagValue(args, ['-o', '--output']) || `concept-atlas-${mode}-guide.mdx`
+  );
+  if ((await exists(output)) && !args.includes('--force')) {
     console.error(`Refusing to overwrite ${output}; pass --force to replace it.`);
     process.exit(1);
   }
@@ -174,7 +255,11 @@ if (command === 'guide') {
   await copyFile(source, output);
   const assetsSource = path.join(templateRoot, 'references', 'assets');
   const assetsTarget = path.join(path.dirname(output), 'assets');
-  if (await exists(assetsSource) && path.resolve(assetsSource) !== path.resolve(assetsTarget) && (args.includes('--force') || !(await exists(assetsTarget)))) {
+  if (
+    (await exists(assetsSource)) &&
+    path.resolve(assetsSource) !== path.resolve(assetsTarget) &&
+    (args.includes('--force') || !(await exists(assetsTarget)))
+  ) {
     await cp(assetsSource, assetsTarget, { recursive: true, force: true });
     console.log(`Copied guide assets to ${assetsTarget}`);
   }
@@ -186,16 +271,22 @@ if (command === 'guide') {
 if (command === 'create' || command === 'new') {
   const output = args[0] ? path.resolve(args[0]) : null;
   const mode = flagValue(args, ['--mode']) || 'atlas';
-  if (!output || path.extname(output).toLowerCase() !== '.mdx' || !['atlas', 'scroll'].includes(mode)) {
+  if (
+    !output ||
+    path.extname(output).toLowerCase() !== '.mdx' ||
+    !['atlas', 'scroll'].includes(mode)
+  ) {
     usage();
     process.exit(1);
   }
-  if (await exists(output) && !args.includes('--force')) {
+  if ((await exists(output)) && !args.includes('--force')) {
     console.error(`Refusing to overwrite ${output}; pass --force to replace it.`);
     process.exit(1);
   }
   await mkdir(path.dirname(output), { recursive: true });
-  const template = mode === 'atlas' ? `\
+  const template =
+    mode === 'atlas'
+      ? `\
 {/* shell 的 title 会成为浏览器标签页标题；页面图标固定为 📃。请把“主题名称”改成真实标题。 */}
 <ExplainPage id="topic-id" title="主题名称" summary="用一句话说明这个主题解决什么问题。">
   <ConceptGraph root="root-node">
@@ -221,7 +312,8 @@ if (command === 'create' || command === 'new') {
     <Relation from="first-branch" to="second-branch" type="depends-on" label="依赖" />
   </ConceptGraph>
 </ExplainPage>
-` : `\
+`
+      : `\
 {/* shell 的 title 会成为浏览器标签页标题；页面图标固定为 📃。请把“主题名称”改成真实标题。 */}
 <ScrollDocument>
   <ScrollHeader title="主题名称">用一两句话说明主题、背景和读者应该带走的判断。</ScrollHeader>
@@ -247,7 +339,9 @@ if (command === 'create' || command === 'new') {
 `;
   await writeFile(output, template, 'utf8');
   console.log(`Created ${mode} MDX template: ${output}`);
-  console.log(`Tip: run "npx concept-atlas-dense-explain guide --mode ${mode}" for a full component reference.`);
+  console.log(
+    `Tip: run "npx concept-atlas-dense-explain guide --mode ${mode}" for a full component reference.`
+  );
   process.exit(0);
 }
 
@@ -270,18 +364,25 @@ const modeFlag = parsed.values.get('--mode') || null;
 let skinFlag = null;
 if (parsed.values.has('--skin')) {
   skinFlag = normalizeSkin(parsed.values.get('--skin'));
-  if (!skinFlag) fail(`Unknown skin: ${parsed.values.get('--skin')} (available: ${SKINS.map(skin => skin.id).join(', ')})`);
+  if (!skinFlag)
+    fail(
+      `Unknown skin: ${parsed.values.get('--skin')} (available: ${SKINS.map(skin => skin.id).join(', ')})`
+    );
 }
 let defaultModeFlag = null;
 if (parsed.values.has('--default-mode')) {
   const raw = parsed.values.get('--default-mode');
-  if (!['dark', 'light', 'system'].includes(raw)) fail(`Invalid --default-mode: ${raw} (use dark, light or system)`);
+  if (!['dark', 'light', 'system'].includes(raw))
+    fail(`Invalid --default-mode: ${raw} (use dark, light or system)`);
   defaultModeFlag = raw;
 }
 let styleFlag = null;
 if (parsed.values.has('--style')) {
   styleFlag = normalizeStyle(parsed.values.get('--style'));
-  if (!styleFlag) fail(`Unknown component style: ${parsed.values.get('--style')} (available: ${COMPONENT_STYLES.map(style => style.id).join(', ')})`);
+  if (!styleFlag)
+    fail(
+      `Unknown component style: ${parsed.values.get('--style')} (available: ${COMPONENT_STYLES.map(style => style.id).join(', ')})`
+    );
 }
 
 if (command === 'validate') {
@@ -290,21 +391,26 @@ if (command === 'validate') {
     fail('Provide an existing .mdx file to validate.');
   }
   const source = await readFile(target, 'utf8');
-  const result = printDiagnostics(source, {
-    filePath: target,
-    mode: modeFlag,
-    strict,
-    inlineAssets,
-    assetExists: spec => existsSync(path.resolve(path.dirname(target), spec)),
-    assetSize: spec => assetByteSize(path.resolve(path.dirname(target), spec)),
-  }, { json });
+  const result = printDiagnostics(
+    source,
+    {
+      filePath: target,
+      mode: modeFlag,
+      strict,
+      inlineAssets,
+      assetExists: spec => existsSync(path.resolve(path.dirname(target), spec)),
+      assetSize: spec => assetByteSize(path.resolve(path.dirname(target), spec))
+    },
+    { json }
+  );
   process.exit(countBySeverity(result.diagnostics).error ? 1 : 0);
 }
 
 // `render` is the default command, so it may still appear as a leading token.
-const positional = parsed.positional[0] && parsed.positional[0].toLowerCase() === 'render'
-  ? parsed.positional.slice(1)
-  : parsed.positional;
+const positional =
+  parsed.positional[0] && parsed.positional[0].toLowerCase() === 'render'
+    ? parsed.positional.slice(1)
+    : parsed.positional;
 const inputs = positional.map(entry => path.resolve(entry));
 
 if (!inputs.length) {
@@ -322,7 +428,7 @@ for (const input of inputs) {
 const outputs = resolveOutputs(inputs, parsed.values.get('-o') || parsed.values.get('--output'));
 
 for (const output of outputs) {
-  if (await exists(output) && !force) {
+  if ((await exists(output)) && !force) {
     console.error(`Refusing to overwrite ${output}; pass --force to replace it.`);
     process.exit(1);
   }
@@ -333,16 +439,20 @@ const sources = await Promise.all(inputs.map(input => readFile(input, 'utf8')));
 
 // Validate every document before building any of them: a batch should fail as a
 // batch rather than leaving half the targets rendered.
-const validations = sources.map((source, index) => printDiagnostics(source, {
-  filePath: inputs[index],
-  mode: modeFlag,
-  strict,
-  inlineAssets,
-  assetExists: spec => existsSync(path.resolve(path.dirname(inputs[index]), spec)),
-  assetSize: spec => assetByteSize(path.resolve(path.dirname(inputs[index]), spec)),
-}, json
-  ? { json: false, quiet: true }
-  : { json: false, label: multi ? inputs[index] : null }));
+const validations = sources.map((source, index) =>
+  printDiagnostics(
+    source,
+    {
+      filePath: inputs[index],
+      mode: modeFlag,
+      strict,
+      inlineAssets,
+      assetExists: spec => existsSync(path.resolve(path.dirname(inputs[index]), spec)),
+      assetSize: spec => assetByteSize(path.resolve(path.dirname(inputs[index]), spec))
+    },
+    json ? { json: false, quiet: true } : { json: false, label: multi ? inputs[index] : null }
+  )
+);
 
 if (json) {
   const payload = multi
@@ -351,7 +461,10 @@ if (json) {
   process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
 }
 
-const errorCount = validations.reduce((sum, result) => sum + countBySeverity(result.diagnostics).error, 0);
+const errorCount = validations.reduce(
+  (sum, result) => sum + countBySeverity(result.diagnostics).error,
+  0
+);
 if (errorCount && !skipValidate) {
   console.error('内容校验未通过，已停止构建。修复后重试，或用 --no-validate 强制构建。');
   process.exit(1);
@@ -360,27 +473,47 @@ if (errorCount && !skipValidate) {
 const jobs = inputs.map((input, index) => {
   const mode = modeFlag || validations[index].carrier;
   if (!mode || !['atlas', 'scroll'].includes(mode)) {
-    console.error(`Could not detect the MDX carrier for ${input}; choose --mode atlas or --mode scroll.`);
+    console.error(
+      `Could not detect the MDX carrier for ${input}; choose --mode atlas or --mode scroll.`
+    );
     process.exit(1);
   }
   // Figures link by default. If the HTML is written outside the MDX's directory
   // its relative image paths no longer resolve, so warn unless --inline-assets
   // bakes them in.
-  if (!inlineAssets && path.resolve(path.dirname(outputs[index])) !== path.resolve(path.dirname(input))) {
-    console.error(`警告：默认外链图片，但 ${outputs[index]} 不在 ${path.dirname(input)} 内，相对图片路径会失效；请用 --inline-assets，或把 assets/ 一并放到输出目录。`);
+  if (
+    !inlineAssets &&
+    path.resolve(path.dirname(outputs[index])) !== path.resolve(path.dirname(input))
+  ) {
+    console.error(
+      `警告：默认外链图片，但 ${outputs[index]} 不在 ${path.dirname(input)} 内，相对图片路径会失效；请用 --inline-assets，或把 assets/ 一并放到输出目录。`
+    );
   }
-  return { input, output: outputs[index], mode, title: extractPageTitle(sources[index]), features: detectFeatures(sources[index]), inlineAssets };
+  return {
+    input,
+    output: outputs[index],
+    mode,
+    title: extractPageTitle(sources[index]),
+    features: detectFeatures(sources[index]),
+    inlineAssets
+  };
 });
 
 const limit = clampConcurrency(parsed.values.get('--concurrency'), jobs.length);
 const started = Date.now();
-const results = await runPool(jobs.map(job => () => buildOne(job)), limit);
+const results = await runPool(
+  jobs.map(job => () => buildOne(job)),
+  limit
+);
 
 const failures = results.filter(result => !result.ok);
 const saved = summarizeFeatures(jobs, results);
-console.log(`Built ${results.length - failures.length}/${results.length} page(s) with concurrency ${limit} in ${((Date.now() - started) / 1000).toFixed(1)}s${saved ? ` (${saved})` : ''}.`);
+console.log(
+  `Built ${results.length - failures.length}/${results.length} page(s) with concurrency ${limit} in ${((Date.now() - started) / 1000).toFixed(1)}s${saved ? ` (${saved})` : ''}.`
+);
 if (failures.length) {
-  for (const failure of failures) console.error(`Build failed for ${failure.input}:`, failure.error);
+  for (const failure of failures)
+    console.error(`Build failed for ${failure.input}:`, failure.error);
   process.exit(1);
 }
 
@@ -390,7 +523,10 @@ async function buildOne(job) {
   // Each build gets its own scratch outDir: the template always writes
   // `index.html`/`scroll.html`, so concurrent builds sharing a directory would
   // overwrite each other before the rename.
-  const scratch = path.join(path.dirname(output), `.concept-atlas-${process.pid}-${(buildCounter += 1)}`);
+  const scratch = path.join(
+    path.dirname(output),
+    `.concept-atlas-${process.pid}-${(buildCounter += 1)}`
+  );
   await mkdir(path.dirname(output), { recursive: true });
   await mkdir(scratch, { recursive: true });
   const define = { __ATLAS_FEATURES__: JSON.stringify(features) };
@@ -413,8 +549,8 @@ async function buildOne(job) {
       build: {
         outDir: scratch,
         emptyOutDir: false,
-        rollupOptions: { input: path.join(templateRoot, templateEntry) },
-      },
+        rollupOptions: { input: path.join(templateRoot, templateEntry) }
+      }
     });
     // Swap the new build in without a window where no output exists: on
     // POSIX rename replaces atomically; the fallback path (Windows can refuse
@@ -441,7 +577,9 @@ async function buildOne(job) {
       }
       if (hasBackup) await rm(backup, { force: true });
     }
-    console.log(`Built ${mode} HTML: ${output}${title ? `  [tab: ${title}]` : ''}${describeFeatures(features)}${inline ? '  [figures inlined]' : '  [figures linked]'}`);
+    console.log(
+      `Built ${mode} HTML: ${output}${title ? `  [tab: ${title}]` : ''}${describeFeatures(features)}${inline ? '  [figures inlined]' : '  [figures linked]'}`
+    );
     return { ok: true, input, output };
   } catch (error) {
     return { ok: false, input, output, error };

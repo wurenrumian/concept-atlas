@@ -15,7 +15,9 @@ const rootDir = path.resolve(__dirname, '..');
  * it back into the HTML for a fully offline single file; CONCEPT_ATLAS_MERMAID_CDN
  * overrides the CDN URL.
  */
-const INLINE_MERMAID = ['1', 'true', 'yes'].includes((process.env.CONCEPT_ATLAS_INLINE_MERMAID || '').toLowerCase());
+const INLINE_MERMAID = ['1', 'true', 'yes'].includes(
+  (process.env.CONCEPT_ATLAS_INLINE_MERMAID || '').toLowerCase()
+);
 const MERMAID_CDN_URL = process.env.CONCEPT_ATLAS_MERMAID_CDN || '';
 
 /**
@@ -29,7 +31,8 @@ function appearanceDefines() {
   const mode = process.env.CONCEPT_ATLAS_DEFAULT_MODE;
   const style = normalizeStyle(process.env.CONCEPT_ATLAS_STYLE || '');
   if (skin) define.__ATLAS_DEFAULT_SKIN__ = JSON.stringify(skin);
-  if (['dark', 'light', 'system'].includes(mode)) define.__ATLAS_DEFAULT_MODE__ = JSON.stringify(mode);
+  if (['dark', 'light', 'system'].includes(mode))
+    define.__ATLAS_DEFAULT_MODE__ = JSON.stringify(mode);
   if (style) define.__ATLAS_DEFAULT_STYLE__ = JSON.stringify(style);
   return define;
 }
@@ -45,7 +48,10 @@ function demoSourceFor(entry) {
   // atlas-guide.mdx and scroll-main.jsx mounts scroll-guide.mdx.
   // content/compile-runtime.mdx is a test-only reference and never reaches
   // this build, so it must not feed feature detection.
-  const demo = path.resolve(rootDir, entry === 'scroll.html' ? 'content/scroll-guide.mdx' : 'content/atlas-guide.mdx');
+  const demo = path.resolve(
+    rootDir,
+    entry === 'scroll.html' ? 'content/scroll-guide.mdx' : 'content/atlas-guide.mdx'
+  );
   return fs.existsSync(demo) ? { demo, source: fs.readFileSync(demo, 'utf8') } : null;
 }
 
@@ -70,9 +76,12 @@ async function buildCarrier(entry, baseDefine) {
     if (features.mermaid) {
       define.__ATLAS_MERMAID_MODE__ = JSON.stringify(INLINE_MERMAID ? 'inline' : 'cdn');
       if (MERMAID_CDN_URL) define.__ATLAS_MERMAID_CDN_URL__ = JSON.stringify(MERMAID_CDN_URL);
-      if (!INLINE_MERMAID) console.log(`🌐 ${entry} Mermaid 运行时从 CDN 加载（--inline-mermaid 可内联）`);
+      if (!INLINE_MERMAID)
+        console.log(`🌐 ${entry} Mermaid 运行时从 CDN 加载（--inline-mermaid 可内联）`);
     }
-    const dropped = [features.math ? null : 'KaTeX', features.mermaid ? null : 'Mermaid'].filter(Boolean);
+    const dropped = [features.math ? null : 'KaTeX', features.mermaid ? null : 'Mermaid'].filter(
+      Boolean
+    );
     if (dropped.length) console.log(`⚡ ${entry} 省略未使用的渲染器：${dropped.join('、')}`);
   }
 
@@ -84,7 +93,7 @@ async function buildCarrier(entry, baseDefine) {
       // dist is cleared once up front; parallel carriers must not wipe each
       // other's output mid-build.
       emptyOutDir: false,
-      rollupOptions: { input: path.resolve(rootDir, entry) },
+      rollupOptions: { input: path.resolve(rootDir, entry) }
     }
   });
 }
@@ -99,10 +108,17 @@ async function runBuild() {
     fs.mkdirSync(distDir, { recursive: true });
 
     const mode = process.env.CONCEPT_ATLAS_MODE;
-    const carriers = mode === 'atlas' ? ['index.html'] : mode === 'scroll' ? ['scroll.html'] : ['index.html', 'scroll.html'];
+    const carriers =
+      mode === 'atlas'
+        ? ['index.html']
+        : mode === 'scroll'
+          ? ['scroll.html']
+          : ['index.html', 'scroll.html'];
     const define = appearanceDefines();
     if (define.__ATLAS_DEFAULT_SKIN__ || define.__ATLAS_DEFAULT_MODE__) {
-      console.log(`🎨 默认外观：skin=${define.__ATLAS_DEFAULT_SKIN__ || '(carrier 默认)'} mode=${define.__ATLAS_DEFAULT_MODE__ || '(carrier 默认)'}`);
+      console.log(
+        `🎨 默认外观：skin=${define.__ATLAS_DEFAULT_SKIN__ || '(carrier 默认)'} mode=${define.__ATLAS_DEFAULT_MODE__ || '(carrier 默认)'}`
+      );
     }
 
     // vite-plugin-singlefile supports one HTML input per build and emits no
@@ -110,7 +126,9 @@ async function runBuild() {
     // instead of one full pass after another.
     await Promise.all(carriers.map(entry => buildCarrier(entry, define)));
 
-    console.log(`✅ 构建成功！产物已生成到 ${carriers.map(entry => `dist/${entry}`).join(' 和 ')}。`);
+    console.log(
+      `✅ 构建成功！产物已生成到 ${carriers.map(entry => `dist/${entry}`).join(' 和 ')}。`
+    );
   } catch (err) {
     console.error('❌ 构建失败：', err);
     process.exit(1);

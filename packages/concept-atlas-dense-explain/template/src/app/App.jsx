@@ -30,7 +30,14 @@ export function App({ mdxContent, initialData }) {
   });
 
   // Appearance state (skin x mode x component style), shared with the scroll carrier via localStorage
-  const { skin, mode: theme, style, setSkin, setStyle, toggleMode } = useAppearance({ defaultMode: 'light' });
+  const {
+    skin,
+    mode: theme,
+    style,
+    setSkin,
+    setStyle,
+    toggleMode
+  } = useAppearance({ defaultMode: 'light' });
 
   const toggleTheme = toggleMode;
 
@@ -42,11 +49,11 @@ export function App({ mdxContent, initialData }) {
   })();
 
   const [currentNodeId, setCurrentNodeId] = useState(
-    () => initialHashNode || graph.meta.rootId || '',
+    () => initialHashNode || graph.meta.rootId || ''
   );
   const [nav, setNav] = useState(() => ({
     entries: (initialHashNode ? [initialHashNode] : [graph.meta.rootId]).filter(Boolean),
-    index: 0,
+    index: 0
   }));
   // Popstate handlers must read the *current* history state, not the closure
   // captured when the effect was created.
@@ -57,7 +64,7 @@ export function App({ mdxContent, initialData }) {
 
   const searchResults = useMemo(
     () => searchNodes(Array.from(graph.nodes.values()), globalQuery),
-    [globalQuery, graph.nodes],
+    [globalQuery, graph.nodes]
   );
 
   const navigateToNode = (nodeId, { replace = false } = {}) => {
@@ -74,7 +81,7 @@ export function App({ mdxContent, initialData }) {
     else window.history.pushState(historyState, '', nextHash);
   };
 
-  const moveHistory = (direction) => {
+  const moveHistory = direction => {
     // Browser history mirrors the in-app entries one-for-one (every navigation
     // pushState'd the matching { atlasIndex }), so step through the real
     // browser history. pushState here used to fork the two stacks and grow
@@ -85,7 +92,7 @@ export function App({ mdxContent, initialData }) {
 
   // Keyboard navigation shortcuts
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = e => {
       if (e.isComposing) return;
 
       // Alt + arrows move through browsing history. Handled before the modifier
@@ -103,7 +110,8 @@ export function App({ mdxContent, initialData }) {
 
       // Toggle views with 1 and 2 or 'g' and 'e' if not focused on input.
       const target = document.activeElement;
-      const typing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(target?.tagName) || target?.isContentEditable;
+      const typing =
+        ['INPUT', 'TEXTAREA', 'SELECT'].includes(target?.tagName) || target?.isContentEditable;
       if (e.metaKey || e.ctrlKey || e.altKey || typing) return;
 
       const key = e.key.toLowerCase();
@@ -127,22 +135,22 @@ export function App({ mdxContent, initialData }) {
   }, [graph, currentNodeId, nav]);
 
   useEffect(() => {
-    const handlePopState = (event) => {
+    const handlePopState = event => {
       const current = navRef.current;
       const nodeId = readNodeFromHash();
       if (nodeId && !graph.nodes.has(nodeId)) return; // stale/foreign hash: ignore
-      const tagged = event.state && Number.isInteger(event.state.atlasIndex)
-        ? event.state.atlasIndex
-        : null;
+      const tagged =
+        event.state && Number.isInteger(event.state.atlasIndex) ? event.state.atlasIndex : null;
       const taggedValid = tagged !== null && tagged >= 0 && tagged < current.entries.length;
       let next = null;
       if (nodeId) {
         // Prefer the index stamped on the entry: entries may contain the same
         // node twice, and lastIndexOf alone would resolve backwards steps to a
         // later duplicate.
-        next = taggedValid && current.entries[tagged] === nodeId
-          ? { entries: current.entries, index: tagged }
-          : syncFromLocation(current, nodeId);
+        next =
+          taggedValid && current.entries[tagged] === nodeId
+            ? { entries: current.entries, index: tagged }
+            : syncFromLocation(current, nodeId);
       } else if (taggedValid) {
         // Back to the hash-less entry the page loaded on: restore it by index.
         next = { entries: current.entries, index: tagged };
@@ -190,16 +198,37 @@ export function App({ mdxContent, initialData }) {
             <input
               value={globalQuery}
               onChange={event => setGlobalQuery(event.target.value)}
-              onKeyDown={event => { if (event.key === 'Escape') setGlobalQuery(''); }}
+              onKeyDown={event => {
+                if (event.key === 'Escape') setGlobalQuery('');
+              }}
               placeholder="搜索所有节点…"
               aria-label="搜索所有节点"
             />
-            {globalQuery && <button type="button" onClick={() => setGlobalQuery('')} aria-label="清除搜索"><X size={13} /></button>}
+            {globalQuery && (
+              <button type="button" onClick={() => setGlobalQuery('')} aria-label="清除搜索">
+                <X size={13} />
+              </button>
+            )}
             {searchResults.length > 0 && (
               <div className="global-search-results" role="listbox">
                 {searchResults.map(node => (
-                  <button type="button" key={node.id} onClick={() => { navigateToNode(node.id); setGlobalQuery(''); }} role="option">
-                    <span>{node.title}</span><small>{node.level}{node.kind && NODE_KINDS[node.kind] ? ` · ${NODE_KINDS[node.kind].label}` : ''} · {node.summary || node.id}</small>
+                  <button
+                    type="button"
+                    key={node.id}
+                    onClick={() => {
+                      navigateToNode(node.id);
+                      setGlobalQuery('');
+                    }}
+                    role="option"
+                  >
+                    <span>{node.title}</span>
+                    <small>
+                      {node.level}
+                      {node.kind && NODE_KINDS[node.kind]
+                        ? ` · ${NODE_KINDS[node.kind].label}`
+                        : ''}{' '}
+                      · {node.summary || node.id}
+                    </small>
                   </button>
                 ))}
               </div>

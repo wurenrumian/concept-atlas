@@ -3,7 +3,13 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { NODE_KINDS, NODE_KIND_NAMES, NODE_KIND_SET, normalizeKind, kindInfo } from '../src/model/node-kinds.js';
+import {
+  NODE_KINDS,
+  NODE_KIND_NAMES,
+  NODE_KIND_SET,
+  normalizeKind,
+  kindInfo
+} from '../src/model/node-kinds.js';
 import { normalizeNode, buildGraphModel } from '../src/model/concept-schema.js';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -60,9 +66,9 @@ test('buildGraphModel reports unknown kinds and keeps valid ones', () => {
     meta: {},
     nodes: [
       { id: 'r', title: 'R', level: 'L0', kind: 'system' },
-      { id: 'x', title: 'X', level: 'L1', parent: 'r', kind: 'bogus' },
+      { id: 'x', title: 'X', level: 'L1', parent: 'r', kind: 'bogus' }
     ],
-    relations: [],
+    relations: []
   });
   assert.equal(model.nodes.get('r').kind, 'system');
   assert.equal(model.nodes.get('x').kind, null);

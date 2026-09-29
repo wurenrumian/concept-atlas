@@ -15,7 +15,7 @@ const MIME_TYPES = {
   '.avif': 'image/avif',
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
-  '.bmp': 'image/bmp',
+  '.bmp': 'image/bmp'
 };
 
 // An opening/self-closing JSX tag. Quoted attribute values may contain `>`, so
@@ -47,21 +47,28 @@ function readInlineProp(tag) {
 function maskCode(code) {
   const blocks = [];
   const token = index => `\u0000atlas-mask-${index}\u0000`;
-  const hide = (text) => { const key = token(blocks.length); blocks.push(text); return key; };
+  const hide = text => {
+    const key = token(blocks.length);
+    blocks.push(text);
+    return key;
+  };
   let fence = null;
-  const lines = code.split('\n').map((line) => {
+  const lines = code.split('\n').map(line => {
     const marker = line.match(/^\s*(`{3,}|~{3,})/);
     if (fence) {
       if (marker && marker[1][0] === fence[0] && marker[1].length >= fence.length) fence = null;
       return hide(line);
     }
-    if (marker) { fence = marker[1]; return hide(line); }
+    if (marker) {
+      fence = marker[1];
+      return hide(line);
+    }
     // Keep the character before the span so we never eat a JSX opening brace.
     return line.replace(/([^{])`[^`\n]*`/g, match => match[0] + hide(match.slice(1)));
   });
   return {
     masked: lines.join('\n'),
-    restore: text => blocks.reduce((acc, block, index) => acc.split(token(index)).join(block), text),
+    restore: text => blocks.reduce((acc, block, index) => acc.split(token(index)).join(block), text)
   };
 }
 
@@ -90,7 +97,7 @@ function inlineMdxAssets() {
     transform(code, id) {
       if (!id.endsWith('.mdx')) return null;
       const dir = path.dirname(id.split('?')[0]);
-      const resolveLocal = (src) => {
+      const resolveLocal = src => {
         if (/^(https?:|data:|\/|#)/i.test(src)) return null;
         const file = path.resolve(dir, src);
         const mime = MIME_TYPES[path.extname(file).toLowerCase()];
@@ -100,7 +107,7 @@ function inlineMdxAssets() {
 
       const { masked, restore } = maskCode(code);
       let changed = false;
-      let output = masked.replace(JSX_TAG_RE, (tag) => {
+      let output = masked.replace(JSX_TAG_RE, tag => {
         const srcMatch = tag.match(/\bsrc=(["'])([^"']+)\1/);
         if (!srcMatch) return tag;
         const prop = readInlineProp(tag);
@@ -123,7 +130,7 @@ function inlineMdxAssets() {
       }
 
       return changed ? { code: restore(output), map: null } : null;
-    },
+    }
   };
 }
 
@@ -182,7 +189,7 @@ export default mermaid;
 const OPTIONAL_FEATURES = {
   mermaid: { feature: 'mermaid', stub: 'mermaid' },
   katex: { feature: 'math', stub: 'katex' },
-  'katex/dist/katex.min.css': { feature: 'math', stub: 'katex-css' },
+  'katex/dist/katex.min.css': { feature: 'math', stub: 'katex-css' }
 };
 
 const FEATURE_STUBS = {
@@ -203,7 +210,7 @@ export default katex;
 `,
   // The stylesheet stub is intentionally empty: dropping it is what removes the
   // base64-inlined KaTeX woff2 payload from the page.
-  'katex-css': '',
+  'katex-css': ''
 };
 
 function optionalFeatures() {
@@ -247,7 +254,7 @@ function optionalFeatures() {
       if (!id.startsWith('\0atlas-stub:')) return null;
       const stub = id.slice('\0atlas-stub:'.length);
       return Object.hasOwn(FEATURE_STUBS, stub) ? FEATURE_STUBS[stub] : null;
-    },
+    }
   };
 }
 
@@ -272,7 +279,9 @@ function appearanceDefaults() {
     configResolved(config) {
       const define = config.define || {};
       skin = resolveToken(define.__ATLAS_DEFAULT_SKIN__, normalizeSkin);
-      mode = resolveToken(define.__ATLAS_DEFAULT_MODE__, value => (['dark', 'light', 'system'].includes(value) ? value : null));
+      mode = resolveToken(define.__ATLAS_DEFAULT_MODE__, value =>
+        ['dark', 'light', 'system'].includes(value) ? value : null
+      );
       style = resolveToken(define.__ATLAS_DEFAULT_STYLE__, normalizeStyle);
     },
     transformIndexHtml(html) {
@@ -281,7 +290,7 @@ function appearanceDefaults() {
       if (mode) output = output.split('__ATLAS_DEFAULT_MODE__').join(mode);
       if (style) output = output.split('__ATLAS_DEFAULT_STYLE__').join(style);
       return output;
-    },
+    }
   };
 }
 
@@ -307,13 +316,16 @@ function pageTitle() {
   return {
     name: 'concept-atlas-page-title',
     configResolved(config) {
-      title = resolveToken(config.define && config.define.__ATLAS_PAGE_TITLE__, value => value.trim() || null);
+      title = resolveToken(
+        config.define && config.define.__ATLAS_PAGE_TITLE__,
+        value => value.trim() || null
+      );
     },
     transformIndexHtml(html) {
       if (!title) return html;
       const escaped = title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       return html.replace(/<title>[\s\S]*?<\/title>/, `<title>${escaped}</title>`);
-    },
+    }
   };
 }
 
@@ -323,17 +335,17 @@ export default defineConfig({
     {
       enforce: 'pre',
       ...mdx({
-        providerImportSource: null,
-      }),
+        providerImportSource: null
+      })
     },
     react(),
     optionalFeatures(),
     appearanceDefaults(),
     pageTitle(),
-    viteSingleFile(),
+    viteSingleFile()
   ],
   build: {
     outDir: 'dist',
-    emptyOutDir: true,
-  },
+    emptyOutDir: true
+  }
 });

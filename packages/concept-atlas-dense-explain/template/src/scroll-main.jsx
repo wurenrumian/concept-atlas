@@ -18,7 +18,14 @@ if (rootElement) {
 }
 
 function ScrollApp() {
-  const { skin, mode: theme, style, setSkin, setStyle, toggleMode } = useAppearance({ defaultMode: 'light' });
+  const {
+    skin,
+    mode: theme,
+    style,
+    setSkin,
+    setStyle,
+    toggleMode
+  } = useAppearance({ defaultMode: 'light' });
 
   return (
     <main className="continuous-page">

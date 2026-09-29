@@ -24,10 +24,10 @@ export function SkinPicker({ skin, style, onSkinChange, onStyleChange }) {
 
   useEffect(() => {
     if (!open) return undefined;
-    const handlePointer = (event) => {
+    const handlePointer = event => {
       if (!rootRef.current?.contains(event.target)) setOpen(false);
     };
-    const handleKey = (event) => {
+    const handleKey = event => {
       if (event.key !== 'Escape') return;
       setOpen(false);
       // Stop Escape from also reaching the window-level handler in App.jsx,
@@ -63,11 +63,16 @@ export function SkinPicker({ skin, style, onSkinChange, onStyleChange }) {
               key={item.id}
               selected={item.id === skin}
               label={`配色 ${item.label}`}
-              onClick={() => { onSkinChange(item.id); setOpen(false); }}
+              onClick={() => {
+                onSkinChange(item.id);
+                setOpen(false);
+              }}
             >
               <span
                 className="skin-swatch"
-                style={{ background: `linear-gradient(135deg, ${item.swatch.dark} 0 42%, ${item.swatch.accent} 42% 58%, ${item.swatch.light} 58% 100%)` }}
+                style={{
+                  background: `linear-gradient(135deg, ${item.swatch.dark} 0 42%, ${item.swatch.accent} 42% 58%, ${item.swatch.light} 58% 100%)`
+                }}
                 aria-hidden="true"
               />
               <span className="skin-option-label">{item.label}</span>
@@ -79,7 +84,10 @@ export function SkinPicker({ skin, style, onSkinChange, onStyleChange }) {
               key={item.id}
               selected={item.id === style}
               label={`组件风格 ${item.label}`}
-              onClick={() => { onStyleChange(item.id); setOpen(false); }}
+              onClick={() => {
+                onStyleChange(item.id);
+                setOpen(false);
+              }}
             >
               <span className={`style-glyph style-glyph-${item.id}`} aria-hidden="true" />
               <span className="skin-option-label">{item.label}</span>
