@@ -23,14 +23,14 @@ npx concept-atlas-dense-explain guide --mode scroll -o scroll-guide.mdx
 npx concept-atlas-dense-explain article.mdx --mode scroll -o dist/article.html
 ```
 
-默认输出为输入文件同目录下的同名 `.html`；已有输出需要显式添加 `--force` 才会覆盖。`validate` 支持 `--json` 和 `--strict`，校验未通过时会阻止构建，可用 `--no-validate` 跳过。
+默认输出为输入文件同目录下的同名 `.html`；已有输出会被直接覆盖（`--force` 保留为兼容用的空操作）。`--mode` 默认为 `scroll`。`validate` 支持 `--json` 和 `--strict`，校验未通过时会阻止构建，可用 `--no-validate` 跳过。
 
 ### 批量编译
 
 一次传入多个 MDX 可以在同一进程内并行构建，省去每个目标重复启动 CLI 与 Vite 的开销。此时 `-o` 是输出目录：
 
 ```bash
-npx concept-atlas-dense-explain papers/a.mdx papers/b.mdx papers/c.mdx -o dist --force
+npx concept-atlas-dense-explain papers/a.mdx papers/b.mdx papers/c.mdx -o dist
 # 默认并发 2；单次构建峰值内存约 1–2GB，建议不超过 3
 npx concept-atlas-dense-explain papers/*.mdx -o dist --concurrency 3
 ```

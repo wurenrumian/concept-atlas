@@ -32,7 +32,7 @@ npx concept-atlas-dense-explain topic.mdx
 
 ```bash
 npx concept-atlas-dense-explain article.mdx --mode scroll
-npx concept-atlas-dense-explain article.mdx -o public/article.html --force
+npx concept-atlas-dense-explain article.mdx -o public/article.html
 ```
 
 CLI 不会初始化项目，不会复制 MDX，也不会要求用户维护 `package.json`、`src/` 或 Vite 配置。
@@ -277,7 +277,7 @@ MDX 属性使用 JavaScript 表达式。字符串要加引号，数组和对象�
 - `ConceptRef` 指向不存在的节点，或者 `Relation` 的 `from` / `to` 拼写不一致。
 - 一个组件里塞入过长的散文，既没有结构，也没有可验证证据。
 - 在 MDX 中直接写 CSS、坐标或自定义页面框架，破坏语义层和响应式布局。
-- 输出文件已经存在却没有使用 `--force`，CLI 会主动拒绝覆盖。
+- 把已有输出当成不可覆盖：现在输出会被直接覆盖，需要保留旧产物时请先自行备份。
 
 ## 9. 组件速查
 

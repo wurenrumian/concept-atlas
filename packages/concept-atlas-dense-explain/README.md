@@ -26,9 +26,9 @@ npx concept-atlas-dense-explain validate topic.mdx --mode atlas
 npx concept-atlas-dense-explain topic.mdx --mode atlas
 ```
 
-`guide` and `create` refuse to overwrite an existing file unless `--force` is
-passed. Use `-o` to choose the output path (a directory when passing several
-inputs). Validation errors abort the build; `--no-validate` forces a knowingly
+Existing outputs are overwritten; `--force` is accepted for compatibility and is
+a no-op. `--mode` defaults to `scroll`. Use `-o` to choose the output path (a
+directory when passing several inputs). Validation errors abort the build; `--no-validate` forces a knowingly
 broken build.
 
 Mermaid loads from a CDN at runtime by default (fast builds, needs network);

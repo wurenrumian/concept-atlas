@@ -63,7 +63,7 @@ npx concept-atlas-dense-explain article.mdx --mode scroll --inline-mermaid
 npx concept-atlas-dense-explain article.mdx --mode scroll --inline-assets
 ```
 
-使用 `-o` 指定输出路径，使用 `--force` 覆盖已有文件。校验未通过时构建会被阻止，可用 `--no-validate` 强制跳过。
+使用 `-o` 指定输出路径；已有输出会被直接覆盖（`--force` 保留为兼容用的空操作）。`--mode` 默认为 `scroll`。校验未通过时构建会被阻止，可用 `--no-validate` 强制跳过。
 
 ## 两种页面模式
 

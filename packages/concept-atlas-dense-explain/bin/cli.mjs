@@ -35,19 +35,18 @@ let buildCounter = 0;
 function usage() {
   console.log('Usage:');
   console.log(
-    '  npx concept-atlas-dense-explain <input.mdx>... [--mode atlas|scroll] [--skin <id>] [--default-mode dark|light|system] [--style <id>] [-o output.html|dir] [--force] [--concurrency N] [--inline-assets] [--inline-mermaid] [--mermaid-cdn <url>] [--json] [--no-validate]'
+    '  npx concept-atlas-dense-explain <input.mdx>... [--mode atlas|scroll] [--skin <id>] [--default-mode dark|light|system] [--style <id>] [-o output.html|dir] [--concurrency N] [--inline-assets] [--inline-mermaid] [--mermaid-cdn <url>] [--json] [--no-validate]'
   );
   console.log('  npx concept-atlas-dense-explain render <input.mdx>... [-o output.html|dir]');
   console.log(
     '  npx concept-atlas-dense-explain validate <input.mdx> [--mode atlas|scroll] [--strict] [--json]'
   );
-  console.log(
-    '  npx concept-atlas-dense-explain create <output.mdx> [--mode atlas|scroll] [--force]'
-  );
-  console.log(
-    '  npx concept-atlas-dense-explain guide [--mode atlas|scroll] [-o output.mdx] [--force]'
-  );
+  console.log('  npx concept-atlas-dense-explain create <output.mdx> [--mode atlas|scroll]');
+  console.log('  npx concept-atlas-dense-explain guide [--mode atlas|scroll] [-o output.mdx]');
   console.log('');
+  console.log(
+    '  --mode defaults to scroll. Existing outputs are overwritten; --force is accepted for compatibility and is a no-op.'
+  );
   console.log('  --help shows this text; --version prints the package version.');
   console.log(
     '  Multiple inputs build in parallel (default 2 at a time, cap 4); -o is then a directory.'
@@ -237,15 +236,11 @@ if (command === 'help') {
 }
 
 if (command === 'guide') {
-  const mode = flagValue(args, ['--mode']) || 'atlas';
+  const mode = flagValue(args, ['--mode']) || 'scroll';
   if (!['atlas', 'scroll'].includes(mode)) fail(`Unknown mode: ${mode}`);
   const output = path.resolve(
     flagValue(args, ['-o', '--output']) || `concept-atlas-${mode}-guide.mdx`
   );
-  if ((await exists(output)) && !args.includes('--force')) {
-    console.error(`Refusing to overwrite ${output}; pass --force to replace it.`);
-    process.exit(1);
-  }
   const source = path.join(templateRoot, 'references', `${mode}-guide.mdx`);
   if (!(await exists(source))) {
     console.error(`Guide for mode "${mode}" is missing from the package.`);
@@ -255,11 +250,7 @@ if (command === 'guide') {
   await copyFile(source, output);
   const assetsSource = path.join(templateRoot, 'references', 'assets');
   const assetsTarget = path.join(path.dirname(output), 'assets');
-  if (
-    (await exists(assetsSource)) &&
-    path.resolve(assetsSource) !== path.resolve(assetsTarget) &&
-    (args.includes('--force') || !(await exists(assetsTarget)))
-  ) {
+  if ((await exists(assetsSource)) && path.resolve(assetsSource) !== path.resolve(assetsTarget)) {
     await cp(assetsSource, assetsTarget, { recursive: true, force: true });
     console.log(`Copied guide assets to ${assetsTarget}`);
   }
@@ -270,17 +261,13 @@ if (command === 'guide') {
 
 if (command === 'create' || command === 'new') {
   const output = args[0] ? path.resolve(args[0]) : null;
-  const mode = flagValue(args, ['--mode']) || 'atlas';
+  const mode = flagValue(args, ['--mode']) || 'scroll';
   if (
     !output ||
     path.extname(output).toLowerCase() !== '.mdx' ||
     !['atlas', 'scroll'].includes(mode)
   ) {
     usage();
-    process.exit(1);
-  }
-  if ((await exists(output)) && !args.includes('--force')) {
-    console.error(`Refusing to overwrite ${output}; pass --force to replace it.`);
     process.exit(1);
   }
   await mkdir(path.dirname(output), { recursive: true });
@@ -349,7 +336,6 @@ const parsed = parseFlags(args);
 const json = parsed.flags.has('--json');
 const strict = parsed.flags.has('--strict');
 const skipValidate = parsed.flags.has('--no-validate');
-const force = parsed.flags.has('--force');
 const linkAssets = parsed.flags.has('--link-assets');
 const inlineAssets = parsed.flags.has('--inline-assets');
 if (linkAssets && inlineAssets) {
@@ -426,13 +412,6 @@ for (const input of inputs) {
 }
 
 const outputs = resolveOutputs(inputs, parsed.values.get('-o') || parsed.values.get('--output'));
-
-for (const output of outputs) {
-  if ((await exists(output)) && !force) {
-    console.error(`Refusing to overwrite ${output}; pass --force to replace it.`);
-    process.exit(1);
-  }
-}
 
 const multi = inputs.length > 1;
 const sources = await Promise.all(inputs.map(input => readFile(input, 'utf8')));
