@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Network, Compass, Sun, Moon, Search, X, Link as LinkIcon } from 'lucide-react';
 import { buildGraphModel } from '../model/concept-schema.js';
 import { extractConceptData } from '../model/normalize-content.js';
@@ -67,28 +67,34 @@ export function App({ mdxContent, initialData }) {
     [globalQuery, graph.nodes]
   );
 
-  const navigateToNode = (nodeId, { replace = false } = {}) => {
-    if (!nodeId || !graph.nodes.has(nodeId)) return;
-    const next = pushNode(nav, nodeId);
-    setCurrentNodeId(nodeId);
-    setNav(next);
-    const nextHash = `#node=${encodeURIComponent(nodeId)}`;
-    // Each browser entry remembers which in-app history index it maps to, so
-    // popstate can restore the exact entry even when hashes repeat.
-    const historyState = { atlasIndex: next.index };
-    if (next === nav && !replace) return; // re-selecting the current node: don't grow browser history
-    if (replace) window.history.replaceState(historyState, '', nextHash);
-    else window.history.pushState(historyState, '', nextHash);
-  };
+  const navigateToNode = useCallback(
+    (nodeId, { replace = false } = {}) => {
+      if (!nodeId || !graph.nodes.has(nodeId)) return;
+      const next = pushNode(nav, nodeId);
+      setCurrentNodeId(nodeId);
+      setNav(next);
+      const nextHash = `#node=${encodeURIComponent(nodeId)}`;
+      // Each browser entry remembers which in-app history index it maps to, so
+      // popstate can restore the exact entry even when hashes repeat.
+      const historyState = { atlasIndex: next.index };
+      if (next === nav && !replace) return; // re-selecting the current node: don't grow browser history
+      if (replace) window.history.replaceState(historyState, '', nextHash);
+      else window.history.pushState(historyState, '', nextHash);
+    },
+    [nav, graph.nodes]
+  );
 
-  const moveHistory = direction => {
-    // Browser history mirrors the in-app entries one-for-one (every navigation
-    // pushState'd the matching { atlasIndex }), so step through the real
-    // browser history. pushState here used to fork the two stacks and grow
-    // browser history unboundedly; the popstate handler applies the result.
-    if (!stepHistory(nav, direction)) return;
-    window.history.go(direction);
-  };
+  const moveHistory = useCallback(
+    direction => {
+      // Browser history mirrors the in-app entries one-for-one (every navigation
+      // pushState'd the matching { atlasIndex }), so step through the real
+      // browser history. pushState here used to fork the two stacks and grow
+      // browser history unboundedly; the popstate handler applies the result.
+      if (!stepHistory(nav, direction)) return;
+      window.history.go(direction);
+    },
+    [nav]
+  );
 
   // Keyboard navigation shortcuts
   useEffect(() => {
@@ -132,7 +138,7 @@ export function App({ mdxContent, initialData }) {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [graph, currentNodeId, nav]);
+  }, [graph, currentNodeId, navigateToNode, moveHistory, toggleTheme]);
 
   useEffect(() => {
     const handlePopState = event => {
@@ -220,6 +226,7 @@ export function App({ mdxContent, initialData }) {
                       setGlobalQuery('');
                     }}
                     role="option"
+                    aria-selected={false}
                   >
                     <span>{node.title}</span>
                     <small>

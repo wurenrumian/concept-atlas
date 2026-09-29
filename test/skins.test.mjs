@@ -19,16 +19,8 @@ function readAllStyles() {
   return walk(stylesRoot).join('\n');
 }
 
-const {
-  SKINS,
-  DEFAULT_SKIN,
-  SKIN_IDS,
-  normalizeSkin,
-  COMPONENT_STYLES,
-  DEFAULT_STYLE,
-  STYLE_IDS,
-  normalizeStyle
-} = await import('../src/model/skins.js');
+const { SKINS, DEFAULT_SKIN, SKIN_IDS, normalizeSkin, DEFAULT_STYLE, STYLE_IDS, normalizeStyle } =
+  await import('../src/model/skins.js');
 const { RELATION_TYPES, LEVEL_DEFS } = await import('../src/model/relation-types.js');
 
 test('every registered skin has dark & light token blocks', () => {

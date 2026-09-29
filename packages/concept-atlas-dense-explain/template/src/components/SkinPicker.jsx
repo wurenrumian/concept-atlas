@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Check, Palette } from 'lucide-react';
 import { SKINS, COMPONENT_STYLES } from '../model/skins.js';
 

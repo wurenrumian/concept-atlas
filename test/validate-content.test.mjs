@@ -8,7 +8,6 @@ import {
   KNOWN_COMPONENT_SET
 } from '../src/model/validate-content.js';
 
-const codes = result => result.diagnostics.map(item => item.code);
 const errorsOf = result =>
   result.diagnostics.filter(item => item.severity === 'error').map(item => item.code);
 const warningsOf = result =>

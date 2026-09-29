@@ -1,4 +1,3 @@
-import React from 'react';
 import { RELATION_TYPES, LEVEL_DEFS } from './relation-types.js';
 import { NODE_KIND_SET, normalizeKind } from './node-kinds.js';
 
@@ -116,7 +115,7 @@ export function buildGraphModel(rawGraph) {
         level: 'warning',
         code: 'UNKNOWN_LEVEL',
         nodeId: node.id,
-        level: node.level
+        nodeLevel: node.level
       });
   });
 

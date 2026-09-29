@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import {
   select,
   zoom,
@@ -28,6 +28,7 @@ export function RelationGraph({ graph, currentNodeId, onSelectNode, onSwitchView
   const zoomBehaviorRef = useRef(null);
   const positionedNodesRef = useRef([]);
   const selectedNodeIdRef = useRef(null);
+  const onSelectNodeRef = useRef(onSelectNode);
 
   // States
   const [selectedNodeId, setSelectedNodeId] = useState(currentNodeId || graph.meta.rootId);
@@ -37,6 +38,9 @@ export function RelationGraph({ graph, currentNodeId, onSelectNode, onSwitchView
   const [filterRelationType, setFilterRelationType] = useState('ALL');
   const [graphMode, setGraphMode] = useState('hierarchy');
   selectedNodeIdRef.current = selectedNodeId;
+  // The layout effect builds the D3 simulation; it reads the click callback from
+  // a ref so a new `onSelectNode` identity never tears the graph down.
+  onSelectNodeRef.current = onSelectNode;
 
   // Convert nodes map to array
   const allNodes = useMemo(() => Array.from(nodes.values()), [nodes]);
@@ -138,10 +142,9 @@ export function RelationGraph({ graph, currentNodeId, onSelectNode, onSwitchView
   }, [allNodes, nodes, relations, filterLevel, filterKind, filterRelationType, searchQuery]);
 
   // Neighbors of focused node
-  const { connectedNodeIds, directRelations } = useMemo(() => {
-    if (!selectedNodeId) return { connectedNodeIds: new Set(), directRelations: [] };
+  const { directRelations } = useMemo(() => {
+    if (!selectedNodeId) return { directRelations: [] };
 
-    const ids = new Set([selectedNodeId]);
     const dirRels = [];
 
     graphLinks.forEach(link => {
@@ -149,16 +152,14 @@ export function RelationGraph({ graph, currentNodeId, onSelectNode, onSwitchView
       const tgtId = typeof link.target === 'object' ? link.target.id : link.target;
 
       if (srcId === selectedNodeId) {
-        ids.add(tgtId);
         dirRels.push({ targetId: tgtId, direction: 'out', link });
       }
       if (tgtId === selectedNodeId) {
-        ids.add(srcId);
         dirRels.push({ targetId: srcId, direction: 'in', link });
       }
     });
 
-    return { connectedNodeIds: ids, directRelations: dirRels };
+    return { directRelations: dirRels };
   }, [selectedNodeId, graphLinks]);
 
   // Setup D3 Force Simulation
@@ -324,7 +325,7 @@ export function RelationGraph({ graph, currentNodeId, onSelectNode, onSwitchView
       .on('click', (event, d) => {
         event.stopPropagation();
         setSelectedNodeId(d.id);
-        onSelectNode(d.id);
+        onSelectNodeRef.current(d.id);
       });
     nodesSelectionRef.current = nodesSelection;
 
@@ -624,7 +625,15 @@ export function RelationGraph({ graph, currentNodeId, onSelectNode, onSwitchView
                       <div
                         key={i}
                         className="panel-rel-card"
+                        role="button"
+                        tabIndex={0}
                         onClick={() => setSelectedNodeId(item.targetId)}
+                        onKeyDown={event => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            setSelectedNodeId(item.targetId);
+                          }
+                        }}
                       >
                         <div className="rel-card-header">
                           <span className="rel-tag" style={{ color: item.link.typeInfo?.color }}>
@@ -679,7 +688,7 @@ export function RelationGraph({ graph, currentNodeId, onSelectNode, onSwitchView
   );
 }
 
-function layoutTree(nodes, width, height) {
+function layoutTree(nodes, width, _height) {
   if (nodes.length === 0) return [];
 
   const nodeMap = new Map(nodes.map(node => [node.id, { ...node, children: [] }]));

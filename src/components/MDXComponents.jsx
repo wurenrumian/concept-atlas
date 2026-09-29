@@ -169,16 +169,7 @@ export function ConceptGraph({ root, children }) {
 }
 ConceptGraph.displayName = 'ConceptGraph';
 
-export function ConceptNode({
-  id,
-  title,
-  level = 'L2',
-  parent = null,
-  children,
-  input,
-  output,
-  summary
-}) {
+export function ConceptNode({ id, title, level = 'L2', parent = null, children }) {
   return (
     <div
       data-component="ConceptNode"
@@ -1066,6 +1057,7 @@ export function Term({ name, definition, children }) {
   const description = definition || (name ? childrenToText(children) : '');
   if (!term) return null;
   return (
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- focus reveals the definition tooltip for keyboard users
     <span className="semantic-term" tabIndex={0} data-term={term}>
       {term}
       {description && (
@@ -1941,6 +1933,9 @@ Chart.displayName = 'Chart';
 
 const ZOOM_MIN = 0.5;
 const ZOOM_MAX = 6;
+// Module scope: only reads the ZOOM_* constants, so it is stable across renders
+// and can be a useCallback dependency without re-creating the callback.
+const clampScale = value => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, +value.toFixed(3)));
 
 /**
  * Full-viewport zoom viewer shared by images and diagrams. Rendered through a
@@ -1959,12 +1954,11 @@ function ZoomOverlay({ title, caption, label, onClose, children }) {
   const scaleRef = React.useRef(scale);
   scaleRef.current = scale;
 
-  const clampScale = value => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, +value.toFixed(3)));
-  const zoomBy = delta => setScale(value => clampScale(value + delta));
-  const reset = () => {
+  const zoomBy = React.useCallback(delta => setScale(value => clampScale(value + delta)), []);
+  const reset = React.useCallback(() => {
     setScale(1);
     setOffset({ x: 0, y: 0 });
-  };
+  }, []);
   // Cursor-anchored zoom feels wrong at 1x; recentre whenever we return to it.
   const settle = value => {
     if (value <= 1) setOffset({ x: 0, y: 0 });
@@ -2001,7 +1995,7 @@ function ZoomOverlay({ title, caption, label, onClose, children }) {
       window.removeEventListener('keydown', onKeyDown, true);
       document.body.style.overflow = overflow;
     };
-  }, [onClose]);
+  }, [onClose, zoomBy, reset]);
 
   const onPointerDown = event => {
     if (event.target.closest('button')) return;
@@ -2036,6 +2030,7 @@ function ZoomOverlay({ title, caption, label, onClose, children }) {
   };
 
   return createPortal(
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- clicking the backdrop closes the overlay; keyboard users close with the ✕ button or Esc
     <div
       className="image-zoom-overlay"
       role="dialog"
@@ -2045,6 +2040,7 @@ function ZoomOverlay({ title, caption, label, onClose, children }) {
         if (event.target === event.currentTarget && !movedRef.current) onClose();
       }}
     >
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- pan/zoom stage driven by pointer; the toolbar buttons are the keyboard path */}
       <div
         ref={stageRef}
         className={`image-zoom-stage${dragging ? ' is-dragging' : ''}`}
@@ -2233,6 +2229,9 @@ export function References({ title = '参考文献', items = [], children }) {
   const key = JSON.stringify(items || []);
   React.useEffect(() => {
     registerReferences(items);
+    // Registration is keyed on the serialized content, not the array identity,
+    // so an equal-but-new `items` array does not re-register on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
   const list = Array.isArray(items) ? items.filter(Boolean) : [];
   return (

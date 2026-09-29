@@ -1,4 +1,4 @@
-import React, { Children, isValidElement } from 'react';
+import { Children, isValidElement } from 'react';
 import { KNOWN_COMPONENT_SET } from './validate-content.js';
 
 /**

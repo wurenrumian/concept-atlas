@@ -1,0 +1,8 @@
+# Formatting-only commits that carry no semantic change. Blame should skip them
+# so `git blame` attributes lines to real changes, not the reformat.
+#
+# Enable locally:  git config blame.ignoreRevsFile .git-blame-ignore-revs
+# GitHub honours this file automatically for its blame view.
+
+# chore: format with prettier
+efd94ed7e4549315b56d0f6ef29cc47cd2efd57d

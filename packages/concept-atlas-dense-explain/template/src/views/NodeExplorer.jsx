@@ -8,8 +8,7 @@ import {
   CornerLeftUp,
   ZoomIn,
   ZoomOut,
-  RotateCcw,
-  Link as LinkIcon
+  RotateCcw
 } from 'lucide-react';
 import { getAncestorPath, getSiblingNodes } from '../model/concept-schema.js';
 import { LEVEL_DEFS } from '../model/relation-types.js';
@@ -36,7 +35,7 @@ export function NodeExplorer({ graph, currentNodeId, onSelectNode, onSwitchView 
   };
 
   // Keep the board from being scrolled entirely out of view.
-  const clampCanvasPan = (x, y, scale = canvasScale) => {
+  const clampCanvasPan = React.useCallback((x, y, scale = canvasScaleRef.current) => {
     const viewport = viewportRef.current;
     const board = boardRef.current;
     if (!viewport || !board) return { x, y };
@@ -47,7 +46,7 @@ export function NodeExplorer({ graph, currentNodeId, onSelectNode, onSwitchView 
       x: clampAxis(x, board.offsetWidth * scale, viewport.clientWidth),
       y: clampAxis(y, board.offsetHeight * scale, viewport.clientHeight)
     };
-  };
+  }, []);
 
   // Wheel scrolls the canvas vertically; Ctrl/Cmd + wheel zooms around the
   // pointer. React's onWheel is passive, so bind a native listener instead.
@@ -83,7 +82,7 @@ export function NodeExplorer({ graph, currentNodeId, onSelectNode, onSwitchView 
 
     viewport.addEventListener('wheel', handleWheel, { passive: false });
     return () => viewport.removeEventListener('wheel', handleWheel);
-  }, []);
+  }, [clampCanvasPan]);
 
   const handleCanvasPointerDown = event => {
     if (event.target.closest('button, a, input, select, textarea')) return;
@@ -133,7 +132,6 @@ export function NodeExplorer({ graph, currentNodeId, onSelectNode, onSwitchView 
 
   const ancestorPath = getAncestorPath(nodes, currentNode.id);
   const siblings = getSiblingNodes(nodes, currentNode.id);
-  const parentNode = currentNode.parent ? nodes.get(currentNode.parent) : null;
   const childNodes = currentNode.children.filter(id => nodes.has(id)).map(id => nodes.get(id));
 
   // Node-specific relations

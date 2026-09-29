@@ -9,7 +9,6 @@ const figures = await import('../src/model/figures.js');
 const { registerFigure, resetFigures, getFigureNumber } = figures;
 
 async function render(element) {
-  const React = await import('react');
   const { renderToStaticMarkup } = await import('react-dom/server');
   return renderToStaticMarkup(element);
 }
