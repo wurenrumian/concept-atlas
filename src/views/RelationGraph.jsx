@@ -42,6 +42,12 @@ export function RelationGraph({ graph, currentNodeId, onSelectNode, onSwitchView
   // a ref so a new `onSelectNode` identity never tears the graph down.
   onSelectNodeRef.current = onSelectNode;
 
+  // Distinguishes a user selection from a layout rebuild: a rebuild re-frames
+  // the whole graph, a selection re-centres on one node. Filtering/searching
+  // rebuilds the layout but must not move the camera.
+  const prevSelectedRef = useRef(selectedNodeId);
+  const framedModeRef = useRef(null);
+
   // Convert nodes map to array
   const allNodes = useMemo(() => Array.from(nodes.values()), [nodes]);
 
@@ -234,6 +240,7 @@ export function RelationGraph({ graph, currentNodeId, onSelectNode, onSwitchView
     const positionedNodes = isConceptMode
       ? graphNodes.map((node, index) => ({
           ...node,
+          ...labelMetrics(node),
           x: width / 2 + ((index % 4) - 1.5) * 80,
           y: height / 2 + (Math.floor(index / 4) - 1) * 80
         }))
@@ -272,7 +279,14 @@ export function RelationGraph({ graph, currentNodeId, onSelectNode, onSwitchView
             })
           )
           .force('center', forceCenter(width / 2, height / 2))
-          .force('collision', forceCollide().radius(34).strength(0.35))
+          // Radius follows the label extent, not just the node disc, so long
+          // Chinese titles keep their own horizontal room.
+          .force(
+            'collision',
+            forceCollide()
+              .radius(d => Math.max(34, (d.labelHalf || 0) + 12))
+              .strength(0.6)
+          )
       : null;
 
     // Resolve the shared label stack once; SVG presentation attributes cannot
@@ -307,7 +321,7 @@ export function RelationGraph({ graph, currentNodeId, onSelectNode, onSwitchView
       .append('text')
       .attr('class', 'graph-edge-label')
       .style('fill', d => d.typeInfo?.color || 'var(--rel-default)')
-      .attr('font-size', '10px')
+      .attr('font-size', '11px')
       .attr('text-anchor', 'middle')
       .attr('dy', -5)
       // Parent-child is visually self-explanatory and its repeated label
@@ -375,16 +389,26 @@ export function RelationGraph({ graph, currentNodeId, onSelectNode, onSwitchView
       .attr('r', d => (d.level === 'L0' ? 10 : d.level === 'L1' ? 7 : 5))
       .style('fill', d => LEVEL_DEFS[d.level]?.color || 'var(--level-l0)');
 
-    // Node Title Label
+    // Node Title Label — wrapped to at most two lines so wide trees stay legible.
     nodeLabelRef.current = nodesSelection
       .append('text')
-      .attr('dy', d => (d.level === 'L0' ? 38 : 30))
       .attr('text-anchor', 'middle')
       .style('fill', 'var(--text-primary)')
-      .attr('font-size', '12px')
+      .attr('font-size', `${LABEL_FONT_SIZE}px`)
       .attr('font-family', labelFont)
-      .attr('font-weight', d => (d.id === selectedNodeIdRef.current ? '700' : '500'))
-      .text(d => d.title);
+      .attr('font-weight', d => (d.id === selectedNodeIdRef.current ? '700' : '500'));
+
+    nodeLabelRef.current.each(function renderNodeTitle(d) {
+      const firstDy = d.level === 'L0' ? 34 : d.level === 'L1' ? 28 : 24;
+      const text = select(this);
+      wrapLabel(d.title).forEach((line, index) => {
+        text
+          .append('tspan')
+          .attr('x', 0)
+          .attr('dy', index === 0 ? firstDy : LABEL_LINE_HEIGHT)
+          .text(line);
+      });
+    });
 
     // Node Level Pill
     nodesSelection
@@ -392,7 +416,7 @@ export function RelationGraph({ graph, currentNodeId, onSelectNode, onSwitchView
       .attr('dy', -22)
       .attr('text-anchor', 'middle')
       .style('fill', d => LEVEL_DEFS[d.level]?.color || 'var(--rel-default)')
-      .attr('font-size', '9px')
+      .attr('font-size', '10px')
       .text(d => d.level);
 
     const renderPositions = () => {
@@ -409,6 +433,24 @@ export function RelationGraph({ graph, currentNodeId, onSelectNode, onSwitchView
       simulation.on('tick', renderPositions);
     } else {
       renderPositions();
+    }
+
+    // Frame the whole graph on the first build and on every mode switch so
+    // nothing starts off-screen. Filter/search rebuilds deliberately leave the
+    // camera where the reader put it.
+    const shouldFrame = framedModeRef.current !== graphMode;
+    framedModeRef.current = graphMode;
+    let framed = false;
+    const frameGraph = () => {
+      if (framed) return;
+      framed = true;
+      fitGraphToViewport(svg, zoomBehavior, positionedNodes, width, height);
+    };
+    if (shouldFrame) {
+      // Hierarchy layout is deterministic; the concept force map is framed once
+      // it settles so the transform is not stale.
+      if (simulation) simulation.on('end.framing', frameGraph);
+      else frameGraph();
     }
 
     return () => {
@@ -429,7 +471,13 @@ export function RelationGraph({ graph, currentNodeId, onSelectNode, onSwitchView
     nodeHaloRef.current?.attr('stroke-width', d => (d.id === selectedNodeId ? 3 : 1.5));
     nodeLabelRef.current?.attr('font-weight', d => (d.id === selectedNodeId ? '700' : '500'));
 
+    // Only a genuine selection change re-centres; a layout rebuild (filter,
+    // search, mode switch) keeps the framing set by the layout effect.
+    const selectionChanged = prevSelectedRef.current !== selectedNodeId;
+    prevSelectedRef.current = selectedNodeId;
+
     if (
+      !selectionChanged ||
       graphMode === 'concept' ||
       !selectedNodeId ||
       !svgRef.current ||
@@ -688,6 +736,128 @@ export function RelationGraph({ graph, currentNodeId, onSelectNode, onSwitchView
   );
 }
 
+/* --------------------------------------------------------------------------
+   Graph label metrics & viewport framing
+   -------------------------------------------------------------------------- */
+
+const LABEL_FONT_SIZE = 12;
+const LABEL_LINE_HEIGHT = 14;
+const LABEL_LINE_CHARS = 8;
+const MAX_LABEL_LINES = 2;
+const TREE_BASE_GAP = 120;
+const TREE_LEVEL_GAP = 155;
+
+/**
+ * Split a long node title across at most two lines. A two-line label halves the
+ * horizontal footprint of a wide tree, which keeps the framed view legible. The
+ * full, untruncated title stays available in the node tooltip.
+ */
+function wrapLabel(text, maxChars = LABEL_LINE_CHARS, maxLines = MAX_LABEL_LINES) {
+  const value = String(text ?? '').trim();
+  if (!value) return [''];
+  const lines = [];
+  let rest = value;
+  while (rest && lines.length < maxLines) {
+    if (rest.length <= maxChars) {
+      lines.push(rest);
+      rest = '';
+    } else if (lines.length === maxLines - 1) {
+      lines.push(`${rest.slice(0, maxChars - 1)}…`);
+      rest = '';
+    } else {
+      lines.push(rest.slice(0, maxChars));
+      rest = rest.slice(maxChars);
+    }
+  }
+  return lines;
+}
+
+/**
+ * Estimate a title's rendered width without a DOM measurement: CJK glyphs are
+ * roughly square at the label font size, Latin/digits about 0.55 of it.
+ */
+function estimateLabelWidth(text) {
+  let width = 0;
+  for (const char of String(text ?? '')) {
+    width += /[\u2e80-\u9fff\uff00-\uffef]/.test(char) ? LABEL_FONT_SIZE : LABEL_FONT_SIZE * 0.55;
+  }
+  return width;
+}
+
+/** Per-node label geometry, shared by the layout, the renderer and framing. */
+function labelMetrics(node) {
+  const lines = wrapLabel(node?.title);
+  const width = Math.max(...lines.map(estimateLabelWidth));
+  return { labelHalf: Math.max(18, width / 2), labelLines: lines.length };
+}
+
+function nodeLabelHalf(node) {
+  return labelMetrics(node).labelHalf;
+}
+
+function prefersReducedMotion() {
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+}
+
+/**
+ * Fit every node (plus its title) into the viewport once. Insets keep the
+ * floating control bar and legend from covering the graph on small screens.
+ */
+function fitGraphToViewport(svg, zoomBehavior, nodes, width, height) {
+  if (!nodes.length || !zoomBehavior) return;
+
+  const narrow = width < 760;
+  const insetTop = narrow ? 150 : 96;
+  const insetBottom = narrow ? 72 : 64;
+  const insetSide = narrow ? 24 : 56;
+
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+
+  nodes.forEach(node => {
+    const half = node.labelHalf || nodeLabelHalf(node);
+    const ring = node.level === 'L0' ? 26 : node.level === 'L1' ? 22 : 18;
+    const firstDy = node.level === 'L0' ? 34 : node.level === 'L1' ? 28 : 24;
+    const lines = node.labelLines || 1;
+    minX = Math.min(minX, node.x - half);
+    maxX = Math.max(maxX, node.x + half);
+    minY = Math.min(minY, node.y - ring - 14);
+    maxY = Math.max(maxY, node.y + firstDy + lines * LABEL_LINE_HEIGHT);
+  });
+
+  const boxWidth = Math.max(maxX - minX, 1);
+  const boxHeight = Math.max(maxY - minY, 1);
+  const availableWidth = Math.max(width - insetSide * 2, 1);
+  const availableHeight = Math.max(height - insetTop - insetBottom, 1);
+  // A floor keeps labels legible on a very wide tree; the reader can pan the
+  // overflow rather than squinting at five-pixel text.
+  const scaleFloor = narrow ? 0.55 : 0.68;
+  const scale = Math.min(
+    1.15,
+    Math.max(scaleFloor, Math.min(availableWidth / boxWidth, availableHeight / boxHeight))
+  );
+  const centerX = (minX + maxX) / 2;
+  const centerY = (minY + maxY) / 2;
+  const translateX = insetSide + availableWidth / 2 - scale * centerX;
+  // Centre vertically when the tree fits; otherwise anchor the root's level to
+  // the top edge so the reading order starts where it should.
+  const translateY =
+    boxHeight * scale <= availableHeight
+      ? insetTop + availableHeight / 2 - scale * centerY
+      : insetTop - scale * minY + 8;
+
+  svg
+    .transition()
+    .duration(prefersReducedMotion() ? 0 : 420)
+    .call(zoomBehavior.transform, zoomIdentity.translate(translateX, translateY).scale(scale));
+}
+
 function layoutTree(nodes, width, _height) {
   if (nodes.length === 0) return [];
 
@@ -703,7 +873,15 @@ function layoutTree(nodes, width, _height) {
   );
   const treeData = { id: '__atlas-root__', children: roots };
   const root = hierarchy(treeData);
-  const tree = treeLayout().nodeSize([110, 155]);
+  // Reserve horizontal room per sibling pair from the estimated label width so
+  // long titles never share a column. Siblings sit one base gap apart; separate
+  // subtrees keep the doubled default separation.
+  const tree = treeLayout()
+    .nodeSize([TREE_BASE_GAP, TREE_LEVEL_GAP])
+    .separation((a, b) => {
+      const gap = nodeLabelHalf(a.data) + nodeLabelHalf(b.data) + 26;
+      return (a.parent === b.parent ? 1 : 2) * Math.max(1, gap / TREE_BASE_GAP);
+    });
   tree(root);
 
   const visible = root.descendants().filter(node => node.data.id !== '__atlas-root__');
@@ -715,8 +893,9 @@ function layoutTree(nodes, width, _height) {
 
   return visible.map(node => ({
     ...node.data,
+    ...labelMetrics(node.data),
     x: node.x + offsetX,
-    y: node.depth * 155 + offsetY
+    y: node.depth * TREE_LEVEL_GAP + offsetY
   }));
 }
 
@@ -823,12 +1002,20 @@ function linkPath(link) {
 
 function positionEdgeLabels(links, nodes, width, height) {
   const occupied = [];
-  const nodeBoxes = nodes.map(node => ({
-    left: node.x - 28,
-    right: node.x + 28,
-    top: node.y - 28,
-    bottom: node.y + 28
-  }));
+  const nodeBoxes = nodes.map(node => {
+    const half = Math.max(28, node.labelHalf || 0);
+    const titleBlock =
+      (node.level === 'L0' ? 34 : node.level === 'L1' ? 28 : 24) +
+      (node.labelLines || 1) * LABEL_LINE_HEIGHT;
+    return {
+      left: node.x - half,
+      right: node.x + half,
+      top: node.y - 28,
+      // Cover the ring *and* the wrapped title beneath it so an edge label
+      // never lands on top of a node name.
+      bottom: node.y + titleBlock
+    };
+  });
 
   links.forEach(link => {
     link.labelVisible = false;

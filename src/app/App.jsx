@@ -67,6 +67,19 @@ export function App({ mdxContent, initialData }) {
     [globalQuery, graph.nodes]
   );
 
+  // Combobox state for the global search. The highlight resets whenever the
+  // query changes so the first arrow key lands on the first result.
+  const [activeResultIndex, setActiveResultIndex] = useState(-1);
+  const searchOpen = globalQuery.trim().length > 0 && searchResults.length > 0;
+  const activeResultId =
+    searchOpen && activeResultIndex >= 0 && searchResults[activeResultIndex]
+      ? `global-search-option-${searchResults[activeResultIndex].id}`
+      : undefined;
+
+  useEffect(() => {
+    setActiveResultIndex(-1);
+  }, [globalQuery]);
+
   const navigateToNode = useCallback(
     (nodeId, { replace = false } = {}) => {
       if (!nodeId || !graph.nodes.has(nodeId)) return;
@@ -82,6 +95,16 @@ export function App({ mdxContent, initialData }) {
       else window.history.pushState(historyState, '', nextHash);
     },
     [nav, graph.nodes]
+  );
+
+  const selectSearchResult = useCallback(
+    node => {
+      if (!node) return;
+      navigateToNode(node.id);
+      setGlobalQuery('');
+      setActiveResultIndex(-1);
+    },
+    [navigateToNode]
   );
 
   const moveHistory = useCallback(
@@ -205,28 +228,57 @@ export function App({ mdxContent, initialData }) {
               value={globalQuery}
               onChange={event => setGlobalQuery(event.target.value)}
               onKeyDown={event => {
-                if (event.key === 'Escape') setGlobalQuery('');
+                if (event.key === 'Escape') {
+                  setGlobalQuery('');
+                  setActiveResultIndex(-1);
+                  return;
+                }
+                if (!searchOpen) return;
+                if (event.key === 'ArrowDown') {
+                  event.preventDefault();
+                  setActiveResultIndex(index => (index + 1) % searchResults.length);
+                } else if (event.key === 'ArrowUp') {
+                  event.preventDefault();
+                  setActiveResultIndex(index =>
+                    index <= 0 ? searchResults.length - 1 : index - 1
+                  );
+                } else if (event.key === 'Enter' && activeResultIndex >= 0) {
+                  event.preventDefault();
+                  selectSearchResult(searchResults[activeResultIndex]);
+                }
               }}
               placeholder="搜索所有节点…"
               aria-label="搜索所有节点"
+              role="combobox"
+              aria-expanded={searchOpen}
+              aria-controls="global-search-results"
+              aria-autocomplete="list"
+              aria-activedescendant={activeResultId}
             />
             {globalQuery && (
-              <button type="button" onClick={() => setGlobalQuery('')} aria-label="清除搜索">
+              <button
+                type="button"
+                onClick={() => {
+                  setGlobalQuery('');
+                  setActiveResultIndex(-1);
+                }}
+                aria-label="清除搜索"
+              >
                 <X size={13} />
               </button>
             )}
-            {searchResults.length > 0 && (
-              <div className="global-search-results" role="listbox">
-                {searchResults.map(node => (
+            {searchOpen && (
+              <div id="global-search-results" className="global-search-results" role="listbox">
+                {searchResults.map((node, index) => (
                   <button
                     type="button"
                     key={node.id}
-                    onClick={() => {
-                      navigateToNode(node.id);
-                      setGlobalQuery('');
-                    }}
+                    id={`global-search-option-${node.id}`}
+                    className={index === activeResultIndex ? 'active' : ''}
+                    onMouseEnter={() => setActiveResultIndex(index)}
+                    onClick={() => selectSearchResult(node)}
                     role="option"
-                    aria-selected={false}
+                    aria-selected={index === activeResultIndex}
                   >
                     <span>{node.title}</span>
                     <small>
