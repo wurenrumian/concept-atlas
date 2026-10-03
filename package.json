@@ -1,6 +1,6 @@
 {
   "name": "concept-atlas",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "基于 MDX 的概念缩放式知识讲解模板",
   "type": "module",
   "private": true,
