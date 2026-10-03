@@ -290,20 +290,21 @@ MDX 属性使用 JavaScript 表达式。字符串要加引号，数组和对象�
 
 ## 9. 组件速查
 
-完整组件实现位于 `packages/concept-atlas-dense-explain/template/src/components/MDXComponents.jsx`。常用组件包括：
+完整组件实现位于 `packages/concept-atlas-dense-explain/template/src/components/MDXComponents.jsx`；下面按用途列出全部组件，名称以 `src/model/validate-content.js` 的 `KNOWN_COMPONENTS` 为准：
 
 ```text
-页面外壳：ExplainPage、ConceptGraph、ConceptNode、ScrollDocument、ScrollSection
-知识语义：Overview、Definition、Mechanism、Prerequisite、Input、Output、Boundary
-代码展示：Implementation、CodeBlock、CodeDiff
-论证证据：Example、Counterexample、Evidence、Invariant、FailureMode、Tradeoff
+页面外壳：ExplainPage、ConceptGraph、ConceptNode、ConceptRef、Children、Relation、ScrollDocument、ScrollHeader、ScrollSection、ScrollProse、ScrollPair、ScrollGrid
+知识语义：Overview、Definition、Mechanism、Implementation、CodeBlock、Prerequisite、Input、Output、Boundary、Glossary
+代码展示：CodeDiff、CodeTabs、AnnotatedCode
+论证证据：Example、Counterexample、Evidence、Invariant、FailureMode、Tradeoff、Checklist
 学习闭环：LearningObjectives、KeyQuestion、WorkedExample、Step、Quiz、KeyTakeaways
-来源与术语：Source、Confidence、Term
-信息模型：Flow、Timeline、Compare、DecisionMatrix、FrameworkModel、MatrixModel
+来源与术语：Source、Confidence、LastReviewed、Term
+信息模型：Flow、Timeline、Compare、DecisionMatrix、FrameworkModel、MatrixModel、FormulaModel、PyramidModel、FunnelModel
 数据与行为：DataTable、Metric、StateMachine、DecisionTree、FeedbackLoop
-阅读组件：Insight、Callout、Details、NoteGrid、Tabs、Columns、Stack、Grid、Split
+阅读组件：Insight、Callout、Details、Quote、NoteGrid、Tabs、Columns、Stack、Grid、Split、ScrollToc
 图形组件：Mermaid、RelationMap、RelationPath
-扩展能力：Math、MathBlock、Chart、Figure、FigureRef、Cite、References
+结构扩展：PropertyList、TreeView
+扩展能力：Math、MathBlock、Chart、Figure（别名 Image）、FigureRef、Cite、References
 ```
 
 组件的选择应服从内容关系，不应服从视觉装饰。页面的价值来自结构化表达，而不是组件数量。
@@ -352,7 +353,7 @@ npm run sync`}</CodeBlock>
 
 ### 图片、题注与自动图号
 
-`Figure` 把图片、题注和编号绑定。相对路径的图片**默认保持外链**（HTML 更小，需与 MDX 的 `assets/` 一起分发）；构建时加 `--inline-assets` 会把本地图片转成 base64 内联，保证单文件离线可用，单张图也可用 `inline={true|false}` 覆盖（优先级：组件 prop > 全局开关 > 默认外链）。远程 URL 永远保持外链，并会产生 `ASSET_REMOTE` 提示。
+`Figure` 把图片、题注和编号绑定。相对路径的图片**默认保持外链**（HTML 更小，需与 MDX 的 `assets/` 一起分发）；构建时加 `--inline-assets` 会把本地图片转成 base64 内联，保证单文件离线可用，单张图也可用 `inline={true|false}` 覆盖（优先级：组件 prop > 全局开关 > 默认外链）。`http(s)` 远程图片永远保持外链，并且只有这类远程图会产生 `ASSET_REMOTE`（提示离线打开时不可见）；本地相对图片默认走外链，**不会**产生该提示。
 
 ```mdx
 {/* 默认外链；给 id 后正文可用 FigureRef 自动引用“图 N” */}
@@ -406,7 +407,7 @@ npx concept-atlas-dense-explain validate topic.mdx --json    # 机器可读
 npx concept-atlas-dense-explain validate topic.mdx --strict  # 把结构警告升级为错误
 ```
 
-常见错误码：
+常见错误码（示例，非完整列表；完整定义见 `src/model/validate-content.js` 与技能的 `SKILL.md`）：
 
 | 错误码 | 含义 |
 | --- | --- |
@@ -416,6 +417,8 @@ npx concept-atlas-dense-explain validate topic.mdx --strict  # 把结构警告�
 | `MISSING_PARENT` / `GRAPH_ROOT_UNRESOLVED` | parent 或 ConceptGraph root 指向不存在的节点 |
 | `REF_UNRESOLVED` / `RELATION_FROM_UNRESOLVED` / `RELATION_TO_UNRESOLVED` | ConceptRef 或 Relation 端点断链 |
 
-常见警告：`NODE_MISSING_SUMMARY`、`NODE_NO_CORE_CONTENT`、`UNKNOWN_LEVEL`、`UNKNOWN_RELATION_TYPE`、`RELATION_MISSING_LABEL`、`PROP_EXPECTS_ARRAY`、`MATH_CHILDREN_BRACES`、`GRAPH_MISSING_ROOT`、`ASSET_MISSING`。
+常见警告（同样只是示例）：`NODE_MISSING_SUMMARY`、`NODE_NO_CORE_CONTENT`、`UNKNOWN_LEVEL`、`UNKNOWN_RELATION_TYPE`、`RELATION_MISSING_LABEL`、`PROP_EXPECTS_ARRAY`、`MATH_CHILDREN_BRACES`、`GRAPH_MISSING_ROOT`、`ASSET_MISSING`。
+
+`--strict` 只把其中 4 个结构警告升级为错误：`MECHANISM_KIND_UNVERIFIED`、`FAILURE_KIND_UNSTRUCTURED`、`NO_ROOT_LEVEL`、`MULTIPLE_ROOT_LEVEL`；其余警告不会被升级。
 
 确实需要跳过校验时使用 `--no-validate`，但应视为例外。

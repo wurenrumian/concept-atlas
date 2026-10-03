@@ -260,6 +260,7 @@ import AtlasGuideDoc from '../content/atlas-guide.mdx';
 
 ```text
 prerequisite  前置知识
+causes        因果推动
 produces      产出生成
 uses          消费使用
 implements    实现关系
@@ -497,16 +498,25 @@ src/model/citations.js             # Cite/References 引用编号
 src/model/concept-schema.js        # 概念树与关系图模型
 src/views/NodeExplorer.jsx         # 概念探索画布
 src/views/RelationGraph.jsx         # 层级图 / 概念关系图
+src/main.jsx                       # atlas 载体入口
+src/scroll-main.jsx                # scroll 载体入口
 src/styles/concept-explain.css     # 样式入口（按顺序 @import 下列文件）
 src/styles/core.css                # 结构样式：基础、布局、组件
 src/styles/tokens.css              # 设计变量（默认皮肤 + 字号角色）
 src/styles/skins.css               # 各配色皮肤覆盖
 src/styles/packs/*.css             # 组件风格包（manuscript / shadcn / elastic）
+src/styles/motion.css              # 动效与过渡样式
 content/*.mdx                      # 知识内容
 test/*.test.mjs                    # 校验器测试
 scripts/sync-template.mjs          # src/ 同步到 npm 包模板
 ```
 
-`src/` 是唯一真相源，npm 包内的 `template/` 由 `npm run sync` 生成；提交前可用 `npm run check:sync` 确认没有漂移。
+`src/` 是唯一真相源，npm 包内的 `template/` 由 `npm run sync` 生成。各生成物的来源（见 `scripts/sync-template.mjs`）：
+
+- `src/`（含 `vite.config.js` 与 `index.html` / `scroll.html` 两个入口）→ `packages/concept-atlas-dense-explain/template/`；
+- `content/` → `packages/concept-atlas-dense-explain/template/references/`，同时生成技能内的 `skills/concept-atlas-dense-explain/references/`；
+- `skills/` → `packages/concept-atlas-dense-explain/packaged-skill/`，仅 `prepack` 时生成且被 `.gitignore` 忽略，因此 clean clone 中不存在属正常状态。
+
+提交前可用 `npm run check:sync` 确认没有漂移。
 
 新增组件时，记得在 `src/components/index.js` 中导出，并把组件名加入 `src/model/validate-content.js` 的 `KNOWN_COMPONENTS`，使 MDX 可以使用且通过校验。
