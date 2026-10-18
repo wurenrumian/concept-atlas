@@ -10,17 +10,6 @@ const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
 /**
- * Mermaid is served from a CDN at runtime by default so its ~2100-module
- * transform stays out of the build. Set CONCEPT_ATLAS_INLINE_MERMAID=1 to bake
- * it back into the HTML for a fully offline single file; CONCEPT_ATLAS_MERMAID_CDN
- * overrides the CDN URL.
- */
-const INLINE_MERMAID = ['1', 'true', 'yes'].includes(
-  (process.env.CONCEPT_ATLAS_INLINE_MERMAID || '').toLowerCase()
-);
-const MERMAID_CDN_URL = process.env.CONCEPT_ATLAS_MERMAID_CDN || '';
-
-/**
  * Optional compile-time appearance defaults, read from the environment and
  * forwarded as `define`s. The carrier HTML plugin replaces the placeholders
  * inside the anti-flash inline script only when these are configured.
@@ -73,15 +62,7 @@ async function buildCarrier(entry, baseDefine) {
     }
     const features = detectFeatures(demo.source);
     define.__ATLAS_FEATURES__ = JSON.stringify(features);
-    if (features.mermaid) {
-      define.__ATLAS_MERMAID_MODE__ = JSON.stringify(INLINE_MERMAID ? 'inline' : 'cdn');
-      if (MERMAID_CDN_URL) define.__ATLAS_MERMAID_CDN_URL__ = JSON.stringify(MERMAID_CDN_URL);
-      if (!INLINE_MERMAID)
-        console.log(`🌐 ${entry} Mermaid 运行时从 CDN 加载（--inline-mermaid 可内联）`);
-    }
-    const dropped = [features.math ? null : 'KaTeX', features.mermaid ? null : 'Mermaid'].filter(
-      Boolean
-    );
+    const dropped = [features.math ? null : 'KaTeX', features.pele ? null : 'Pele'].filter(Boolean);
     if (dropped.length) console.log(`⚡ ${entry} 省略未使用的渲染器：${dropped.join('、')}`);
   }
 

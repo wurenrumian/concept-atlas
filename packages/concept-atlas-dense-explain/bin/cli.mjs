@@ -35,7 +35,7 @@ let buildCounter = 0;
 function usage() {
   console.log('Usage:');
   console.log(
-    '  npx concept-atlas-dense-explain <input.mdx>... [--mode atlas|scroll] [--skin <id>] [--default-mode dark|light|system] [--style <id>] [-o output.html|dir] [--concurrency N] [--inline-assets] [--inline-mermaid] [--mermaid-cdn <url>] [--json] [--no-validate]'
+    '  npx concept-atlas-dense-explain <input.mdx>... [--mode atlas|scroll] [--skin <id>] [--default-mode dark|light|system] [--style <id>] [-o output.html|dir] [--concurrency N] [--inline-assets] [--json] [--no-validate]'
   );
   console.log('  npx concept-atlas-dense-explain render <input.mdx>... [-o output.html|dir]');
   console.log(
@@ -55,7 +55,7 @@ function usage() {
     '  Figures are kept as relative links by default (small HTML; ship the assets/ dir beside it). --inline-assets bakes every local image into the HTML as base64 instead; a per-tag inline={true|false} on <Figure> overrides that for one image. --link-assets is kept as an explicit alias for the default.'
   );
   console.log(
-    '  Mermaid diagrams load from a CDN at runtime by default (fast builds, needs network); --inline-mermaid bakes Mermaid into the HTML for a fully offline single file; --mermaid-cdn overrides the CDN URL.'
+    '  Mermaid-syntax diagrams (<Mermaid>) are rendered by Pele and ship inline, so every page is a fully offline single file. A document without <Mermaid> drops the renderer entirely.'
   );
   console.log(
     `  --skin bakes a default palette (${SKINS.map(skin => skin.id).join(', ')}); --default-mode bakes a default dark/light mode; --style bakes a default component style (${COMPONENT_STYLES.map(style => style.id).join(', ')}). Readers can still switch in the UI.`
@@ -101,8 +101,7 @@ const VALUE_FLAGS = new Set([
   '--concurrency',
   '--skin',
   '--default-mode',
-  '--style',
-  '--mermaid-cdn'
+  '--style'
 ]);
 const BOOLEAN_FLAGS = new Set([
   '--force',
@@ -111,7 +110,6 @@ const BOOLEAN_FLAGS = new Set([
   '--no-validate',
   '--link-assets',
   '--inline-assets',
-  '--inline-mermaid',
   '--help',
   '-h',
   '--version',
@@ -341,8 +339,6 @@ const inlineAssets = parsed.flags.has('--inline-assets');
 if (linkAssets && inlineAssets) {
   fail('--link-assets and --inline-assets are mutually exclusive (linking is the default).');
 }
-const inlineMermaid = parsed.flags.has('--inline-mermaid');
-const mermaidCdn = parsed.values.get('--mermaid-cdn') || null;
 const modeFlag = parsed.values.get('--mode') || null;
 
 // Compile-time appearance defaults. Invalid values fail fast with the valid
@@ -515,10 +511,6 @@ async function buildOne(job) {
   if (skinFlag) define.__ATLAS_DEFAULT_SKIN__ = JSON.stringify(skinFlag);
   if (defaultModeFlag) define.__ATLAS_DEFAULT_MODE__ = JSON.stringify(defaultModeFlag);
   if (styleFlag) define.__ATLAS_DEFAULT_STYLE__ = JSON.stringify(styleFlag);
-  if (features.mermaid) {
-    define.__ATLAS_MERMAID_MODE__ = JSON.stringify(inlineMermaid ? 'inline' : 'cdn');
-    if (mermaidCdn) define.__ATLAS_MERMAID_CDN_URL__ = JSON.stringify(mermaidCdn);
-  }
   try {
     await build({
       root: templateRoot,
@@ -567,10 +559,10 @@ async function buildOne(job) {
   }
 }
 
-/** Saves the mermaid/KaTeX payload when a document never renders them. */
+/** Notes the optional renderers a page carries, or that it dropped them. */
 function describeFeatures(features) {
   const tags = [];
-  if (features.mermaid) tags.push(inlineMermaid ? 'mermaid inline' : 'mermaid cdn');
+  if (features.pele) tags.push('Pele');
   if (features.math) tags.push('KaTeX');
   return tags.length ? `  [${tags.join(', ')}]` : '';
 }
@@ -580,12 +572,10 @@ function summarizeFeatures(jobs, results) {
   const pages = jobs.filter(job => built.has(job.input));
   if (!pages.length) return '';
   const droppedMath = pages.filter(job => !job.features.math).length;
-  const droppedMermaid = pages.filter(job => !job.features.mermaid).length;
-  const cdnMermaid = pages.filter(job => job.features.mermaid && !inlineMermaid).length;
+  const droppedPele = pages.filter(job => !job.features.pele).length;
   const parts = [];
-  if (cdnMermaid) parts.push(`Mermaid via CDN on ${cdnMermaid}/${pages.length}`);
   if (droppedMath) parts.push(`KaTeX dropped on ${droppedMath}/${pages.length}`);
-  if (droppedMermaid) parts.push(`Mermaid dropped on ${droppedMermaid}/${pages.length}`);
+  if (droppedPele) parts.push(`Pele dropped on ${droppedPele}/${pages.length}`);
   return parts.join(', ');
 }
 

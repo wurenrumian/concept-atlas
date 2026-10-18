@@ -125,7 +125,7 @@ export function auditCss({ root = process.cwd() } = {}) {
     }
   }
 
-  // Classes injected by third-party renderers (KaTeX, Mermaid) or by the browser
+  // Classes injected by third-party renderers (KaTeX) or by the browser
   // itself; they never appear in our source but are legitimately used.
   const ALLOW = new Set(['katex', 'katex-display', 'katex-html', 'katex-mathml']);
 
