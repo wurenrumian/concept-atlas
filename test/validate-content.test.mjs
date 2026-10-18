@@ -172,13 +172,13 @@ test('detectFeatures reports which optional renderers a document needs', () => {
   const proseOnly = detectFeatures(
     `<ScrollDocument><ScrollProse>一段话</ScrollProse></ScrollDocument>`
   );
-  assert.deepEqual(proseOnly, { math: false, mermaid: false });
+  assert.deepEqual(proseOnly, { math: false, pele: false });
 
   const mathOnly = detectFeatures(`${atlas(rootNode)}\n  <MathBlock formula="E = mc^2" />`);
-  assert.deepEqual(mathOnly, { math: true, mermaid: false });
+  assert.deepEqual(mathOnly, { math: true, pele: false });
 
   const both = detectFeatures(`${atlas(rootNode)}\n  <Mermaid chart="flowchart LR; A-->B" />`);
-  assert.deepEqual(both, { math: false, mermaid: true });
+  assert.deepEqual(both, { math: false, pele: true });
 
   const inlineMath = detectFeatures(
     `${atlas(rootNode)}\n  <Overview>符号 <Math>x</Math> 表示变量。</Overview>`
@@ -190,12 +190,12 @@ test('detectFeatures ignores samples inside code fences and inline code', () => 
   const fenced = detectFeatures(
     `${atlas(rootNode)}\n\n\`\`\`mdx\n<Mermaid chart="flowchart LR; A-->B" />\n<MathBlock formula="E = mc^2" />\n\`\`\``
   );
-  assert.deepEqual(fenced, { math: false, mermaid: false });
+  assert.deepEqual(fenced, { math: false, pele: false });
 
   const inline = detectFeatures(
     `${atlas(rootNode)}\n  <Definition>写作 \`<Mermaid>\` 表示图表节点。</Definition>`
   );
-  assert.equal(inline.mermaid, false);
+  assert.equal(inline.pele, false);
 });
 
 test('extractPageTitle reads the tab title from the carrier shell', () => {
