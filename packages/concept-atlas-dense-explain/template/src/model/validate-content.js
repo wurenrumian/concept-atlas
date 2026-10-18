@@ -902,10 +902,11 @@ export function countBySeverity(diagnostics) {
 /**
  * Optional renderers a document actually instantiates.
  *
- * Mermaid and KaTeX (plus the ~1.4 MB of woff2 fonts its stylesheet inlines) are
- * heavy enough that bundling them into a page which never renders a diagram or a
- * formula dominates both build time and output size. The build reads these flags
- * and swaps unused renderers for stubs.
+ * KaTeX (plus the ~1.4 MB of woff2 fonts its stylesheet inlines) is heavy
+ * enough that bundling it into a page which never renders a formula dominates
+ * both build time and output size; Pele, the renderer behind <Mermaid>, is
+ * smaller but still worth dropping from a page with no diagram. The build reads
+ * these flags and swaps unused renderers for stubs.
  *
  * Detection runs on the masked source, so `<Math>` inside a fenced block or an
  * inline code span does not count as usage.
@@ -917,7 +918,7 @@ export function detectFeatures(source) {
   }
   return {
     math: used.has('Math') || used.has('MathBlock'),
-    mermaid: used.has('Mermaid')
+    pele: used.has('Mermaid')
   };
 }
 

@@ -3845,14 +3845,14 @@ html[data-carrier='scroll'] #root {
 .image-zoom-stage.is-dragging .image-zoom-target { transition: none; }
 
 /* A diagram keeps its natural aspect inside the viewer and paints on the
-   Mermaid canvas tone, so labels stay legible over the dark scrim. */
+   diagram canvas tone, so labels stay legible over the dark scrim. */
 .mermaid-zoom-canvas svg {
   display: block;
   width: min(94vw, 1800px);
   height: auto;
   max-height: 84vh;
   border-radius: var(--radius-3);
-  background: var(--mermaid-canvas);
+  background: var(--pele-bg);
   box-shadow: var(--shadow-modal);
 }
 
@@ -4122,7 +4122,7 @@ a.reference-title:hover { color: var(--text-accent); }
   animation: ca-pop 520ms var(--ease-out) backwards;
 }
 
-/* A rendered diagram fades in once Mermaid inserts it. */
+/* A rendered diagram fades in once Pele inserts it. */
 .mermaid-canvas svg {
   animation: ca-fade calc(var(--motion-base) + 120ms) var(--ease-standard) backwards;
 }

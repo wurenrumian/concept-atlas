@@ -61,7 +61,7 @@
   box-shadow: var(--shadow-sm);
 }
 
-/* Mermaid / RelationMap inside the explorer grid carry their own chassis rule. */
+/* Mermaid (Pele) / RelationMap inside the explorer grid carry their own chassis rule. */
 [data-style='shadcn'] .draft-board .semantic-grid > .semantic-mermaid,
 [data-style='shadcn'] .draft-board .semantic-grid > .semantic-relation-map {
   margin: 0;

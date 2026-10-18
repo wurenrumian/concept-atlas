@@ -121,13 +121,6 @@
   --explorer-grid:
     linear-gradient(rgba(56, 189, 248, 0.025) 1px, transparent 1px),
     linear-gradient(90deg, rgba(56, 189, 248, 0.025) 1px, transparent 1px);
-
-  /* Mermaid diagram palette (read by JS at render time) */
-  --mermaid-node-bg: #1b2540;
-  --mermaid-node-text: #e0f2fe;
-  --mermaid-node-border: #38bdf8;
-  --mermaid-line: #6b7c93;
-  --mermaid-canvas: #0e1421;
 }
 
 [data-theme="light"] {
@@ -241,13 +234,28 @@
   --explorer-grid:
     linear-gradient(rgba(37, 99, 235, 0.04) 1px, transparent 1px),
     linear-gradient(90deg, rgba(37, 99, 235, 0.04) 1px, transparent 1px);
+}
 
-  /* Mermaid diagram palette */
-  --mermaid-node-bg: #dbeafe;
-  --mermaid-node-text: #0f172a;
-  --mermaid-node-border: #2563eb;
-  --mermaid-line: #64748b;
-  --mermaid-canvas: #ffffff;
+/* ==========================================================================
+   DIAGRAM PALETTE — Pele renders <Mermaid> charts. Its colors come from the
+   `--pele-*` CSS variables, so the aliases below ride on the theme tokens
+   above: a diagram follows the active skin and mode with no JS re-render.
+   Pele reads them on the root <svg> (class `.pele`), which the widget's
+   `.mermaid-canvas` / `.mermaid-zoom-canvas` frames contain.
+   ========================================================================== */
+
+:root {
+  --pele-bg: var(--bg-surface);
+  --pele-fg: var(--text-primary);
+  --pele-muted: var(--text-muted);
+  --pele-line: var(--text-dim);
+  --pele-surface: var(--bg-card-hover);
+  --pele-surface-alt: var(--bg-card);
+  --pele-border: var(--text-accent);
+  --pele-accent: var(--primary);
+  --pele-font: var(--font-sans);
+  --pele-font-mono: var(--font-mono);
+  --pele-radius: var(--radius-2);
 }
 
 /* ==========================================================================
