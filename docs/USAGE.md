@@ -42,28 +42,15 @@ npx concept-atlas-dense-explain papers/*.mdx -o dist --concurrency 3
 构建会扫描内容，只把真正用到的重型渲染器打进产物：
 
 - 没有 `<Math>` / `<MathBlock>` 时，KaTeX 及其样式（约 1.4MB 内联字体）不会进入产物。
-- 没有 `<Mermaid>` 时，Mermaid 不会进入产物。
+- 没有 `<Mermaid>` 时，Pele（图表渲染器）不会进入产物。
 
 构建结束会打印汇总，例如 `(KaTeX dropped on 3/3)`。一篇不使用公式和图表的 `scroll` 文章通常是约 250KB 而不是约 5MB。如果确实需要某个渲染器，正常写组件即可，无需任何开关。
 
-### Mermaid 的 CDN 加载与 `--inline-mermaid`
+### 图表的渲染器：Pele
 
-Mermaid 是最大的依赖（约 2100 个模块）。默认情况下它**不打进产物**，而是在页面第一次渲染 `<Mermaid>` 时从 CDN 动态加载 `mermaid@11`。这样含图表的文档构建更快、HTML 更小，代价是查看图表需要联网。
+`<Mermaid>` 的图表由 [Pele](https://pele.run) 渲染——它是 Obsidian 出的 Mermaid 语法渲染器：体积约为 Mermaid.js 的 1/6、同步渲染、零运行时依赖，产物无需联网。因此**不需要任何开关**：含图表的页面直接就是离线单文件。图表颜色来自 `--pele-*` CSS 变量（定义在 `src/styles/tokens.css`，由当前皮肤与明暗模式驱动），切换皮肤或明暗模式时颜色即时跟随，无需重绘。
 
-需要完全离线的单文件时，用 `--inline-mermaid` 把 Mermaid 烘焙回 HTML；`--mermaid-cdn <url>` 可替换默认 CDN 地址（例如自建镜像）：
-
-```bash
-# 默认：Mermaid 走 CDN
-npx concept-atlas-dense-explain paper.mdx --mode atlas
-
-# 离线单文件：内联 Mermaid
-npx concept-atlas-dense-explain paper.mdx --mode atlas --inline-mermaid
-
-# 换 CDN 地址（仍走运行时加载）
-npx concept-atlas-dense-explain paper.mdx --mode atlas --mermaid-cdn https://cdn.example.com/mermaid.min.js
-```
-
-仓库自身构建用环境变量 `CONCEPT_ATLAS_INLINE_MERMAID=1`（另有 `CONCEPT_ATLAS_MERMAID_CDN`）。CDN 加载失败时图表位置会显示提示，其余内容不受影响。
+图表源码仍是标准 Mermaid 语法（flowchart、sequenceDiagram、stateDiagram 等，覆盖 Mermaid 12.1.0 的内置图类型）。Pele 使用自己的布局与视觉风格，节点位置、间距与 Mermaid.js 不完全一致；`themeVariables` 之类的 Mermaid 主题配置不再生效，请改用 CSS 变量。若 Pele 误读或拒绝了某个 Mermaid 12.1.0 语法，可在 [Pele 仓库](https://github.com/obsidianmd/pele/issues) 反馈差异。
 
 ### 图片：默认外链与 `--inline-assets`
 
@@ -310,7 +297,7 @@ exception-of  异常或反例
 
 ### Mermaid 图
 
-`Mermaid` 支持 Mermaid 的流程图、时序图、状态图等语法，图表在浏览器中渲染：
+`Mermaid` 接受标准的 Mermaid 图语法（流程图、时序图、状态图等），由 Pele 在浏览器中渲染为 SVG，并内联进产物、开箱离线：
 
 ```mdx
 <Mermaid
@@ -424,7 +411,7 @@ exception-of  异常或反例
 | 要表达的东西 | 用什么 | 说明 |
 | --- | --- | --- |
 | 数据趋势、对比 | `Chart` | bar / line / pie |
-| 流程、拓扑、时序 | `Mermaid` | 文本图，默认 CDN，`--inline-mermaid` 可离线 |
+| 流程、拓扑、时序 | `Mermaid` | 文本图，由 Pele 内联渲染，开箱离线 |
 | 概念之间的关系 | `RelationMap` / `RelationPath` | 复用知识网络的语义关系 |
 | 截图、示意图、照片 | `Figure`（别名 `Image`） | 默认外链，`--inline-assets` 内联 |
 

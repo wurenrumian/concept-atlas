@@ -247,7 +247,7 @@ MDX 属性使用 JavaScript 表达式。字符串要加引号，数组和对象�
 | `FormulaModel` | `variables` | `{ symbol?: string, name?: string, description?: string, value?: string }[]` |
 | `Tradeoff` | `options` | `{ name?: string, label?: string, benefit?: string, cost?: string, when?: string }[]` |
 | `NoteGrid` | `notes` | `{ title?: string, label?: string, content?: string, text?: string, description?: string }[]` |
-| `Mermaid` | `chart` | `string`，使用模板字符串表达多行图表 |
+| `Mermaid` | `chart` | `string`，使用模板字符串表达多行图表（标准 Mermaid 语法，由 Pele 渲染并内联） |
 | `Tabs` | `items` | `{ label?: string, title?: string, content?: string }[]` |
 | `Math` | `formula` | `string`（LaTeX；含 `{` 或反斜杠时用这个 prop，不要写子内容） |
 | `MathBlock` | `formula` / `variables` | `string` / `{ symbol?: string, name?: string, description?: string }[]` |

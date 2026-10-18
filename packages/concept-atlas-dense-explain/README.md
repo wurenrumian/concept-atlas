@@ -31,13 +31,13 @@ a no-op. `--mode` defaults to `scroll`. Use `-o` to choose the output path (a
 directory when passing several inputs). Validation errors abort the build; `--no-validate` forces a knowingly
 broken build.
 
-Mermaid loads from a CDN at runtime by default (fast builds, needs network);
-`--inline-mermaid` bakes it into the HTML for a fully offline single file, and
-`--mermaid-cdn` overrides the CDN URL. Appearance defaults can be baked with
-`--skin`, `--default-mode` and `--style`; readers can still switch in the UI.
-Local figures link by default (small HTML, ship `assets/` beside the output);
-`--inline-assets` bakes them in as base64 for a self-contained file, and a
-per-figure `inline={true|false}` overrides that choice.
+Mermaid-syntax diagrams are rendered by Pele, which ships inline: a page with
+`<Mermaid>` is a fully offline single file with no CDN call, and a document
+without `<Mermaid>` drops the renderer entirely. Appearance defaults can be
+baked with `--skin`, `--default-mode` and `--style`; readers can still switch in
+the UI. Local figures link by default (small HTML, ship `assets/` beside the
+output); `--inline-assets` bakes them in as base64 for a self-contained file,
+and a per-figure `inline={true|false}` overrides that choice.
 
 Run `npx concept-atlas-dense-explain help` for the full flag list.
 
