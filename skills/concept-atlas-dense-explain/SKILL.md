@@ -1,6 +1,6 @@
 ---
 name: concept-atlas-dense-explain
-description: Turn a topic or an existing document into an interactive Concept Atlas explainer. Generate AI-editable MDX with the concept-atlas-dense-explain CLI, validate its structure, and compile standalone HTML with concept nodes, relation graphs, math (KaTeX), charts, figures, citations, and reading aids. Use when a technical explanation, concept map, layered knowledge page, dense explainer, or interactive teaching page is requested.
+description: Turn a topic or existing document into an interactive Concept Atlas explainer — AI-editable MDX compiled to standalone HTML with concept nodes, relation graphs, math, charts, figures, citations, and reading aids. Use for technical explanations, concept maps, layered knowledge pages, dense explainers, or interactive teaching pages; also 概念图 / 知识地图 / 分层讲解.
 ---
 
 # Concept Atlas Dense Explain
@@ -20,9 +20,7 @@ This is the only runner — there is nothing to look for. Do not search for a lo
 ## Workflow
 
 1. Choose one page shell: `atlas` (concept graph with node navigation) or `scroll` (continuous document). Recommend `atlas` when the reader drills into concepts or follows relations, `scroll` for linear argument, tutorials, and reports. The library is shared. If an `.mdx` already exists, detect its shell and work with it.
-2. **Learn the components from the bundled reference before authoring.** The only reference you need is the guide that ships with this skill:
-   - `references/atlas-guide.mdx` (atlas) or `references/scroll-guide.mdx` (scroll)
-   It is real, compilable MDX showing that shell's components and their exact props; search it for a component name instead of guessing, and do not look for component documentation anywhere else. Do not run `guide` for this.
+2. **Learn the components before authoring.** `references/components.md` is the catalogue — search it by component name for props and shapes rather than guessing. `references/atlas-guide.mdx` (atlas) or `references/scroll-guide.mdx` (scroll) is real, compilable MDX showing how that shell's components compose into a page. Do not look for component documentation anywhere else, and do not run `guide` for this.
    Run `npx concept-atlas-dense-explain guide --mode <mode> -o <file>` only when you specifically need a project-local copy to compile beside the page, and delete that copy when done.
 3. Start from a skeleton when useful: `npx concept-atlas-dense-explain create <file>.mdx --mode atlas|scroll` (`--mode` defaults to `scroll`). `create` and `guide` overwrite their output, so never point them at a file you want to keep.
 4. Write the semantic MDX into the user's `.mdx` file (see Authoring rules).
@@ -44,15 +42,9 @@ This is the only runner — there is nothing to look for. Do not search for a lo
 - The browser tab comes from the shell, not the build flags: `ExplainPage title` (atlas) or `ScrollHeader title` (scroll) becomes the `<title>`, so give it a real, specific name — never a placeholder like "主题名称". Every page uses a fixed 📃 favicon.
 - Never make one MDX file both shells. When switching shells, convert only the outer structure.
 
-## Component families
+## Component and prop reference
 
-- Node semantics: `Overview`, `Definition`, `Mechanism`, `Implementation`, `CodeBlock`, `Boundary`, `Example`, `Counterexample`, `Prerequisite`, `Input`, `Output`, `Glossary`
-- Argument and evidence: `Evidence`, `Invariant`, `FailureMode`, `Tradeoff`, `Checklist`, `LearningObjectives`, `KeyQuestion`
-- Learning loop and provenance: `WorkedExample` + `Step`, `Quiz`, `KeyTakeaways`, `Source`, `Confidence`, `LastReviewed`, `Term`
-- Information models: `Flow`, `Timeline`, `Compare`, `DecisionMatrix`, `FrameworkModel`, `MatrixModel`, `FormulaModel`, `PyramidModel`, `FunnelModel`
-- Data and behaviour: `DataTable`, `Metric`, `PropertyList`, `TreeView`, `StateMachine`, `DecisionTree`, `FeedbackLoop`, `CodeDiff`
-- Reading and layout: `Insight`, `Callout`, `Details`, `Quote`, `NoteGrid`, `Tabs`, `Columns`, `Stack`, `Grid`, `Split`, `ScrollGrid`, `ScrollPair`, `ScrollToc`
-- Graphics and extensions: `Mermaid`, `RelationMap`, `RelationPath`, `Math`, `MathBlock`, `Chart`, `CodeTabs`, `AnnotatedCode`, `Figure` (alias `Image`), `FigureRef`, `Cite`, `References`
+The component catalogue, every prop shape, and the syntax traps are in `references/components.md`. Read it before authoring, and search it by component name whenever a tag is new to this page — prop names and shapes are not guessable. Charts, the learning loop, provenance, data/behaviour and structure components are documented there in full; only the rules that must hold on every page are repeated below.
 
 ## Authoring rules
 
@@ -62,21 +54,14 @@ This is the only runner — there is nothing to look for. Do not search for a lo
 - Array props are arrays of objects: `Flow steps={[{title, description}]}`, `Timeline events={[{label, content}]}`, `MatrixModel cells={[{title, description, tone}]}`, `DecisionMatrix headers={[...]} rows={[[...]]}`, `Chart data={[{label, value}]}`, `References items={[{id, authors, year, title, url, source}]}`. The validator warns (`PROP_EXPECTS_ARRAY`) when an array prop gets a string or non-array.
 - `Relation type` must be one of `prerequisite`, `causes`, `produces`, `uses`, `implements`, `contrasts`, `depends-on`, `exception-of`, `precedes`, and each `Relation` needs a `label`. Parent/child hierarchy is implicit (via `parent` and `Children`/`ConceptRef`) — do not express it with a `Relation`.
 - **Math**: MDX parses `{ ... }` in children as expressions, so pass LaTeX with braces or backslashes through `formula`: `<Math formula="r_{\text{ann}} = (1 + r)^{12} - 1" />`, `<MathBlock formula="I(x) = -\log_2 p(x)" variables={[{symbol, description}]} />`. Brace-free children such as `<Math>\log_2 N</Math>` are fine. The validator warns (`MATH_CHILDREN_BRACES`).
-- **CodeBlock**: a general code block usable anywhere; `Implementation` is the node-bound variant. Pass the code as a string via `code` (or as children) wrapped in a template literal so MDX does not read it as expressions: `<CodeBlock language="bash" title="..." lineNumbers>{`npm run validate`}</CodeBlock>`. `language` adds the badge, `title`/`caption` add labels, `lineNumbers` and `wrap` are booleans.
-- **Chart**: `type` is `bar` | `line` | `pie`; use `data` for bar/pie and `labels` + `series={[{name, values}]}` for line. Charts follow theme colors.
-- **Learning loop**: `WorkedExample` holds `Step` children; give each step a `reason` (the justification) so it teaches reasoning, not just the result. `Quiz question answer` reveals the answer on click with children as the explanation. `KeyTakeaways items={[...]}` closes a section.
-- **Provenance**: `Source kind="spec|rfc|implementation|experiment|experience|reference" label href` marks one claim's origin inline (`reference` is the default); `Confidence level="high|medium|low" basis` wraps a claim with how strongly it is established; `Term name` (or children as the definition) gives an inline hover definition.
-- **Data and behaviour**: `DataTable headers={[...]} rows={[[...]]}` is the neutral table (no comparative stance). `Metric label value unit delta trend note` is one headline number — compose several with `Grid`/`ScrollGrid`. `StateMachine states={[{id,label,terminal}]} transitions={[{from,to,event,guard}]}` expresses cycles and guards. `DecisionTree branches={[{condition,outcome,tone,branches}]}` nests branches. `FeedbackLoop type="reinforcing|balancing" nodes={[{label,description}]}` closes a loop. `CodeDiff before after language` shows a change.
-- **Structure and code extensions**: `Quote author source href` attributes a quotation. `Checklist title items={[{text,status:'pass'|'fail'|'unknown'|'todo',note}]}` is a verification list. `PropertyList title items={[{name,value,note}]}` is a name/value spec ledger. `TreeView title items={[{label,description,children:[…]}]}` nests a hierarchy. `CodeTabs items={[{label,language,code}]} title caption lineNumbers` gives one collapsible listing per variant. `AnnotatedCode code language title notes={[{line,text}]}` numbers a listing and calls out specific lines. `LastReviewed date by note` is a review stamp.
-- **Figure**: a relative `src` (`./assets/diagram.png`) stays a relative link by default; compile with `--inline-assets` to bake every local image in as base64, or set `inline={true}` / `inline={false}` on one figure to override (precedence: per-figure prop > global flag > link). `http(s)` URLs stay links and warn (`ASSET_REMOTE`). Always set `alt`; a missing relative file warns (`ASSET_MISSING`) and shows a placeholder. Readers can click a figure to open it full-screen (zoom, drag, `Esc`) — mention it for diagram-heavy pages.
-- **Figure numbering**: give a figure an `id` and reference it with `<FigureRef id="..." />` to render "图 N". Numbering follows document order (per node in `atlas`, whole document in `scroll`) and reflows automatically, so never hand-write "图 1"; an explicit `label` still wins. A ref with no matching `id` warns (`FIGURE_REF_UNRESOLVED`).
-- **Figure size & cost**: linking keeps the HTML small but requires the output to sit beside the MDX's `assets/` (the CLI warns when `-o` points elsewhere). Inlining is what makes a screenshot-heavy page large (a page with no heavy renderers otherwise lands near 250KB), and an inlined asset over 512KB warns (`ASSET_LARGE`). Decide the trade-off with the user instead of choosing silently.
-- **Cite/References**: `<Cite id="..." />` renders `[n]` from the matching item's position in `<References items={...} />`. In `scroll`, `References` can sit anywhere. In `atlas`, keep the cites and the `References` block in the same node, because node content only renders when that node is open.
+- **Code**: pass code as a string via `code` (or as children) wrapped in a template literal, so MDX does not read it as expressions: `<CodeBlock language="bash" lineNumbers>{`npm run validate`}</CodeBlock>`. Badges, captions and wrapping are documented in `references/components.md`.
+- **Figures**: always set `alt`; number with an `id` plus `<FigureRef>`, never hand-write "图 N"; relative links versus `--inline-assets` is a size trade-off — decide it with the user instead of choosing silently.
+- **Cite/References**: `<Cite id="..." />` renders `[n]` from the matching item's position in `<References items={...} />`. In `atlas`, keep the cites and the `References` block in the same node, because node content only renders when that node is open.
 - Continuous reading is configured on the shell, not with manual CSS: `spacing="compact|comfortable|airy"` for rhythm, `fontSize="compact|normal|large|xlarge"` (or numeric `scale`/`lineHeight`) for text size.
 
 ## Validation diagnostics
 
-`validate` and the build print `CODE line:column message`. Fix these `error`s before building: `UNKNOWN_COMPONENT`, `CARRIER_MISSING`, `CARRIER_CONFLICT`, `CARRIER_MODE_MISMATCH`, `NODE_MISSING_ID`, `DUPLICATE_NODE_ID`, `NODE_MISSING_TITLE`, `MISSING_PARENT`, `GRAPH_ROOT_UNRESOLVED`, `REF_MISSING_ID`, `REF_UNRESOLVED`, `RELATION_FROM_UNRESOLVED`, `RELATION_TO_UNRESOLVED`. Warnings worth fixing: `NODE_MISSING_SUMMARY`, `NODE_NO_CORE_CONTENT`, `UNKNOWN_LEVEL`, `UNKNOWN_KIND`, `MECHANISM_KIND_UNVERIFIED`, `FAILURE_KIND_UNSTRUCTURED`, `FAILURE_MODE_EMPTY`, `UNKNOWN_RELATION_TYPE`, `RELATION_MISSING_LABEL`, `RELATION_SELF`, `PROP_EXPECTS_ARRAY`, `MATH_CHILDREN_BRACES`, `PROSE_EXPRESSION`, `FRONTMATTER_UNSUPPORTED`, `GRAPH_MISSING_ROOT`, `FIGURE_MISSING_SRC`, `ASSET_MISSING`, `ASSET_REMOTE`, `ASSET_LARGE`, `FIGURE_REF_UNRESOLVED`, `FIGURE_REF_MISSING_ID`, `FIGURE_DUPLICATE_ID`, `REF_SELF`; `NO_ROOT_LEVEL`, `MULTIPLE_ROOT_LEVEL`, `MECHANISM_KIND_UNVERIFIED` and `FAILURE_KIND_UNSTRUCTURED` are warnings that `--strict` promotes to errors.
+`validate` and the build print `CODE line:column message`. Fix every `error` before building; `references/diagnostics.md` lists the codes you may meet and separates errors from warnings. `NO_ROOT_LEVEL`, `MULTIPLE_ROOT_LEVEL`, `MECHANISM_KIND_UNVERIFIED` and `FAILURE_KIND_UNSTRUCTURED` are warnings that `--strict` promotes to errors.
 
 ## Before you report
 
