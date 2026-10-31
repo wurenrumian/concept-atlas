@@ -2,7 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { render as renderPele } from 'pele';
 import katex from 'katex';
-import { ZoomIn } from 'lucide-react';
+import { ZoomIn, X } from 'lucide-react';
 import 'katex/dist/katex.min.css';
 import { registerReferences, subscribeReferences, getReferenceIndex } from '../model/citations.js';
 import { registerFigure, subscribeFigures, getFigureNumber } from '../model/figures.js';
@@ -1123,7 +1123,7 @@ function ReadingProgress() {
   );
 }
 
-export function ScrollToc({ items = [], activeId = null, title = '目录' }) {
+export function ScrollToc({ items = [], activeId = null, title = '目录', onNavigate }) {
   if (items.length < 2) return null;
   return (
     <nav className="scroll-toc" aria-label="目录">
@@ -1131,7 +1131,9 @@ export function ScrollToc({ items = [], activeId = null, title = '目录' }) {
       <ol className="scroll-toc-list">
         {items.map(item => (
           <li key={item.id} className={item.id === activeId ? 'active' : undefined}>
-            <a href={`#${item.id}`}>{item.title}</a>
+            <a href={`#${item.id}`} onClick={onNavigate}>
+              {item.title}
+            </a>
           </li>
         ))}
       </ol>
@@ -1196,6 +1198,64 @@ export function ScrollDocument({
 
   const showToc = toc && items.length >= 2;
 
+  const [tocOpen, setTocOpen] = React.useState(false);
+  const tocTriggerRef = React.useRef(null);
+  const tocPanelRef = React.useRef(null);
+  const closeTimer = React.useRef(0);
+
+  // The outline is a hover panel, not a button you click: parking the pointer on
+  // the edge tab (or moving into the panel) keeps it open, leaving lets it fall
+  // away. Touch and keyboard still get there through tap, focus and Escape.
+  const cancelClose = React.useCallback(() => {
+    window.clearTimeout(closeTimer.current);
+  }, []);
+
+  const openToc = React.useCallback(() => {
+    cancelClose();
+    setTocOpen(true);
+  }, [cancelClose]);
+
+  const scheduleClose = React.useCallback(() => {
+    cancelClose();
+    closeTimer.current = window.setTimeout(() => setTocOpen(false), 340);
+  }, [cancelClose]);
+
+  const closeToc = React.useCallback(() => {
+    cancelClose();
+    setTocOpen(false);
+  }, [cancelClose]);
+
+  React.useEffect(() => cancelClose, [cancelClose]);
+
+  // The panel stays mounted so it can slide both ways; `inert` keeps the hidden
+  // outline out of the tab order and the accessibility tree.
+  React.useEffect(() => {
+    if (tocPanelRef.current) tocPanelRef.current.inert = !tocOpen;
+  }, [tocOpen]);
+
+  React.useEffect(() => {
+    if (!tocOpen) return undefined;
+    const onKeyDown = event => {
+      if (event.key === 'Escape') {
+        closeToc();
+        tocTriggerRef.current?.focus();
+      }
+    };
+    // A tap outside the panel dismisses it on touch screens, where there is no
+    // pointerleave to rely on.
+    const onPointerDown = event => {
+      if (tocPanelRef.current?.contains(event.target)) return;
+      if (tocTriggerRef.current?.contains(event.target)) return;
+      closeToc();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('pointerdown', onPointerDown);
+    };
+  }, [tocOpen, closeToc]);
+
   return (
     <article
       className={`continuous-document continuous-spacing-${safeSpacing}${showToc ? ' has-toc' : ''}`}
@@ -1204,7 +1264,42 @@ export function ScrollDocument({
     >
       {progress && <ReadingProgress />}
       <ScrollOutlineContext.Provider value={outline}>
-        {showToc && <ScrollToc items={items} activeId={activeId} />}
+        {showToc && (
+          <>
+            <button
+              ref={tocTriggerRef}
+              type="button"
+              className="scroll-toc-trigger"
+              aria-expanded={tocOpen}
+              aria-controls="scroll-toc-panel"
+              aria-label="目录"
+              onPointerEnter={openToc}
+              onPointerLeave={scheduleClose}
+              onFocus={openToc}
+              onClick={openToc}
+            >
+              目录
+            </button>
+            <div
+              id="scroll-toc-panel"
+              className={`scroll-toc-panel${tocOpen ? ' is-open' : ''}`}
+              ref={tocPanelRef}
+              aria-hidden={!tocOpen}
+              onPointerEnter={cancelClose}
+              onPointerLeave={scheduleClose}
+            >
+              <button
+                type="button"
+                className="scroll-toc-close"
+                onClick={closeToc}
+                aria-label="关闭目录"
+              >
+                <X size={15} aria-hidden="true" />
+              </button>
+              <ScrollToc items={items} activeId={activeId} onNavigate={closeToc} />
+            </div>
+          </>
+        )}
         <div className="continuous-content">{children}</div>
       </ScrollOutlineContext.Provider>
     </article>
