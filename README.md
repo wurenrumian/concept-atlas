@@ -19,7 +19,7 @@
 - **学习闭环与溯源**：`LearningObjectives`/`KeyQuestion` 开场，`WorkedExample`/`Step` 逐步推演，`Quiz` 即时自测，`KeyTakeaways` 收束；`Source`/`Confidence` 标注来源类型与置信度，`Term` 提供行内术语释义。
 - **数据与行为模型**：`DataTable`（中立表格）、`Metric`（头条数字）、`StateMachine`（状态迁移）、`DecisionTree`（分支决策）、`FeedbackLoop`（反馈回路）和 `CodeDiff`（改动对比）。
 - **扩展能力**：`Math`/`MathBlock`（KaTeX 公式）、`Chart`（bar/line/pie 图表）、`Figure`/`FigureRef`（配图与自动图号）、`Cite`/`References`（引用与文献）、`LastReviewed`（审阅日期）。
-- **阅读体验可配置**：`scroll` 自动生成侧栏目录和阅读进度，并支持 `fontSize`/`scale`/`lineHeight` 调整正文大小。
+- **阅读体验可配置**：`scroll` 把正文收进一条居中阅读柱，左边缘悬停即出目录面板，并自动生成阅读进度；`fontSize`/`scale`/`lineHeight` 可调正文大小。
 - **外观系统**：读者可随时切换配色皮肤（`aurora` 极光冷调 / `ember` 炉火暖调 / `verdant` 苔原森林 / `sakura` 樱雾粉紫 / `noir` 墨白单色）× 明暗模式 × 组件风格（`manuscript` 手稿排版 / `classic` 经典卡片 / `shadcn` 极简界面 / `elastic` 观测面板），选择在 localStorage 持久化；CLI/环境变量可把默认外观烘焙进产物。
 - **内容校验**：CLI 在构建前校验结构，断链、重复 id、缺失字段和错误 prop 会直接报错。
 - **单文件输出**：MDX 可直接编译为独立 `.html` 文件，JS/CSS 完全内联，可离线打开（字体默认从 Google Fonts CDN 加载，离线时会回退到系统字体栈）。图表由 Pele（Obsidian 出品的 Mermaid 语法渲染器）在页面内直接渲染并内联进产物，因此含 `<Mermaid>` 的页面同样是开箱离线的单文件；不含图表的页面会完全剔除该渲染器。本地图片默认保持外链（HTML 更小，需与 `assets/` 一起分发），需要离线单文件时加 `--inline-assets` 全部内联，单张图可用 `inline` prop 覆盖；实际体积主要取决于文档是否使用 KaTeX，以及内联了多少图片。

@@ -382,7 +382,7 @@ npm run sync`}</CodeBlock>
 
 ## 11. 可配置排版与阅读体验
 
-`ScrollDocument` 会自动根据章节标题生成侧栏目录和阅读进度，并用 `fontSize` 控制正文大小：
+`ScrollDocument` 会把整篇内容收进一条居中的阅读柱（最宽 880px，标题、章节标题、正文与卡片共用同一条左右边界），并自动根据章节标题生成目录和阅读进度，用 `fontSize` 控制正文大小：
 
 ```mdx
 <ScrollDocument spacing="comfortable" fontSize="large" toc progress>
@@ -392,7 +392,7 @@ npm run sync`}</CodeBlock>
 
 - `fontSize`：`compact | normal | large | xlarge`。
 - 也可以传数值 `scale`（字号倍率）和 `lineHeight` 覆盖预设。
-- `toc` / `progress`：分别控制目录与阅读进度条，默认开启。
+- `toc` / `progress`：分别控制目录与阅读进度条，默认开启。目录不是侧栏：左边缘居中处有一个窄标签，鼠标悬停（或键盘聚焦、点按）时滑出完整目录面板，离开标签与面板即收起；正文因此始终是一条居中的柱。
 - `ScrollSection` 可以用 `id` 指定锚点，否则由标题自动生成。
 
 不要为了调整字号在内容里写 CSS，统一通过这两个 prop 控制。
