@@ -12,7 +12,7 @@ Concept Atlas 的工作方式很简单：内容作者用 MDX 描述知识，渲�
 npx concept-atlas-dense-explain create topic.mdx --mode atlas
 ```
 
-让 AI 活得轻松一点：先取一份可编译的组件参考并阅读，再动手写。
+先让 AI 读一份可编译的组件参考，再动手写——比凭记忆猜 prop 写法省事得多。
 
 ```bash
 npx concept-atlas-dense-explain guide --mode atlas -o atlas-guide.mdx
