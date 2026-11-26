@@ -1,3 +1,4 @@
+{/* 按需检索：只搜索本次要使用的组件名并阅读附近示例，不要通读本文件。 */}
 <ScrollDocument spacing="comfortable" fontSize="normal">
   <ScrollHeader title="Concept Atlas 连续阅读指南" label="连续阅读 · 组件参考">同一套语义组件可以脱离图谱和节点面板，按传统文档流连续阅读。本页同时是一份可运行的组件参考：每一节演示一个组件家族，正文保持高信息密度，模型在需要比较、推导或收敛时占满可用宽度。</ScrollHeader>
 
@@ -61,9 +62,9 @@ npm run dev`}</CodeBlock>
   <ScrollSection title="把讲解补成学习闭环">
     <ScrollProse>讲解不应只给结论。WorkedExample 记录每一步的理由，Quiz 触发主动回忆，KeyTakeaways 在结尾压缩真正要带走的部分。</ScrollProse>
     <WorkedExample title="一次动态库加载失败的完整追踪" problem="程序编译成功却在启动时退出，需要逐步定位而不是直接猜测。">
-      <Step number="1" title="确认格式与架构" reason="格式或架构不匹配会让 loader 直接拒绝文件">file app && readelf -h app</Step>
+      <Step number="1" title="确认格式与架构" reason="格式或架构不匹配会让加载器直接拒绝文件">file app && readelf -h app</Step>
       <Step number="2" title="检查直接依赖" reason="排除共享库缺失这一最常见原因">ldd app</Step>
-      <Step number="3" title="核对搜索路径" reason="依赖存在但不在 loader 搜索路径上同样会失败">echo $LD_LIBRARY_PATH</Step>
+      <Step number="3" title="核对搜索路径" reason="依赖存在但不在加载器搜索路径上同样会失败">echo $LD_LIBRARY_PATH</Step>
     </WorkedExample>
     <Quiz question="哪个阶段负责解析跨文件符号？" answer="链接阶段" tone="success">
       链接器把目标文件中的未定义引用与其他目标文件或库中的定义匹配起来，装载阶段只做重定位。
@@ -140,7 +141,7 @@ npm run dev`}</CodeBlock>
   style E fill:#14532d,stroke:#34d399,color:#ecfdf5`} />
       <RelationPath title="阅读路径" steps={[{level:'L0',node:'总览',note:'建立直觉',tone:'info'},{level:'L1',node:'机制',note:'理解过程',tone:'success'},{level:'L2',node:'边界',note:'检查反例',tone:'warn'}]} />
     </ScrollGrid>
-    <RelationMap title="关系速览" items={[{from:'MDX',type:'produces',to:'Graph',note:'生成关系图'},{from:'Node',type:'uses',to:'Mermaid',note:'展示局部流程'}]} />
+    <RelationMap title="关系速览" items={[{from:'MDX',type:'produces',to:'图谱',note:'生成关系图'},{from:'节点',type:'uses',to:'Mermaid',note:'展示局部流程'}]} />
   </ScrollSection>
 
   <ScrollSection title="附录：大图的框内适配与放大阅读">

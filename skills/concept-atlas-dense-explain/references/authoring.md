@@ -1,59 +1,59 @@
-# Authoring and document conversion
+# 编写与文档转换
 
-Use this reference when turning source material into a page, or when deciding whether a draft is complete. Component APIs live in `components.md`; this file governs structure, fidelity, and stopping conditions.
+仅在需要文档转换、源材料映射或判断草稿完成度时阅读本文；按章节标题搜索，不要通读。组件 API 见 `components.md`；本文规定结构、忠实度和停止条件。
 
-## Choose the shell from the reading task
+## 根据阅读任务选择页面外壳
 
-- Choose `atlas` when readers need to compare concepts, follow cross-branch relations, or explore details out of order.
-- Choose `scroll` when the source's argument must be read in order: tutorials, reports, procedures, and long-form explanations.
-- If an `.mdx` file already exists, detect and keep its shell unless the user asks to convert it. Never make one file both shells.
+- 当读者需要比较概念、追踪跨分支关系，或不按顺序探索细节时，选择 `atlas`。
+- 当源材料的论证必须按顺序阅读时，选择 `scroll`：例如教程、报告、操作流程和长篇解释。
+- 若 `.mdx` 文件已存在，检测并保留其页面外壳，除非用户要求转换。切勿让同一个文件同时使用两种页面外壳。
 
-## Turn a document into a page
+## 将文档转换为页面
 
-Restructure the source; do not paste it into one node or section. Map the source's own outline first, then convert each unit into one claim with its supporting material.
+重组源材料，不要把它整体粘贴到一个节点或章节中。先梳理源材料自身的大纲，再把每个单元转换为一条主张及其支撑材料。
 
-| Source material | Preferred expression |
+| 源材料 | 推荐表达方式 |
 | --- | --- |
-| Chapter or major heading | One `ScrollSection`, or one named concept node in `atlas` |
-| Neutral table or raw observations | `DataTable` |
-| Options compared against criteria | `DecisionMatrix` or `Tradeoff` |
-| Two-dimensional positioning | `MatrixModel` |
-| Ordered process | `Flow` or `WorkedExample` + `Step` |
-| Dated sequence | `Timeline` |
-| Before/after or alternative designs | `Compare` or `CodeDiff` |
-| Headline number | `Metric` |
-| Repeated definition or prose | One `Definition` plus its evidence; merge duplicates |
-| Citation or source claim | `Cite` + `References`, and `Source` where provenance matters |
+| 章节或主要标题 | 一个 `ScrollSection`，或 `atlas` 中的一个命名概念节点 |
+| 中性表格或原始观察 | `DataTable` |
+| 按标准比较的选项 | `DecisionMatrix` 或 `Tradeoff` |
+| 二维定位 | `MatrixModel` |
+| 有序过程 | `Flow` 或 `WorkedExample` + `Step` |
+| 带日期的序列 | `Timeline` |
+| 前后对照或备选设计 | `Compare` 或 `CodeDiff` |
+| 核心数字 | `Metric` |
+| 重复的定义或说明文字 | 一个 `Definition` 加相应证据；合并重复项 |
+| 引用或源材料中的主张 | `Cite` + `References`；需标明出处时再加 `Source` |
 
-Preserve the source's citations, qualifications, counterexamples, and uncertainty. Do not invent evidence, citations, measurements, or examples to make the page look complete. If the source leaves a material gap, say so in the page or report it to the user.
+保留源材料中的引用、限定条件、反例和不确定性。不要为了让页面显得完整而编造证据、引用、测量数据或示例。若源材料存在实质缺口，应在页面中说明，或向用户报告。
 
-Finish with a short mapping report: what was restructured, merged, dropped, or left unresolved. This lets the user check that the conversion did not silently change the argument.
+最后给出简短的映射报告，说明哪些内容经过了重组、合并、删除或仍未解决。这样用户可以检查转换过程是否悄然改变了论证。
 
-## Density means information gain, not quotas
+## 密度指信息增益，而非数量指标
 
-A branch that only restates its title is a stub. A block that repeats the previous block in different styling is also a stub. Fix both by adding new information or merging the unit.
+只复述标题的分支是空壳。仅换一种样式重复上一段内容的区块也是空壳。添加新信息或合并单元，即可修复这两类问题。
 
-For each important concept, ask:
+对于每个重要概念，询问：
 
-1. **What is it?** Give a precise definition or mental model.
-2. **Why or how does it work?** Explain the mechanism, cause, or decision rule.
-3. **What supports it?** Add evidence, a worked example, data, or a citation when available.
-4. **Where does it stop?** State a boundary, failure mode, trade-off, or counterexample when relevant.
+1. **它是什么？** 给出精确定义或心智模型。
+2. **为什么或如何运作？** 解释机制、成因或决策规则。
+3. **有什么支撑？** 在可用时添加证据、完整示例、数据或引用。
+4. **它的边界在哪里？** 在相关时说明边界、失效模式、权衡或反例。
 
-These are coverage questions, not required block counts. A simple concept may need only a definition and an example; a complex mechanism may need several models and a failure analysis. Stop when the reader can answer the concept's key question and check the important claims. Never split prose or fabricate substance merely to hit a number.
+这些是覆盖度检查问题，不是必需的块数。简单概念可能只需要定义和示例；复杂机制可能需要多个模型和失效分析。当读者能够回答该概念的关键问题并核验重要主张时，就应停止。不要为了达到某个数量而拆分说明文字或编造实质内容。
 
-In `scroll`, one section should make one claim plus its evidence. Split a section when it changes subject or develops a second independent claim, not because it crosses an arbitrary screen count.
+在 `scroll` 中，每个章节应承载一条主张及其证据。当章节切换主题或展开第二条独立主张时才拆分，而不是因为超过了某个武断的屏幕数量阈值。
 
-## Component selection follows the relationship
+## 组件选择取决于关系
 
-Use the component whose data shape matches the information, not the one with the most decorative treatment. A `Flow` expresses order; `Timeline` adds time; `StateMachine` adds states and transitions; `DecisionTree` adds conditions; `FeedbackLoop` adds feedback polarity. If two components would show the same text, keep one.
+选择数据形状与信息相匹配的组件，而不是装饰效果最强的组件。`Flow` 表达顺序；`Timeline` 增加时间维度；`StateMachine` 增加状态和转换；`DecisionTree` 增加条件；`FeedbackLoop` 增加反馈极性。如果两个组件展示的文字相同，只保留一个。
 
-## Final content check
+## 最终内容检查
 
-Before compiling, verify:
+编译前确认：
 
-- Every important unit has a claim-like title and non-duplicated substance.
-- Every node has `title` and `summary`; every relation has a meaningful `label`.
-- All ids, parents, refs, relation endpoints, figures, and citations resolve.
-- Source claims remain traceable, and uncertainty has not been silently upgraded into certainty.
-- The page answers the user's actual reading task rather than merely displaying many components.
+- 每个重要单元都有主张式标题，且内容不重复。
+- 每个节点都有 `title` 和 `summary`；每个关系都有有意义的 `label`。
+- 所有 id、父节点、引用、关系端点、图和文献引用均可正确解析。
+- 源材料中的主张仍可追溯，且没有将不确定性悄然升级为确定性。
+- 页面回答的是用户的实际阅读任务，而不只是展示了许多组件。

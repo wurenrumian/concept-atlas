@@ -1,74 +1,74 @@
 ---
 name: concept-atlas-dense-explain
-description: Build a dense, interactive Concept Atlas page from a topic or source document — semantic MDX compiled to standalone HTML, with concept graphs, math, charts, figures, and citations. Use it when someone wants material turned into an interactive HTML/MDX explainer, tutorial, technical deep-dive, report, concept/knowledge map, or teaching page, including "turn this doc into a page" or "explain this properly as a page"; also 讲解 / 深度长文 / 教程 / 技术文档 / 报告 / 概念图 / 知识地图 / 分层讲解. Not for a short chat answer, summary-only work, a slide deck, or a Word/PDF-only deliverable.
+description: 把主题或 source document 整理成语义化 MDX，并编译为 standalone HTML 交互式 Concept Atlas 页面，支持概念图谱、公式、图表、配图和引用。适用于把材料做成交互式 HTML/MDX 讲解页、教程、技术深潜、报告页、概念图、知识地图或分层教学页面，包括“把这份文档变成网页”“讲清楚一点并做成页面”等请求，也覆盖 讲解 / 深度长文 / 教程 / 技术文档 / 报告 / 概念图 / 知识地图 / 分层讲解 等说法。Not for 简短聊天回答、仅摘要、幻灯片或只交付 Word/PDF 的任务。
 ---
 
 # Concept Atlas Dense Explain
 
-Turn a topic or source document into semantic MDX and compile it with the `concept-atlas-dense-explain` CLI. Everything needed is in this file and the bundled `references/`; do not read the framework repository or installed package files, copy implementation files from the skill directory, or recreate the React/Vite app.
+把主题或源文档整理成语义化 MDX，并使用 `concept-atlas-dense-explain` CLI 编译。所需内容都在本文件和随附的 `references/` 中；不要阅读框架仓库或已安装包的实现文件，不要从 skill 目录复制实现文件，也不要重新创建 React/Vite 应用。
 
-If the user only wants the methodology or MDX text, still choose one shell and emit valid MDX. CLI validation and compilation are needed only when producing files.
+如果用户只需要方法说明或 MDX 文本，仍选择一种页面外壳并输出合法 MDX。只有在需要产出文件时，才需要进行 CLI 校验和编译。
 
-## Operating rules
+## 运行规则
 
-- Use the CLI only through `npx`. Do not search for another runner or run the framework repository's own scripts.
-- Use exactly one page shell per file. Keep MDX semantic: no CSS, SVG, custom React, or invented component APIs. Use free-position coordinates only when the user explicitly asks for manual layout.
-- Preserve source claims, citations, counterexamples, and uncertainty. Never invent evidence, measurements, references, or examples to make a page look complete.
-- Protect user files. `create`, `guide`, and compiled outputs overwrite their targets; `guide` also overwrites `assets/` beside its output. Choose a new path or ask before overwriting existing work.
-- Load references by task instead of reading everything: component API, authoring, CLI details, and diagnostics are separate files.
+- 只通过 `npx` 使用 CLI。不要寻找其他运行方式，也不要运行框架仓库自己的脚本。
+- 每个文件只使用一种页面外壳。保持 MDX 语义化：不要写 CSS、SVG、自定义 React 或臆造组件 API。只有用户明确要求手工布局时，才使用自由定位坐标。
+- 保留源材料中的论断、引用、反例和不确定性。不要为了页面显得完整而编造证据、测量数据、参考文献或示例。
+- 保护用户文件。`create`、`guide` 和编译产物会覆盖目标；`guide` 还会覆盖输出旁边的 `assets/`。请选择新路径，或在覆盖已有文件前询问用户。
+- 不要预加载或通读 references。先搜索当前任务的关键词，只读命中章节；guide 也按组件名检索，不通读。只有在当前步骤需要时才打开对应文件。
 
-## Workflow
+## 工作流程
 
-1. **Establish the deliverable.** Identify the source material, audience, desired output path, and whether the user wants MDX only or compiled HTML. Ask only when a choice is ambiguous or would overwrite user work.
-2. **Choose the shell.** Use the decision table below. If an `.mdx` file already exists, detect its shell and keep it unless conversion is requested.
-3. **Learn the API before writing tags.** Read `references/components.md` and search it by component name. Unknown props are silently ignored, so do not guess. Use the matching bundled guide as a compilable example: `references/atlas-guide.mdx` or `references/scroll-guide.mdx`.
-4. **Draft the semantic MDX.** Start from `create` when useful, then apply the authoring contract below. Read `references/authoring.md` for document conversion, source-to-component mapping, density checks, and stopping conditions.
-5. **Validate before rendering.**
+1. **确定交付物。** 识别源材料、目标读者、输出路径，以及用户只需要 MDX 还是要编译后的 HTML。只有在选择不明确或会覆盖用户文件时才提问。
+2. **选择页面外壳。** 使用下方决策表。如果已有 `.mdx` 文件，检测其外壳并保留，除非用户要求转换。
+3. **写标签前先查 API。** 在 `references/components.md` 中搜索组件名，只读对应的 props 行；若涉及数组 prop，再搜索 `Shapes and traps` 下的同名条目。未知 prop 会被静默忽略，因此不要猜测。需要完整组合示例时，再到 `references/atlas-guide.mdx` 或 `references/scroll-guide.mdx` 中搜索该组件名，不要通读 guide。
+4. **起草语义化 MDX。** 需要时先从 `create` 开始，再应用下方写作约定。仅在需要文档转换、源材料映射或判断完成度时，读取 `references/authoring.md` 的对应章节；其他情况跳过。
+5. **渲染前校验。**
    ```bash
    npx concept-atlas-dense-explain validate <file>.mdx --mode atlas|scroll
    npx concept-atlas-dense-explain validate <file>.mdx --mode atlas|scroll --json
    ```
-   Fix every error and re-run. Address warnings when cheap; use `--strict` when the user wants a clean structural contract. See `references/diagnostics.md` for causes and fixes.
-6. **Compile.** Read `references/cli.md` for output, appearance, batching, and asset flags.
+   修复所有错误（error）后重新运行。成本不高时处理警告（warning）；用户要求干净的结构契约时使用 `--strict`。出现诊断代码时，只在 `references/diagnostics.md` 中搜索该代码并读取对应行；没有诊断时不要打开该文件。
+6. **编译。** 只在需要确认输出、外观、批处理或资源行为时，搜索 `references/cli.md` 的对应命令或参数，只读命中章节，不要通读。
    ```bash
    npx concept-atlas-dense-explain <file>.mdx --mode atlas|scroll [-o out.html]
    ```
-   Validation errors block the build. Use `--no-validate` only with an explicit reason.
-7. **Verify the result.** Confirm the HTML exists. When a browser tool is available, open it and check the title, shell navigation, and every diagram, chart, figure, tab, or citation you added. Fix blank widgets or broken interactions; otherwise state what remains unverified.
-8. **Report the outcome.** Name the shell, MDX and HTML paths, validation result, restructured/merged/dropped source material, and limitations that actually apply. Diagrams need no chart CDN, but fonts may load remotely and local images remain linked unless inlined. Do not claim interactions you did not verify.
+   校验错误（error）会阻止构建。只有有明确理由时才使用 `--no-validate`。
+7. **验证结果。** 确认 HTML 文件存在。有浏览器工具时，打开页面并检查标题、外壳导航，以及添加的每个图表、流程图、配图、标签页或引用。修复空白可视化组件或损坏的交互；否则说明还有哪些内容未验证。
+8. **报告结果。** 说明页面外壳、MDX 和 HTML 路径、校验结果、重构/合并/删除的源材料，以及实际适用的限制。图表不依赖图表 CDN（diagrams need no chart CDN），但字体可能远程加载，本地图片除非内联否则仍为链接。不要声称验证过未实际检查的交互。
 
-## Shell decision
+## 外壳决策
 
-| Reader task | Shell | Structure |
+| 阅读任务 | 外壳 | 结构 |
 | --- | --- | --- |
-| Explore concepts, compare branches, follow relations | `atlas` | `ExplainPage` → `ConceptGraph` → `ConceptNode`, with `Children` / `ConceptRef` and cross-branch `Relation` |
-| Read an argument, tutorial, procedure, or report in order | `scroll` | `ScrollDocument` → `ScrollHeader` + `ScrollSection`, with shared content components inside sections |
-| Existing MDX | Detect and keep | Convert only the outer shell when requested; never combine both shells |
+| 探索概念、比较分支、追踪关系 | `atlas` | `ExplainPage` → `ConceptGraph` → `ConceptNode`，通过 `Children` / `ConceptRef` 和跨分支 `Relation` 组织 |
+| 按顺序阅读论证、教程、流程或报告 | `scroll` | `ScrollDocument` → `ScrollHeader` + `ScrollSection`，章节（section）内使用共享内容组件 |
+| 已有 MDX | 检测并保留 | 只在用户要求时转换外层外壳；绝不合并两种外壳 |
 
-For `atlas`, keep exactly one `L0` root and use `L1`–`L4` for progressively finer detail. For `scroll`, the shell builds the table of contents and reading progress from section titles; do not hand-build navigation. Give `ExplainPage title` or `ScrollHeader title` a real static string because it becomes the browser tab title.
+对于 `atlas`，保持恰好一个 `L0` 根节点，并使用 `L1`–`L4` 表示逐层细化的内容。对于 `scroll`，外壳根据章节（section）标题自动生成目录和阅读进度；不要手工构建导航。为 `ExplainPage title` 或 `ScrollHeader title` 提供真实的静态字符串，因为它会成为浏览器标签页标题。
 
-## Authoring contract
+## 写作约定
 
-- Give each important concept a claim-like title, a one-sentence summary where the shell supports it, and substance that adds new information. Merge stubs instead of padding them.
-- Density means information gain, not quotas. Cover what the concept is, why/how it works, evidence or an example when available, and a boundary or trade-off when relevant; stop when the reader's question is answered.
-- Use `kind` only when an atlas node's knowledge role is clear. A `mechanism` should carry an `Invariant` or `Evidence`; a `failure` should carry a structured `FailureMode`.
-- Use relation types for cross-branch meaning, never for parent-child hierarchy. Every `Relation` needs a meaningful `label`.
-- Check array shapes in `components.md`. Pass LaTeX and code through the documented string/template-literal forms so MDX does not parse them as expressions.
-- Always set figure `alt`; use `id` + `FigureRef` for automatic numbering. In `atlas`, keep `Cite` and `References` in the same node.
-- Configure reading rhythm and text size on the shell, not with manual CSS.
+- 每个重要概念使用主张式标题；外壳支持时提供一句话摘要；正文必须增加新信息。合并空壳，而不是填充内容。
+- 密度意味着信息增益，不是配额。覆盖概念是什么、为什么/如何工作、证据或示例（如有）、边界或权衡（如相关）；读者的问题得到回答后就停止。
+- 只在知识角色明确时使用 `kind`。`mechanism` 应包含 `Invariant` 或 `Evidence`；`failure` 应包含结构化的 `FailureMode`。
+- 关系类型用于跨分支语义，不用于父子层级。每个 `Relation` 都需要有意义的 `label`。
+- 需要数组 prop 时，只在 `components.md` 的 `Shapes and traps` 中搜索同名组件。按文档规定的字符串/模板字面量形式传递 LaTeX 和代码，避免 MDX 将它们解析为表达式。
+- 始终设置配图 `alt`；使用 `id` + `FigureRef` 自动编号。在 `atlas` 中，`Cite` 和 `References` 放在同一节点。
+- 在外壳上配置阅读节奏和字号，不要使用手工 CSS。
 
-## Reference router
+## 参考文件路由
 
-| Need | Read |
-| --- | --- |
-| Component props, defaults, array shapes, aliases, traps | `references/components.md` |
-| Document conversion, source fidelity, density, stopping conditions | `references/authoring.md` |
-| Commands, flags, appearance, batching, assets, version mismatch | `references/cli.md` |
-| Diagnostic meaning and repair action | `references/diagnostics.md` |
-| Compilable composition examples | `references/atlas-guide.mdx` or `references/scroll-guide.mdx` |
+| 需求 | 文件 | 加载方式 |
+| --- | --- | --- |
+| 组件 props、默认值、数组形状、别名和陷阱 | `references/components.md` | 搜索组件名；只读 props 行和同名陷阱条目 |
+| 文档转换、源材料保真、密度和停止条件 | `references/authoring.md` | 仅在转换或完成度检查时读取对应章节 |
+| 命令、参数、外观、批处理、资源和版本不一致 | `references/cli.md` | 搜索命令或参数；只读命中章节 |
+| 诊断含义和修复动作 | `references/diagnostics.md` | 搜索诊断代码；只读对应行 |
+| 可编译的组合示例 | `references/atlas-guide.mdx` 或 `references/scroll-guide.mdx` | 搜索组件名；只读附近示例 |
 
-## Failure recovery
+## 失败恢复
 
-- If `npx` cannot reach the registry, report the blocker; do not switch to a repository build or copy implementation files.
-- If the CLI rejects a component that the current skill documents, check `--version` and report a likely skill/CLI version mismatch rather than inventing a workaround.
-- If validation still fails after the documented fix, report the remaining diagnostic and the file location instead of using `--no-validate` silently.
+- 如果 `npx` 无法访问 npm registry，报告阻塞；不要切换到仓库构建或复制实现文件。
+- 如果 CLI 拒绝当前 skill 文档中的组件，检查 `--version`，报告可能的 skill/CLI 版本不一致，不要臆造变通方案。
+- 如果按文档修复后仍校验失败，报告剩余诊断和文件位置，不要静默使用 `--no-validate`。

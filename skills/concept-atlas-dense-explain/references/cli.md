@@ -1,77 +1,77 @@
-# CLI reference
+# CLI 参考
 
-Use this reference when scaffolding, validating, compiling, batching, or configuring appearance. The main workflow is in `SKILL.md`.
+仅在需要创建骨架、校验、编译、批量构建、外观或资源行为时查阅本参考；先搜索命令或参数，只读命中章节，不要通读。主流程见 `SKILL.md`。
 
-## Runner
+## 运行入口
 
-Always invoke the CLI through `npx`, from any directory:
+始终通过 `npx` 调用 CLI，可从任意目录运行：
 
 ```bash
 npx concept-atlas-dense-explain <args>
 ```
 
-This is the only runner. Do not search for a local binary, repository checkout, or installed copy, and do not run the framework repository's own `npm` scripts. The first call may download the package from npm; say so once, then continue. Use `npx concept-atlas-dense-explain help` when a flag is unclear and `--version` when diagnosing a version mismatch.
+这是唯一的运行入口。不要查找本地二进制文件、仓库检出副本或已安装副本，也不要运行框架仓库自身的 `npm` 脚本。首次调用可能会从 npm 下载包；只需向用户说明一次，然后继续。参数不明确时使用 `npx concept-atlas-dense-explain help`，诊断版本不匹配时使用 `--version`。
 
-## Core commands
+## 核心命令
 
 ```bash
-# Optional skeleton; defaults to scroll and overwrites the target.
+# 可选骨架；默认使用 scroll 并覆盖目标文件。
 npx concept-atlas-dense-explain create <file>.mdx --mode atlas|scroll
 
-# Validate before rendering.
+# 渲染前先校验。
 npx concept-atlas-dense-explain validate <file>.mdx --mode atlas|scroll
 npx concept-atlas-dense-explain validate <file>.mdx --mode atlas|scroll --json
 
-# Compile; detects the MDX shell when --mode is omitted and writes beside the MDX unless -o is given.
+# 编译；省略 --mode 时检测 MDX 外壳，除非指定 -o，否则写入 MDX 旁。
 npx concept-atlas-dense-explain <file>.mdx --mode atlas|scroll [-o out.html]
 
-# Build several documents; -o becomes a directory.
+# 构建多个文档；-o 表示目录。
 npx concept-atlas-dense-explain a.mdx b.mdx c.mdx -o dist [--concurrency 3]
 ```
 
-`create`, `guide`, and compiled HTML outputs overwrite existing files. `guide` also copies its sample resources into `assets/` beside the output and overwrites matching files. Do not point it at a path containing user work unless overwriting is intended; choose a new path or ask first.
+`create`、`guide` 和编译后的 HTML 输出会覆盖现有文件。`guide` 还会把示例资源复制到输出旁的 `assets/`，并覆盖同名文件。除非确实要覆盖，否则不要将其指向包含用户工作的路径；应选择新路径或先询问。
 
-`guide` is only needed when the user wants a project-local, compilable copy of the bundled example. The installed skill already contains `references/atlas-guide.mdx` and `references/scroll-guide.mdx`; do not generate another copy just to learn the components.
+只有当用户需要一份项目本地、可编译的内置示例副本时，才需要使用 `guide`。已安装的技能已包含 `references/atlas-guide.mdx` 和 `references/scroll-guide.mdx`；不要为了解组件而再生成一份副本。
 
-## Flags
+## 参数（flags）
 
-| Flag | Meaning |
+| 参数 | 含义 |
 | --- | --- |
-| `--mode atlas\|scroll` | Selects the page shell. `create` / `guide` default to `scroll`; validation and builds detect the shell when omitted. Keep it consistent across commands when specified. |
-| `-o <path>` | Output HTML file, or output directory for multiple inputs. |
-| `--strict` | Promotes structural warnings to validation errors. |
-| `--json` | Machine-readable validation output. |
-| `--no-validate` | Skips validation and knowingly allows a broken build. Use only with an explicit reason. |
-| `--inline-assets` | Inlines every local image as base64. |
-| `--link-assets` | Explicit alias for the default linked-image behavior; mutually exclusive with `--inline-assets`. |
-| `--concurrency <N>` | Parallel build limit for multiple inputs; default 2, capped at 4. |
-| `--skin <id>` | Bakes a default palette. |
-| `--default-mode dark\|light\|system` | Bakes a default color mode. |
-| `--style <id>` | Bakes a default component style. |
-| `--force` | Compatibility no-op; outputs are overwritten anyway. |
+| `--mode atlas\|scroll` | 选择页面外壳。`create` / `guide` 默认为 `scroll`；校验和构建在省略时会检测外壳。指定后，请在各个命令中保持一致。 |
+| `-o <path>` | 输出 HTML 文件；多个输入时表示输出目录。 |
+| `--strict` | 将结构性警告提升为校验错误。 |
+| `--json` | 机器可读的校验输出。 |
+| `--no-validate` | 跳过校验，并允许构建出损坏的页面。仅在理由明确时使用。 |
+| `--inline-assets` | 将每张本地图片内联为 base64。 |
+| `--link-assets` | 默认图片外链行为的显式别名；与 `--inline-assets` 互斥。 |
+| `--concurrency <N>` | 多个输入的并行构建上限；默认为 2，最高为 4。 |
+| `--skin <id>` | 内置默认配色。 |
+| `--default-mode dark\|light\|system` | 内置默认明暗模式。 |
+| `--style <id>` | 内置默认组件风格。 |
+| `--force` | 兼容性空操作；输出本来就会被覆盖。 |
 
-## Appearance
+## 外观
 
-Pages ship a reader-facing appearance menu: palette (`aurora` indigo, `ember` gold, `verdant` forest, `sakura` pink-plum, `noir` ink), dark/light mode, and component style (`manuscript` editorial marginalia, `classic` boxed cards, `shadcn` hairline-bordered minimal UI, `elastic` bordered observability panels). The shipped default is aurora × manuscript × light, and choices persist in localStorage.
+页面提供面向读者的外观菜单：配色（`aurora` 靛蓝、`ember` 金色、`verdant` 森林绿、`sakura` 粉紫、`noir` 墨黑）、深色/浅色模式，以及组件风格（`manuscript` 社论式旁注、`classic` 方框卡片、`shadcn` 细边框极简界面、`elastic` 带边框的可观测性面板）。随附的默认值为 aurora × manuscript × light，选择会持久保存在 localStorage 中。
 
-Bake different defaults only when the user asks:
+仅在用户要求时内置不同的默认值：
 
 ```bash
 npx concept-atlas-dense-explain article.mdx --mode scroll \
   --skin ember --default-mode dark --style classic
 ```
 
-`--default-mode system` resolves to the carrier default (`light`). Content MDX never sets appearance.
+`--default-mode system` 会解析为载体的默认值（`light`）。内容 MDX 从不设置外观。
 
-## Assets and offline behavior
+## 资源与离线行为
 
-- `<Mermaid>` diagrams are rendered by Pele and inlined, so diagrams need no chart CDN. A page without `<Mermaid>` drops the renderer entirely.
-- Fonts may load from Google Fonts at runtime and fall back to the system stack offline.
-- Local images stay relative links by default. Ship the `assets/` directory beside the HTML, or use `--inline-assets`.
-- A per-figure `inline={true}` / `inline={false}` overrides the global flag for one image.
-- Remote images remain links and require network access.
-- Never add dummy `<Math>` or `<Mermaid>` nodes to enable a renderer; builds include only what the content uses.
+- `<Mermaid>` 图表由 Pele 渲染并内联，因此不需要图表 CDN。不含 `<Mermaid>` 的页面会完全移除渲染器。
+- 字体可能在运行时从 Google Fonts 加载，离线时回退到系统字体栈。
+- 本地图片默认保持相对链接。请将 `assets/` 目录放在 HTML 旁，或使用 `--inline-assets`。
+- 单图的 `inline={true}` / `inline={false}` 会覆盖该图片的全局参数。
+- 远程图片保持链接，需要网络访问。
+- 切勿为了启用渲染器而添加无意义的 `<Math>` 或 `<Mermaid>` 节点；构建只包含内容实际用到的部分。
 
-## Version mismatch
+## 版本不匹配
 
-The skill documentation and the npm `latest` CLI are released separately. If a documented component is rejected as `UNKNOWN_COMPONENT` after `npx` has fetched `latest`, report the likely version mismatch and the versions involved. Do not copy package implementation files into the skill, invent a replacement API, or silently downgrade the page.
+技能文档与 npm `latest` CLI 分别发布。如果 `npx` 获取 `latest` 后，文档中的组件被拒绝并报 `UNKNOWN_COMPONENT`，请报告可能的版本不匹配以及涉及的版本。不要把包实现文件复制到技能中，不要编造替代 API，也不要静默降级页面。
