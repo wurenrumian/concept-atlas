@@ -3885,6 +3885,9 @@ html[data-carrier='scroll'] #root {
   display: grid;
   place-items: center;
   padding: 28px;
+  /* How much of the viewport a full-size diagram may fill; the reader's fit
+     math and the small-screen override both read it. */
+  --zoom-fit-h: 84vh;
   background: var(--overlay-scrim);
   /* Clip at the viewport, not at the media box: the zoom transform does not
      change layout size, so a stage-sized clip would only ever reveal what the
@@ -3928,12 +3931,19 @@ html[data-carrier='scroll'] #root {
 .image-zoom-stage.is-dragging .image-zoom-target { transition: none; }
 
 /* A diagram keeps its natural aspect inside the viewer and paints on the
-   diagram canvas tone, so labels stay legible over the dark scrim. */
+   diagram canvas tone, so labels stay legible over the dark scrim. It is a
+   vector: the reader multiplies its layout width by `--zoom` (a number handed
+   down by ZoomOverlay) instead of scaling a rasterised layer, so every step of
+   the zoom re-renders sharp. `--diagram-w` / `--diagram-ratio` come from the
+   SVG's own viewBox: the fit fills the viewport, never past twice the natural
+   width, and a tall chart is bounded by the height instead — so opening a
+   narrow chart no longer paints a wide empty slab. */
 .mermaid-zoom-canvas svg {
   display: block;
-  width: min(94vw, 1800px);
+  width: calc(min(94vw, calc(var(--diagram-w, 1800px) * 2), calc(var(--zoom-fit-h, 84vh) * var(--diagram-ratio, 1.78))) * var(--zoom, 1));
   height: auto;
-  max-height: 84vh;
+  max-width: none;
+  max-height: none;
   border-radius: var(--radius-3);
   background: var(--pele-bg);
   box-shadow: var(--shadow-modal);
@@ -4000,9 +4010,8 @@ html[data-carrier='scroll'] #root {
 }
 
 @media (max-width: 760px) {
-  .image-zoom-overlay { padding: 12px; }
+  .image-zoom-overlay { padding: 12px; --zoom-fit-h: 74vh; }
   .image-zoom-stage img { max-height: 74vh; }
-  .mermaid-zoom-canvas svg { max-height: 74vh; }
   .image-zoom-caption { top: 10px; font-size: 12px; }
 }
 

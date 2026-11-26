@@ -1395,15 +1395,18 @@ export function Tabs({ items = [], children }) {
 Tabs.displayName = 'Tabs';
 
 /**
- * Enlarged reader for a diagram. It re-renders the chart under a fresh id so
- * the full-size copy never collides with the inline SVG, then hands the result
- * to the shared zoom overlay (wheel zoom, drag to pan, Esc to close).
+ * The drawing inside the full-size reader. A diagram is a vector, so enlarging
+ * it has to change its layout size: a CSS `scale()` on the wrapper only
+ * stretches the layer the browser already rasterised, which is what makes a
+ * chart look like a blurry bitmap while it grows. The SVG therefore carries its
+ * own viewBox size (`--diagram-w`, `--diagram-ratio`) and the reader multiplies
+ * that width by the current zoom; panning still rides a transform, because a
+ * translation never resamples.
  */
-function MermaidZoom({ chart, title, onClose }) {
+function DiagramCanvas({ chart, zoom, onError }) {
   const ref = React.useRef(null);
-  const [error, setError] = React.useState('');
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (!ref.current) return;
     const source = chart.trim();
     if (!source) return;
@@ -1414,19 +1417,40 @@ function MermaidZoom({ chart, title, onClose }) {
         responsive: false
       });
       ref.current.innerHTML = svg;
-      setError('');
+      const el = ref.current.querySelector('svg');
+      const box = el?.viewBox?.baseVal;
+      const width = box?.width || Number(el?.getAttribute('width')) || 0;
+      const height = box?.height || Number(el?.getAttribute('height')) || 0;
+      if (el && width > 0 && height > 0) {
+        el.style.setProperty('--diagram-w', `${width}px`);
+        el.style.setProperty('--diagram-ratio', String(width / height));
+      }
+      onError('');
     } catch (err) {
-      setError(err.message || '图表语法错误');
+      onError(err.message || '图表语法错误');
     }
-  }, [chart]);
+  }, [chart, onError]);
+
+  return <div className="mermaid-zoom-canvas" ref={ref} style={{ '--zoom': zoom }} />;
+}
+
+/**
+ * Enlarged reader for a diagram. It re-renders the chart under a fresh id so
+ * the full-size copy never collides with the inline SVG, then hands the result
+ * to the shared zoom overlay (wheel zoom, drag to pan, Esc to close).
+ */
+function MermaidZoom({ chart, title, onClose }) {
+  const [error, setError] = React.useState('');
 
   return (
-    <ZoomOverlay title={title || '关系草图'} caption={title} onClose={onClose}>
-      {error ? (
-        <pre className="mermaid-error">{error}</pre>
-      ) : (
-        <div className="mermaid-zoom-canvas" ref={ref} />
-      )}
+    <ZoomOverlay title={title || '关系草图'} caption={title} onClose={onClose} vector>
+      {scale =>
+        error ? (
+          <pre className="mermaid-error">{error}</pre>
+        ) : (
+          <DiagramCanvas chart={chart} zoom={scale} onError={setError} />
+        )
+      }
     </ZoomOverlay>
   );
 }
@@ -1961,7 +1985,7 @@ const clampScale = value => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, +value.toFixed
  * fixed` would otherwise be contained by them). Supports wheel zoom, drag to
  * pan, double-click to toggle 1x/2x, and Escape to close.
  */
-function ZoomOverlay({ title, caption, label, onClose, children }) {
+function ZoomOverlay({ title, caption, label, onClose, children, vector = false }) {
   const [scale, setScale] = React.useState(1);
   const [offset, setOffset] = React.useState({ x: 0, y: 0 });
   const [dragging, setDragging] = React.useState(false);
@@ -1971,6 +1995,9 @@ function ZoomOverlay({ title, caption, label, onClose, children }) {
   const movedRef = React.useRef(false);
   const scaleRef = React.useRef(scale);
   scaleRef.current = scale;
+  // A vector target (a rendered diagram) receives the zoom as a number and
+  // resizes itself; only a raster target (an image) is scaled as a layer.
+  const content = typeof children === 'function' ? children(scale) : children;
 
   const zoomBy = React.useCallback(delta => setScale(value => clampScale(value + delta)), []);
   const reset = React.useCallback(() => {
@@ -2080,9 +2107,13 @@ function ZoomOverlay({ title, caption, label, onClose, children }) {
       >
         <div
           className="image-zoom-target"
-          style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})` }}
+          style={
+            vector
+              ? { transform: `translate(${offset.x}px, ${offset.y}px)` }
+              : { transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})` }
+          }
         >
-          {children}
+          {content}
         </div>
       </div>
       {title && (
@@ -2119,9 +2150,19 @@ function ZoomOverlay({ title, caption, label, onClose, children }) {
 
 function ImageZoom({ src, alt, caption, label, onClose }) {
   const title = alt || caption || '图片';
+  const imgRef = React.useRef(null);
+  // An SVG authored without width/height has no intrinsic width, so `width:auto`
+  // inside the shrink-to-fit stage resolves to 0 and the reader opens empty.
+  // Such an image gets the viewer's width instead; a bitmap keeps its own.
+  const sizeSizelessImage = () => {
+    const img = imgRef.current;
+    if (!img || !img.complete || !img.naturalWidth) return;
+    if (img.getBoundingClientRect().width > 0) return;
+    img.style.width = 'min(94vw, 1800px)';
+  };
   return (
     <ZoomOverlay title={title} caption={caption || alt} label={label} onClose={onClose}>
-      <img src={src} alt={alt || ''} draggable="false" />
+      <img ref={imgRef} src={src} alt={alt || ''} draggable="false" onLoad={sizeSizelessImage} />
     </ZoomOverlay>
   );
 }
