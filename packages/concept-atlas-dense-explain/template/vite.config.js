@@ -32,11 +32,20 @@ const MARKDOWN_IMAGE_RE = /!\[([^\]]*)\]\(([^)\s]+)(\s+["'][^"']*["'])?\)/g;
  * mistaken for the prop itself.
  */
 function readInlineProp(tag) {
-  const stripped = tag.replace(/"[^"]*"|'[^']*'/g, '""');
-  const match = stripped.match(/\binline\b(?:\s*=\s*(\{[^}]*\}|[^\s/>]+))?/);
-  if (!match) return null;
-  if (match[1] === undefined) return true;
-  return match[1].replace(/^\{|\}$/g, '').trim() !== 'false';
+  // Consume whole attribute values so an `inline` word inside `title="..."` or
+  // another quoted string cannot be mistaken for the prop itself.
+  const attr = /([:\w-]+)(?:\s*=\s*(\{[^}]*\}|"[^"]*"|'[^']*'|[^\s/>]+))?/g;
+  for (const match of tag.matchAll(attr)) {
+    if (match[1] !== 'inline') continue;
+    if (match[2] === undefined) return true;
+    let value = match[2]
+      .trim()
+      .replace(/^\{|\}$/g, '')
+      .trim();
+    if (/^(["']).*\1$/.test(value)) value = value.slice(1, -1);
+    return value !== 'false' && value !== '0';
+  }
+  return null;
 }
 
 /**

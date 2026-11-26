@@ -45,7 +45,7 @@ function usage() {
   console.log('  npx concept-atlas-dense-explain guide [--mode atlas|scroll] [-o output.mdx]');
   console.log('');
   console.log(
-    '  --mode defaults to scroll. Existing outputs are overwritten; --force is accepted for compatibility and is a no-op.'
+    '  create/guide default to scroll; validate/build detect the MDX shell when --mode is omitted. Existing outputs are overwritten; guide also overwrites assets/ beside its output. --force is a compatibility no-op.'
   );
   console.log('  --help shows this text; --version prints the package version.');
   console.log(
@@ -55,7 +55,7 @@ function usage() {
     '  Figures are kept as relative links by default (small HTML; ship the assets/ dir beside it). --inline-assets bakes every local image into the HTML as base64 instead; a per-tag inline={true|false} on <Figure> overrides that for one image. --link-assets is kept as an explicit alias for the default.'
   );
   console.log(
-    '  Mermaid-syntax diagrams (<Mermaid>) are rendered by Pele and ship inline, so every page is a fully offline single file. A document without <Mermaid> drops the renderer entirely.'
+    '  Mermaid-syntax diagrams (<Mermaid>) are rendered by Pele and ship inline, so diagrams need no chart CDN. A document without <Mermaid> drops the renderer entirely. Fonts may load remotely and local images stay linked unless inlined.'
   );
   console.log(
     `  --skin bakes a default palette (${SKINS.map(skin => skin.id).join(', ')}); --default-mode bakes a default dark/light mode; --style bakes a default component style (${COMPONENT_STYLES.map(style => style.id).join(', ')}). Readers can still switch in the UI.`

@@ -117,9 +117,11 @@ export const LARGE_ASSET_BYTES = 512 * 1024;
 export const ARRAY_PROPS = {
   Flow: ['steps'],
   Timeline: ['events'],
+  ScrollToc: ['items'],
   FrameworkModel: ['elements'],
   MatrixModel: ['cells'],
   FormulaModel: ['variables'],
+  MathBlock: ['variables'],
   PyramidModel: ['levels'],
   FunnelModel: ['steps'],
   DecisionMatrix: ['headers', 'rows'],
@@ -136,7 +138,7 @@ export const ARRAY_PROPS = {
   RelationMap: ['items'],
   RelationPath: ['steps'],
   References: ['items'],
-  Chart: ['data', 'series'],
+  Chart: ['data', 'series', 'labels'],
   DataTable: ['headers', 'rows'],
   StateMachine: ['states', 'transitions'],
   KeyTakeaways: ['items'],
@@ -369,6 +371,14 @@ function attrValue(map, name) {
   return attr.value;
 }
 
+/** Matches the build-time asset plugin's boolean prop handling. */
+function attrTruthy(attr) {
+  if (!attr) return false;
+  if (!attr.hasValue) return true;
+  const value = String(attr.value).trim();
+  return value !== 'false' && value !== '0';
+}
+
 /**
  * Statically validate a Concept Atlas MDX document without rendering React.
  * Works in Node (CLI) and in the browser (registry only).
@@ -478,6 +488,7 @@ export function validateMdxSource(source, options = {}) {
       const map = attrsToMap(tag.attrs);
       const src = attrValue(map, 'src');
       const quoted = map.src ? map.src.quoted : false;
+      const inlineRequested = map.inline ? attrTruthy(map.inline) : inlineAssets;
       const figureId = attrValue(map, 'id');
       if (figureId) {
         if (figureIds.has(figureId))
@@ -497,7 +508,7 @@ export function validateMdxSource(source, options = {}) {
         const resolved = src.startsWith('.') ? src : `./${src}`;
         if (!assetExists(resolved)) {
           add('warning', 'ASSET_MISSING', `找不到图片文件：${src}（将显示占位符）`, tag.start, src);
-        } else if (inlineAssets && assetSize) {
+        } else if (inlineRequested && assetSize) {
           const bytes = assetSize(resolved);
           if (typeof bytes === 'number' && bytes > LARGE_ASSET_BYTES) {
             add(

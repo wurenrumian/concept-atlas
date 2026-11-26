@@ -92,8 +92,15 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
 /* Optional semantic layout primitives */
 .semantic-stack { display: flex; flex-direction: column; }
 .semantic-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.semantic-grid.grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.semantic-grid.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.semantic-grid.grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .semantic-split { display: grid; grid-template-columns: var(--split-ratio, 1fr 1fr); align-items: start; }
 .gap-sm { gap: 8px; } .gap-md { gap: 16px; } .gap-lg { gap: 28px; }
+.timeline-time { margin-left: 8px; color: var(--text-muted); font-size: 11px; }
+@media (max-width: 720px) {
+  .semantic-grid.grid-2, .semantic-grid.grid-3, .semantic-grid.grid-4 { grid-template-columns: 1fr; }
+}
 .semantic-tabs details { border-bottom: 1px solid var(--border-subtle); padding: 8px 0; }
 .semantic-tabs summary { cursor: pointer; font-weight: 700; color: var(--text-primary); }
 .mermaid-tools { display: inline-flex; align-items: center; gap: 6px; }

@@ -1,58 +1,24 @@
-# Concept Atlas 框架使用指南
+# Concept Atlas 内容编写指南
 
-Concept Atlas 的工作方式很简单：内容作者用 MDX 描述知识，渲染器负责把这些语义编译成一个可以离线打开的 HTML 页面。
+Concept Atlas 用语义化 MDX 描述知识结构、证据和关系，再把它们编译成交互式 HTML。内容作者只决定“这一块信息是什么”，渲染器负责布局、导航、主题和交互。
 
-它的重点不是把文章拆成很多漂亮卡片，而是用合适的结构压缩更多可理解、可验证的信息。
+完整组件 API 见 [`skills/concept-atlas-dense-explain/references/components.md`](../skills/concept-atlas-dense-explain/references/components.md)；CLI 命令见 [`USAGE.md`](./USAGE.md)。
 
-## 1. 最短工作流
+## 1. 先选页面外壳
 
-如果你还没有 MDX 文件，可以先生成起稿：
+`atlas` 和 `scroll` 共享同一套内容组件，区别只在阅读路径。
 
-```bash
-npx concept-atlas-dense-explain create topic.mdx --mode atlas
-```
-
-先让 AI 读一份可编译的组件参考，再动手写——比凭记忆猜 prop 写法省事得多。
-
-```bash
-npx concept-atlas-dense-explain guide --mode atlas -o atlas-guide.mdx
-npx concept-atlas-dense-explain guide --mode scroll -o scroll-guide.mdx
-```
-
-guide 是一份真实的 MDX，覆盖全部组件和 prop 写法，可以直接编译预览，也可以当模板改写。
-
-改完内容后先校验，再编译：
-
-```bash
-npx concept-atlas-dense-explain validate topic.mdx --mode atlas
-npx concept-atlas-dense-explain topic.mdx
-```
-
-默认输出同目录的 `topic.html`。也可以指定模式和输出路径：
-
-```bash
-npx concept-atlas-dense-explain article.mdx --mode scroll
-npx concept-atlas-dense-explain article.mdx -o public/article.html
-```
-
-CLI 不会初始化项目，不会复制 MDX，也不会要求用户维护 `package.json`、`src/` 或 Vite 配置。
-
-## 2. 先选页面外壳
-
-`atlas` 和 `scroll` 不是两套组件库，而是两种页面外壳。
-
-| 外壳 | 适合的问题 | 必要结构 |
+| 读者任务 | 外壳 | 必要结构 |
 | --- | --- | --- |
-| `atlas` | 概念有层级，需要下钻、回溯和关系图 | `ExplainPage`、`ConceptGraph`、`ConceptNode` |
-| `scroll` | 内容按章节连续阅读，重点是论证、比较和总结 | `ScrollDocument`、`ScrollSection`、`ScrollProse` |
+| 探索概念、比较分支、追踪关系 | `atlas` | `ExplainPage` → `ConceptGraph` → `ConceptNode` |
+| 顺序阅读论证、教程、过程或报告 | `scroll` | `ScrollDocument` → `ScrollHeader` + `ScrollSection` |
+| 已有 MDX | 保持当前外壳 | 只在用户要求时转换外层结构 |
 
-共享的信息组件可以放进合适的位置。比如 `Insight`、`Flow`、`Mermaid`、`Callout`、`FrameworkModel`、`MatrixModel`、`FormulaModel`、`DecisionMatrix`、`FailureMode`、`NoteGrid`、`Tabs` 和 `Details` 并不属于某个外壳。扩展组件 `Math`/`MathBlock`、`Chart`、`Figure`、`CodeBlock`、`Cite`/`References` 同样两种外壳通用。
+一个文件只能使用一种外壳。切换外壳时转换外层结构，不重写内部语义组件。
 
-外壳决定页面如何组织，组件决定一段信息如何被理解。
+## 2. Atlas：概念树与关系
 
-## 3. Atlas 写法
-
-Atlas 用概念树承载导航，用 `Relation` 表达不属于树结构的关系：
+Atlas 用概念树组织下钻路径，用 `Relation` 表达跨分支关系。
 
 ```mdx
 <ExplainPage
@@ -67,147 +33,170 @@ Atlas 用概念树承载导航，用 `Relation` 表达不属于树结构的关�
       level="L0"
       summary="客户端通过结构化消息请求资源或触发操作。"
     >
-      <Overview>先解释全局过程和读者需要建立的直觉。</Overview>
-      <Definition>给出准确的定义和边界。</Definition>
-      <Flow title="处理阶段" steps={[
+      <Overview>先建立全局过程和直觉。</Overview>
+      <Definition>请求是客户端发往服务端的结构化消息。</Definition>
+      <Flow steps={[
         {title: '构造', description: '确定方法、目标和请求头'},
         {title: '传输', description: '通过连接发送请求消息'},
-        {title: '处理', description: '服务端校验、执行业务逻辑'},
+        {title: '处理', description: '服务端校验并执行业务逻辑'},
         {title: '响应', description: '返回状态、头部和消息体'}
       ]} />
       <Children><ConceptRef id="request-line" /></Children>
     </ConceptNode>
 
-    <ConceptNode id="request-line" title="请求行" level="L1" parent="request">
-      <Definition>请求行声明方法、目标资源和协议版本。</Definition>
+    <ConceptNode
+      id="request-line"
+      title="请求行"
+      level="L1"
+      parent="request"
+      summary="请求行声明方法、目标资源和协议版本。"
+    >
+      <Definition>请求行是请求消息的起始部分。</Definition>
       <Example title="典型请求">GET /users HTTP/1.1</Example>
     </ConceptNode>
-
-    <Relation from="request-line" to="request" type="implements" label="具体化" />
   </ConceptGraph>
 </ExplainPage>
 ```
 
-层级建议：`L0` 是全局主题，`L1` 是主要分支，`L2` 是局部机制，`L3` 是实现细节，`L4` 是边界、反例或异常情况。
+层级表示认知深度，不表示视觉字号：
 
-节点还可以用可选的 `kind` 单独标注知识角色，它与层级正交，用于知识网络页的按类型筛选：
+| 层级 | 用途 |
+| --- | --- |
+| `L0` | 全局主题，整篇文档只有一个 |
+| `L1` | 主要阶段、子系统或分支 |
+| `L2` | 局部机制 |
+| `L3` | 实现细节 |
+| `L4` | 边界、反例和异常情况 |
+
+`parent` 决定树归属，`Children` / `ConceptRef` 声明下钻入口。不要用 `Relation` 重复表达父子关系。
+
+### 知识类型 `kind`
+
+`level` 表示“位于哪一层”，`kind` 表示“在论证中扮演什么角色”，两者正交。
+
+| `kind` | 含义 |
+| --- | --- |
+| `system` | 整体系统、产品或问题域 |
+| `stage` | 生命周期阶段、处理步骤或子系统 |
+| `mechanism` | 可解释、可验证的工作机制 |
+| `artifact` | 阶段产出的实体、数据或文件 |
+| `failure` | 失败模式、异常与边界情况 |
+| `tool` | 工具、库或外部依赖 |
+| `boundary` | 约束、前提、限制与非目标 |
+| `decision` | 设计取舍与选择点 |
+
+`kind` 可选。声明 `mechanism` 时建议提供 `Invariant` 或 `Evidence`；声明 `failure` 时建议使用结构化 `FailureMode`。`--strict` 会把这两项未满足契约升级为错误。
+
+### 概念关系
+
+`Relation` 表达不属于树结构的关系，类型包括：
 
 ```text
-system     整体系统、产品或问题域      stage      生命周期阶段或子系统
-mechanism  可验证的工作机制           artifact   阶段产出的实体或文件
-failure    失败模式与异常             tool       工具、库或外部依赖
-boundary   约束、前提与非目标         decision   设计取舍与选择点
+prerequisite  前置知识
+causes        因果推动
+produces      产出生成
+uses          消费使用
+implements    实现关系
+precedes      时序先后
+depends-on    依赖关系
+contrasts     对比关系
+exception-of  异常或反例
 ```
 
-声明 `kind="mechanism"` 的节点建议至少包含一个 `Invariant` 或 `Evidence`；声明 `kind="failure"` 的节点建议包含 `FailureMode`。这两条契约只在主动写出 `kind` 后生效，`--strict` 会把它升级为错误。
-
-## 4. Scroll 写法
-
-Scroll 用章节组织阅读顺序。共享组件放在章节中，不需要为了使用 `Flow` 或 `MatrixModel` 改成 Atlas：
+每条关系都需要一个面向读者的 `label`，例如：
 
 ```mdx
-<ScrollDocument>
+<Relation
+  from="lexer"
+  to="ast"
+  type="produces"
+  label="生成"
+  description="词法和语法分析共同为 AST 提供输入。"
+/>
+```
+
+## 3. Scroll：连续阅读
+
+Scroll 用章节组织阅读顺序，共享组件直接放在章节中。
+
+```mdx
+<ScrollDocument spacing="comfortable" fontSize="normal">
   <ScrollHeader title="如何做一次技术判断">
     先说明问题、背景和读者最终要带走的判断。
   </ScrollHeader>
 
   <ScrollSection title="先定义问题">
-    <ScrollProse>解释问题的范围、输入和关键约束。</ScrollProse>
+    <ScrollProse>解释范围、输入和关键约束。</ScrollProse>
     <Insight title="核心判断">把本节最重要的结论压缩成一句话。</Insight>
   </ScrollSection>
 
   <ScrollSection title="比较候选方案">
     <ScrollGrid columns="2">
-      <MatrixModel title="影响 / 成本" xLabel="成本" yLabel="影响" cells={[
-        {title: '优先投入', description: '高影响、低成本', tone: 'success'},
-        {title: '谨慎评估', description: '高影响、高成本', tone: 'warn'},
-        {title: '暂缓处理', description: '低影响、高成本', tone: 'danger'}
-      ]} />
+      <MatrixModel
+        title="影响 / 成本"
+        xLabel="成本"
+        yLabel="影响"
+        cells={[
+          {title: '优先投入', description: '高影响、低成本', tone: 'success'},
+          {title: '审慎评估', description: '高影响、高成本', tone: 'warn'},
+          {title: '快速验证', description: '低影响、低成本'},
+          {title: '暂缓处理', description: '低影响、高成本', tone: 'danger'}
+        ]}
+      />
       <Callout type="info" title="判断方法">先验证高影响、低成本的选项。</Callout>
     </ScrollGrid>
   </ScrollSection>
 </ScrollDocument>
 ```
 
-`ScrollDocument` 的 `spacing` 控制章节内部的垂直节奏，默认是 `comfortable`：
+`ScrollDocument` 支持：
 
-```mdx
-<ScrollDocument spacing="compact">
-  ...
-</ScrollDocument>
+- `spacing="compact|comfortable|airy"`：章节内垂直节奏，默认 `comfortable`。
+- `fontSize="compact|normal|large|xlarge"`：正文大小，默认 `normal`。
+- `scale` / `lineHeight`：可选的数值覆盖。
+- `toc` / `progress`：目录与阅读进度，默认开启；布尔值使用裸 prop 或 `{false}`，不要写 `"false"`。
 
-<ScrollSection title="需要展开的章节" spacing="airy">
-  ...
-</ScrollSection>
-```
+目录由章节标题自动生成，不要手工搭建。正文采用一条居中阅读柱，左边缘标签悬停或聚焦时展开目录面板。
 
-可选值：
+## 4. 信息密度来自结构，不来自组件数量
 
-- `compact`：组件较多、希望一屏承载更多信息。
-- `comfortable`：默认值，适合普通技术文章。
-- `airy`：段落较少、希望突出章节分隔。
-
-配置会统一控制章节内组件之间的间距和 `ScrollGrid` 的列间距；组件不需要自己添加布局样式。
-
-## 5. 如何提升信息密度
-
-信息密度不是减少字数，而是让每个区块承担清晰的认知任务：
+信息密度不是减少字数，也不是把页面塞满，而是让每个区块承担不同的认知任务。
 
 | 任务 | 优先组件 |
 | --- | --- |
 | 建立直觉 | `Overview`、`ScrollProse`、`Example` |
-| 给出严格定义 | `Definition`、`Glossary` |
-| 解释过程 | `Mechanism`、`Flow`、`Timeline`、`Mermaid` |
-| 比较和决策 | `Compare`、`MatrixModel`、`DecisionMatrix`、`Tradeoff` |
+| 给出定义 | `Definition`、`Glossary` |
+| 解释机制 | `Mechanism`、`Flow`、`Timeline`、`Mermaid` |
+| 比较与决策 | `Compare`、`MatrixModel`、`DecisionMatrix`、`Tradeoff` |
 | 压缩结论 | `Insight`、`Callout`、`NoteGrid` |
 | 说明限制 | `Boundary`、`Counterexample`、`FailureMode` |
 | 保留证据 | `Evidence`、`Invariant`、`Checklist`、`Details` |
 | 教学推演 | `WorkedExample`、`Step`、`Quiz`、`KeyTakeaways` |
 | 标注来源 | `Source`、`Confidence`、`LastReviewed`、`Cite` / `References` |
-| 表达状态与分支 | `StateMachine`、`DecisionTree`、`FeedbackLoop` |
-| 呈现数据 | `DataTable`、`PropertyList`、`Metric`、`Chart` |
-| 解释改动 | `CodeDiff`、`CodeBlock`、`CodeTabs`、`AnnotatedCode` |
-| 表达结构 | `TreeView`、`Columns`、`Stack`、`Grid` |
-| 引用观点 | `Quote` |
+| 状态与分支 | `StateMachine`、`DecisionTree`、`FeedbackLoop` |
+| 数据与改动 | `DataTable`、`PropertyList`、`Metric`、`Chart`、`CodeDiff` |
+| 结构与引用 | `TreeView`、`Columns`、`Stack`、`Grid`、`Quote` |
 
-推荐一个基本节奏：
+一个实用的论证节奏是：
 
 ```text
 问题 → 定义 → 机制 → 证据 → 例子 → 边界 → 结论
 ```
 
-不要把同一段文字同时放进 `Overview`、`Definition` 和 `Insight`。每个组件应该补充新的信息，而不是换一种样式重复内容。
+不要把同一段文字同时放进 `Overview`、`Definition` 和 `Insight`。每个组件都应增加新信息；只有标题或摘要的节点应补充内容或合并掉。密度没有固定配额，不要为了凑数拆段或编造证据。
 
-## 6. 交给 AI 的写作要求
+## 5. 常见语法陷阱
 
-可以直接把下面的要求交给 AI：
+### 数组与对象
 
-```text
-请把这份材料改写成 Concept Atlas MDX。
-
-1. 先判断使用 atlas 还是 scroll；不要改变已经选定的页面外壳。
-2. 只使用框架提供的语义组件，不写 CSS、手工 SVG 或页面布局代码。
-3. 每个重要概念都要有 claim-like 标题、一句话 summary，以及定义、机制、例子或边界中的合适内容。
-4. 过程用 Flow / Timeline / Mermaid，比较用 MatrixModel / DecisionMatrix，结论用 Insight，限制用 Boundary 或 FailureMode。
-5. 让每个组件承担不同的信息任务，优先提升可验证性和信息密度。
-6. 检查所有 id、parent、ConceptRef 和 Relation 的引用是否一致。
-7. 最后给出编译命令：npx concept-atlas-dense-explain <file>.mdx --mode atlas|scroll
-```
-
-## 7. 数据类型速查
-
-MDX 属性使用 JavaScript 表达式。字符串要加引号，数组和对象要用 `{}` 包起来；对象数组中的字段名必须与组件约定一致。
+数组 prop 的形状互不通用，先查组件参考再写字段。
 
 ```mdx
-<Flow steps={[
-  '先收集输入',
-  {title: '处理', description: '说明这一阶段发生什么'},
-  {title: '输出', description: '说明结果和证据'}
-]} />
+<Flow steps={['输入', '处理', '输出']} />
 
 <Timeline events={[
-  {label: '阶段一', content: '发生了什么'},
-  {time: '阶段二', desc: '接下来发生什么'}
+  {label: '第一阶段', time: '2026-01', content: '完成定义'},
+  {label: '第二阶段', content: '完成验证'}
 ]} />
 
 <DecisionMatrix
@@ -215,105 +204,13 @@ MDX 属性使用 JavaScript 表达式。字符串要加引号，数组和对象�
   headers={['维度', '方案 A', '方案 B']}
   rows={[['成本', '低', '高'], ['风险', '中', '低']]}
 />
-
-<FrameworkModel
-  title="关键要素"
-  type="elements"
-  elements={[{title: '输入', description: '来源和约束'}]}
-/>
-
-<FormulaModel
-  title="计算关系"
-  formula="结果 = 输入 × 系数"
-  variables={[{symbol: '输入', description: '变量含义'}]}
-/>
-
-<NoteGrid notes={[{title: '标签', content: '短结论'}]} />
-<Tabs items={[{label: '视角一', content: '对应内容'}]} />
 ```
 
-常用属性类型如下：
+`Flow` 接受字符串或对象；`DecisionMatrix.rows` 是二维数组；`LearningObjectives` / `KeyTakeaways` 接受字符串数组。完整形状见组件参考。
 
-| 组件 | 属性 | 类型 |
-| --- | --- | --- |
-| `ConceptNode` | `kind` | `'system' \| 'stage' \| 'mechanism' \| 'artifact' \| 'failure' \| 'tool' \| 'boundary' \| 'decision'`（可选，与 `level` 正交） |
-| `Flow` | `steps` | `string[]` 或 `{ title?: string, label?: string, description?: string }[]` |
-| `Timeline` | `events` | `{ label?: string, time?: string, content?: string, desc?: string }[]` |
-| `DecisionMatrix` | `headers` / `rows` | `string[]` / `string[][]` |
-| `Compare` | `items` | `{ label?: string, title?: string, rows?: string[], values?: string[] }[]` |
-| `FrameworkModel` | `type` | `'elements' | 'stages' | 'layers' | 'cycle'` |
-| `FrameworkModel` | `elements` | `{ title?: string, label?: string, name?: string, description?: string }[]` |
-| `MatrixModel` | `cells` | `{ title?: string, label?: string, description?: string, tone?: string }[]` |
-| `FormulaModel` | `variables` | `{ symbol?: string, name?: string, description?: string, value?: string }[]` |
-| `Tradeoff` | `options` | `{ name?: string, label?: string, benefit?: string, cost?: string, when?: string }[]` |
-| `NoteGrid` | `notes` | `{ title?: string, label?: string, content?: string, text?: string, description?: string }[]` |
-| `Mermaid` | `chart` | `string`，使用模板字符串表达多行图表（标准 Mermaid 语法，由 Pele 渲染并内联） |
-| `Tabs` | `items` | `{ label?: string, title?: string, content?: string }[]` |
-| `Math` | `formula` | `string`（LaTeX；含 `{` 或反斜杠时用这个 prop，不要写子内容） |
-| `MathBlock` | `formula` / `variables` | `string` / `{ symbol?: string, name?: string, description?: string }[]` |
-| `Chart` | `type` / `data` / `series` / `labels` | `'bar' \| 'line' \| 'pie'` / `{ label?: string, value: number }[]` / `{ name?: string, values: number[] }[]` / `string[]` |
-| `CodeBlock` | `code` / `language` / `title` / `caption` / `lineNumbers` / `wrap` | `string` / `string` / `string` / `string` / `boolean` / `boolean` |
-| `Figure` | `id` / `src` / `alt` / `caption` / `label` / `inline` | `string` / `string`（默认外链，`--inline-assets` 或 `inline` 控制内联）/ `string` / `string` / `string`（缺省用自动图号）/ `boolean` |
-| `FigureRef` | `id` | `string`（指向带 `id` 的 `Figure`，渲染“图 N”） |
-| `References` | `items` | `{ id: string, authors?: string, year?: string, title?: string, url?: string, source?: string, note?: string }[]` |
-| `WorkedExample` | `title` / `problem` | `string` / `string`（子内容为 `Step`） |
-| `Step` | `number` / `title` / `reason` | `string` / `string` / `string`（`reason` 记录该步理由） |
-| `Quiz` | `question` / `answer` / `tone` | `string` / `string` / `'info' \| 'success' \| 'warn' \| 'danger'`（子内容为解析） |
-| `KeyTakeaways` | `items` | `string[]` |
-| `Source` | `kind` / `label` / `href` | `'spec' \| 'rfc' \| 'implementation' \| 'experiment' \| 'experience' \| 'reference'` / `string` / `string` |
-| `Confidence` | `level` / `basis` | `'high' \| 'medium' \| 'low'` / `string` |
-| `Term` | `name` / `definition` | `string` / `string`（也可把定义写成子内容） |
-| `DataTable` | `headers` / `rows` | `string[]` / `string[][]` |
-| `Metric` | `label` / `value` / `unit` / `delta` / `trend` / `note` | `string` / `string \| number` / `string` / `string` / `'up' \| 'down' \| 'flat'` / `string` |
-| `StateMachine` | `states` / `transitions` / `initial` | `{ id: string, label?: string, description?: string, terminal?: boolean }[]` / `{ from: string, to: string, event?: string, guard?: string }[]` / `string` |
-| `DecisionTree` | `question` / `branches` | `string` / `{ condition?: string, outcome?: string, note?: string, tone?: string, branches?: DecisionBranch[] }[]` |
-| `FeedbackLoop` | `type` / `nodes` | `'reinforcing' \| 'balancing'` / `{ label?: string, title?: string, description?: string }[]` |
-| `CodeDiff` | `before` / `after` / `language` / `title` / `caption` | `string` / `string` / `string` / `string` / `string` |
-| `Quote` | `author` / `source` / `href` | `string` / `string` / `string`（`source` 有 `href` 时渲染为链接） |
-| `Checklist` | `title` / `items` | `string` / `{ text?: string, status?: 'pass' \| 'fail' \| 'unknown' \| 'todo', note?: string }[]` |
-| `LastReviewed` | `date` / `by` / `note` | `string` / `string` / `string`（三者皆空时不渲染） |
-| `PropertyList` | `title` / `items` | `string` / `{ name?: string, label?: string, key?: string, value?: string, note?: string }[]` |
-| `TreeView` | `title` / `items` | `string` / `{ label?: string, title?: string, description?: string, children?: TreeViewNode[] }[]`（递归嵌套） |
-| `CodeTabs` | `items` / `title` / `caption` / `lineNumbers` | `{ label?: string, language?: string, code?: string }[]` / `string` / `string` / `boolean` |
-| `AnnotatedCode` | `code` / `language` / `title` / `caption` / `notes` | `string` / `string` / `string` / `string` / `{ line: number, text?: string }[]` |
+### Math
 
-组件也支持 JSX 子内容作为备用写法，例如 `<Flow>...</Flow>`、`<DecisionMatrix>...</DecisionMatrix>`。但带数据属性的写法更适合让 AI 稳定生成和检查。
-
-## 8. 常见错误
-
-- 把 `atlas` 和 `scroll` 当成两套组件库，导致不敢在章节或节点中使用共享组件。
-- Atlas 节点缺少 `id`、`level` 或错误的 `parent`，导致树无法正确导航。
-- `ConceptRef` 指向不存在的节点，或者 `Relation` 的 `from` / `to` 拼写不一致。
-- 一个组件里塞入过长的散文，既没有结构，也没有可验证证据。
-- 在 MDX 中直接写 CSS、坐标或自定义页面框架，破坏语义层和响应式布局。
-- 把已有输出当成不可覆盖：现在输出会被直接覆盖，需要保留旧产物时请先自行备份。
-
-## 9. 组件速查
-
-完整组件实现位于 `packages/concept-atlas-dense-explain/template/src/components/MDXComponents.jsx`；下面按用途列出全部组件，名称以 `src/model/validate-content.js` 的 `KNOWN_COMPONENTS` 为准：
-
-```text
-页面外壳：ExplainPage、ConceptGraph、ConceptNode、ConceptRef、Children、Relation、ScrollDocument、ScrollHeader、ScrollSection、ScrollProse、ScrollPair、ScrollGrid
-知识语义：Overview、Definition、Mechanism、Implementation、CodeBlock、Prerequisite、Input、Output、Boundary、Glossary
-代码展示：CodeDiff、CodeTabs、AnnotatedCode
-论证证据：Example、Counterexample、Evidence、Invariant、FailureMode、Tradeoff、Checklist
-学习闭环：LearningObjectives、KeyQuestion、WorkedExample、Step、Quiz、KeyTakeaways
-来源与术语：Source、Confidence、LastReviewed、Term
-信息模型：Flow、Timeline、Compare、DecisionMatrix、FrameworkModel、MatrixModel、FormulaModel、PyramidModel、FunnelModel
-数据与行为：DataTable、Metric、StateMachine、DecisionTree、FeedbackLoop
-阅读组件：Insight、Callout、Details、Quote、NoteGrid、Tabs、Columns、Stack、Grid、Split、ScrollToc
-图形组件：Mermaid、RelationMap、RelationPath
-结构扩展：PropertyList、TreeView
-扩展能力：Math、MathBlock、Chart、Figure（别名 Image）、FigureRef、Cite、References
-```
-
-组件的选择应服从内容关系，不应服从视觉装饰。页面的价值来自结构化表达，而不是组件数量。
-
-## 10. 扩展组件
-
-### 数学公式
-
-`Math` 用于行内符号，`MathBlock` 用于独立公式。因为 MDX 会把子内容里的 `{}` 当作表达式，凡公式含 `{` 或反斜杠，一律用 `formula` prop：
+MDX 会把子内容里的 `{}` 当作表达式。含花括号的 LaTeX 必须走 `formula` prop：
 
 ```mdx
 <Overview>信息量约为 <Math formula="\log_2 N" /> 比特。</Overview>
@@ -321,106 +218,66 @@ MDX 属性使用 JavaScript 表达式。字符串要加引号，数组和对象�
 <MathBlock
   title="香农信息量"
   formula="I(x) = -\log_2 p(x)"
-  variables={[{symbol:'p(x)',description:'事件发生的概率'}]}
+  variables={[{symbol: 'p(x)', description: '事件发生的概率'}]}
 />
 ```
 
-只有不含大括号的简单 LaTeX 才能写子内容，例如 `<Math>\log_2 N</Math>`。
+不含花括号的简单 LaTeX 可以写子内容，但统一使用 `formula` 更稳妥。
 
-### 代码块
+### Code
 
-`Implementation` 绑定在某个概念节点的“实现”语义上；`CodeBlock` 是通用代码块，可以出现在任何章节或节点里，用来承载命令行、配置、输出或伪代码：
+代码作为字符串传入，多行代码使用模板字符串，避免 MDX 解析花括号：
 
 ```mdx
-<CodeBlock language="bash" title="校验与构建" lineNumbers>{`npm run validate
-npm run sync`}</CodeBlock>
-
-<CodeBlock language="javascript" wrap>const fn = x => x + 1;</CodeBlock>
+<CodeBlock language="bash" title="校验与构建" lineNumbers>{`npx concept-atlas-dense-explain validate topic.mdx --mode atlas
+npx concept-atlas-dense-explain topic.mdx --mode atlas`}</CodeBlock>
 ```
 
-- `code` 也可以作为 prop 传入（与子内容二选一），字符串请用模板字符串包裹，避免 MDX 把花括号当表达式。
-- `language` 决定语言标记，`title` 显示标题栏，`caption` 显示题注。
-- `lineNumbers` 打开行号，`wrap` 让长行折行。
+`Implementation` 用于节点内的实现语义；`CodeBlock` 是通用代码块。
 
-### 数据图表
-
-`Chart` 支持 `bar`、`line`、`pie`，颜色跟随主题：
+### Figure 与引用
 
 ```mdx
-<Chart title="各阶段耗时" type="bar" unit="小时" data={[{label:'收集',value:6},{label:'分析',value:14}]} />
-<Chart title="留存趋势" type="line" labels={['第1周','第2周']} series={[{name:'留存率',values:[100,72]}]} />
-```
-
-### 图片、题注与自动图号
-
-`Figure` 把图片、题注和编号绑定。相对路径的图片**默认保持外链**（HTML 更小，需与 MDX 的 `assets/` 一起分发）；构建时加 `--inline-assets` 会把本地图片转成 base64 内联，保证单文件离线可用，单张图也可用 `inline={true|false}` 覆盖（优先级：组件 prop > 全局开关 > 默认外链）。`http(s)` 远程图片永远保持外链，并且只有这类远程图会产生 `ASSET_REMOTE`（提示离线打开时不可见）；本地相对图片默认走外链，**不会**产生该提示。
-
-```mdx
-{/* 默认外链；给 id 后正文可用 FigureRef 自动引用“图 N” */}
-<Figure id="flow" src="./assets/diagram.png" alt="架构示意" caption="数据从输入流经处理到输出。" />
+<Figure
+  id="flow"
+  src="./assets/diagram.png"
+  alt="数据从输入流经处理到输出"
+  caption="处理流程"
+/>
 <Overview>如 <FigureRef id="flow" /> 所示，处理分为三步。</Overview>
-```
 
-`Figure` 的 `id` 会按文档顺序自动编号（`atlas` 每个节点各自编号，`scroll` 全文共用一套），插入新图时编号自动重排；显式 `label` 仍然优先。
-
-点击图片会在全屏浮层中放大查看：滚轮或 `+` / `−` 缩放，拖拽平移，双击在 1x / 2x 间切换，`0` 重置，`Esc` 或点击背景关闭。图片本身是键盘可达的按钮，回车即可打开。浮层通过 portal 挂到 `body`，因此不受草稿画布缩放或卡片旋转的影响。
-
-`Mermaid` 复用同一个浮层（点图面或标题栏的「放大阅读」）。图表是矢量，浮层放大时改的是它的布局尺寸而不是对已栅格化的图层做 `scale`，所以每一档倍率都重新绘制、保持清晰；打开时按视口适配：纵向长图按高度适配，横向图最多放大到自然尺寸的 2 倍，`100%` 即这个适配尺寸。
-
-找不到本地图片只会产生 warning 并显示占位符，不会中断构建；`FigureRef` 指向不存在的 `id` 会提示 `FIGURE_REF_UNRESOLVED`。
-
-实测同一个目标：内联 1.51MB → 外链 270KB。外链时 HTML 必须与 MDX 的 `assets/` 保持相对位置，否则 CLI 会警告。
-
-### 引用与文献
-
-`Cite` 的 `id` 对应 `References` 中条目的 `id`，编号自动取该条目在列表中的序号：
-
-```mdx
 <Overview>该结论依赖可追溯的证据<Cite id="tufte1983" />。</Overview>
-<References items={[{id:'tufte1983',authors:'Tufte, E. R.',year:'1983',title:'The Visual Display of Quantitative Information',source:'Graphics Press'}]} />
+<References items={[
+  {id: 'tufte1983', authors: 'Tufte, E. R.', year: '1983', title: 'The Visual Display of Quantitative Information'}
+]} />
 ```
 
-在 `atlas` 中，节点内容只在打开该节点时渲染，因此请把 `Cite` 和对应的 `References` 放在同一个节点内。
+- 始终提供 `alt`；`id` + `FigureRef` 自动生成图号，不要手写“图 1”。
+- 本地图片默认外链；`--inline-assets` 或单图 `inline` 控制内联。外链 `src` 相对输出 HTML 解析，需把 `assets/` 放在 HTML 旁或调整路径。
+- `atlas` 中把 `Cite` 和 `References` 放在同一个节点，避免未打开节点的引用无法解析。
 
-## 11. 可配置排版与阅读体验
+### 布尔值与静默 prop
 
-`ScrollDocument` 会把整篇内容收进一条居中的阅读柱（最宽 880px，标题、章节标题、正文与卡片共用同一条左右边界），并自动根据章节标题生成目录和阅读进度，用 `fontSize` 控制正文大小：
+布尔值使用裸 prop 或 `{true}` / `{false}`：
 
 ```mdx
-<ScrollDocument spacing="comfortable" fontSize="large" toc progress>
+<ScrollDocument toc={false} progress>
   ...
 </ScrollDocument>
 ```
 
-- `fontSize`：`compact | normal | large | xlarge`。
-- 也可以传数值 `scale`（字号倍率）和 `lineHeight` 覆盖预设。
-- `toc` / `progress`：分别控制目录与阅读进度条，默认开启。目录不是侧栏：左边缘居中处有一个窄标签，鼠标悬停（或键盘聚焦、点按）时滑出完整目录面板，离开标签与面板即收起；正文因此始终是一条居中的柱。
-- `ScrollSection` 可以用 `id` 指定锚点，否则由标题自动生成。
+不要写 `toc="false"` 或 `showValues="false"`；这些运行时布尔值会把字符串当作真。资源插件也能识别 `inline="false"`，但统一使用 `inline={false}` 更清楚。未知 prop 目前会被静默忽略，因此必须查组件参考，不能凭印象猜。
 
-不要为了调整字号在内容里写 CSS，统一通过这两个 prop 控制。
+## 6. 阅读与交互
 
-## 12. 内容校验
+- Atlas 支持祖先路径、父子导航、子概念卡片和全局关系图。
+- Scroll 自动生成目录与阅读进度，正文保持居中阅读柱。
+- 图片和 Mermaid 图支持全屏放大、拖拽平移、滚轮缩放和 `Esc` 关闭；双击在 1x / 2x 间切换，`0` 重置。
+- Atlas 画布支持拖动平移、滚轮缩放、`Esc` 返回父节点；`1` / `E` 进入概念探索，`2` / `G` 进入知识网络，`T` 切换主题。
+- 外观由读者切换，内容 MDX 不设置皮肤、主题或组件风格。
 
-CLI 在构建前会静态校验内容结构。错误会阻止构建，警告只提示：
+## 7. 校验与完整参考
 
-```bash
-npx concept-atlas-dense-explain validate topic.mdx           # 人类可读
-npx concept-atlas-dense-explain validate topic.mdx --json    # 机器可读
-npx concept-atlas-dense-explain validate topic.mdx --strict  # 把结构警告升级为错误
-```
+CLI 会检查外壳、节点 id、父子关系、引用、关系端点、数组形状和资源路径。错误阻止构建；警告表示结构或可读性仍有改进空间。
 
-常见错误码（示例，非完整列表；完整定义见 `src/model/validate-content.js` 与技能的 `SKILL.md`）：
-
-| 错误码 | 含义 |
-| --- | --- |
-| `UNKNOWN_COMPONENT` | 组件名拼错或未导出 |
-| `CARRIER_MISSING` / `CARRIER_CONFLICT` / `CARRIER_MODE_MISMATCH` | 外壳缺失、同时存在两种外壳，或与 `--mode` 不一致 |
-| `NODE_MISSING_ID` / `NODE_MISSING_TITLE` / `DUPLICATE_NODE_ID` | 节点缺少 id/title 或 id 重复 |
-| `MISSING_PARENT` / `GRAPH_ROOT_UNRESOLVED` | parent 或 ConceptGraph root 指向不存在的节点 |
-| `REF_UNRESOLVED` / `RELATION_FROM_UNRESOLVED` / `RELATION_TO_UNRESOLVED` | ConceptRef 或 Relation 端点断链 |
-
-常见警告（同样只是示例）：`NODE_MISSING_SUMMARY`、`NODE_NO_CORE_CONTENT`、`UNKNOWN_LEVEL`、`UNKNOWN_RELATION_TYPE`、`RELATION_MISSING_LABEL`、`PROP_EXPECTS_ARRAY`、`MATH_CHILDREN_BRACES`、`GRAPH_MISSING_ROOT`、`ASSET_MISSING`。
-
-`--strict` 只把其中 4 个结构警告升级为错误：`MECHANISM_KIND_UNVERIFIED`、`FAILURE_KIND_UNSTRUCTURED`、`NO_ROOT_LEVEL`、`MULTIPLE_ROOT_LEVEL`；其余警告不会被升级。
-
-确实需要跳过校验时使用 `--no-validate`，但应视为例外。
+完整诊断分类与修复动作见 [`references/diagnostics.md`](../skills/concept-atlas-dense-explain/references/diagnostics.md)，完整组件 API 见 [`references/components.md`](../skills/concept-atlas-dense-explain/references/components.md)。

@@ -162,7 +162,7 @@ function parseConceptNode(nodeElement) {
       case 'Implementation':
         node.implementation = {
           language: child.props.language || 'text',
-          title: child.props.title || '代码实现',
+          title: child.props.title || '实现代码',
           code: child.props.children
         };
         break;
@@ -174,13 +174,13 @@ function parseConceptNode(nodeElement) {
         break;
       case 'Counterexample':
         node.counterexamples.push({
-          title: child.props.title || '边界反例 / 常见误区',
+          title: child.props.title || '反例与误区',
           content: child.props.children
         });
         break;
       case 'Boundary':
         node.boundaries.push({
-          title: child.props.title || '边界条件 / 约束',
+          title: child.props.title || '边界与约束',
           content: child.props.children
         });
         break;

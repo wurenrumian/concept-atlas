@@ -1,74 +1,74 @@
 ---
 name: concept-atlas-dense-explain
-description: Turn a topic or existing document into an interactive Concept Atlas explainer — AI-editable MDX compiled to standalone HTML with concept nodes, relation graphs, math, charts, figures, citations, and reading aids. Use for technical explanations, concept maps, layered knowledge pages, dense explainers, or interactive teaching pages; also 概念图 / 知识地图 / 分层讲解.
+description: Build a dense, interactive Concept Atlas page from a topic or source document — semantic MDX compiled to standalone HTML, with concept graphs, math, charts, figures, and citations. Use it when someone wants material turned into an interactive HTML/MDX explainer, tutorial, technical deep-dive, report, concept/knowledge map, or teaching page, including "turn this doc into a page" or "explain this properly as a page"; also 讲解 / 深度长文 / 教程 / 技术文档 / 报告 / 概念图 / 知识地图 / 分层讲解. Not for a short chat answer, summary-only work, a slide deck, or a Word/PDF-only deliverable.
 ---
 
 # Concept Atlas Dense Explain
 
-Drive everything through the `concept-atlas-dense-explain` CLI, always via `npx`. Everything you need is in this file and the bundled `references/`; do not read the framework repository or installed package files, do not copy implementation files from the skill directory, and do not recreate the React/Vite app. If a command name is unclear, run `npx concept-atlas-dense-explain help`. If the user only wants the prompt/methodology and not files, still choose a shell and emit valid MDX; the CLI is needed only to validate and compile.
+Turn a topic or source document into semantic MDX and compile it with the `concept-atlas-dense-explain` CLI. Everything needed is in this file and the bundled `references/`; do not read the framework repository or installed package files, copy implementation files from the skill directory, or recreate the React/Vite app.
 
-## Running the CLI
+If the user only wants the methodology or MDX text, still choose one shell and emit valid MDX. CLI validation and compilation are needed only when producing files.
 
-Always invoke the CLI through `npx`, from any directory:
+## Operating rules
 
-```bash
-npx concept-atlas-dense-explain <args>
-```
-
-This is the only runner — there is nothing to look for. Do not search for a local binary, a repository checkout, or an installed copy, and do not run the framework's own `npm` scripts. The first call downloads the package from the npm registry; say so once, then continue.
+- Use the CLI only through `npx`. Do not search for another runner or run the framework repository's own scripts.
+- Use exactly one page shell per file. Keep MDX semantic: no CSS, SVG, custom React, or invented component APIs. Use free-position coordinates only when the user explicitly asks for manual layout.
+- Preserve source claims, citations, counterexamples, and uncertainty. Never invent evidence, measurements, references, or examples to make a page look complete.
+- Protect user files. `create`, `guide`, and compiled outputs overwrite their targets; `guide` also overwrites `assets/` beside its output. Choose a new path or ask before overwriting existing work.
+- Load references by task instead of reading everything: component API, authoring, CLI details, and diagnostics are separate files.
 
 ## Workflow
 
-1. Choose one page shell: `atlas` (concept graph with node navigation) or `scroll` (continuous document). Recommend `atlas` when the reader drills into concepts or follows relations, `scroll` for linear argument, tutorials, and reports. The library is shared. If an `.mdx` already exists, detect its shell and work with it.
-2. **Learn the components before authoring.** `references/components.md` is the catalogue — search it by component name for props and shapes rather than guessing. `references/atlas-guide.mdx` (atlas) or `references/scroll-guide.mdx` (scroll) is real, compilable MDX showing how that shell's components compose into a page. Do not look for component documentation anywhere else, and do not run `guide` for this.
-   Run `npx concept-atlas-dense-explain guide --mode <mode> -o <file>` only when you specifically need a project-local copy to compile beside the page, and delete that copy when done.
-3. Start from a skeleton when useful: `npx concept-atlas-dense-explain create <file>.mdx --mode atlas|scroll` (`--mode` defaults to `scroll`). `create` and `guide` overwrite their output, so never point them at a file you want to keep.
-4. Write the semantic MDX into the user's `.mdx` file (see Authoring rules).
-5. Validate before rendering:
+1. **Establish the deliverable.** Identify the source material, audience, desired output path, and whether the user wants MDX only or compiled HTML. Ask only when a choice is ambiguous or would overwrite user work.
+2. **Choose the shell.** Use the decision table below. If an `.mdx` file already exists, detect its shell and keep it unless conversion is requested.
+3. **Learn the API before writing tags.** Read `references/components.md` and search it by component name. Unknown props are silently ignored, so do not guess. Use the matching bundled guide as a compilable example: `references/atlas-guide.mdx` or `references/scroll-guide.mdx`.
+4. **Draft the semantic MDX.** Start from `create` when useful, then apply the authoring contract below. Read `references/authoring.md` for document conversion, source-to-component mapping, density checks, and stopping conditions.
+5. **Validate before rendering.**
    ```bash
    npx concept-atlas-dense-explain validate <file>.mdx --mode atlas|scroll
-   npx concept-atlas-dense-explain validate <file>.mdx --json
+   npx concept-atlas-dense-explain validate <file>.mdx --mode atlas|scroll --json
    ```
-   Diagnostics are `CODE line:column message`. Fix all `error`s and re-run; address warnings when cheap.
-6. Compile: `npx concept-atlas-dense-explain <file>.mdx --mode atlas|scroll [-o out.html] [--skin <id>] [--default-mode dark|light|system] [--style <id>]`. Output is a standalone HTML beside the MDX unless `-o` is given. Validation errors abort the build (`--no-validate` forces a knowingly broken build). `<Mermaid>` charts are rendered by Pele and inline into the HTML, so the page is a fully offline single file with no CDN call — no flag needed.
-7. **Appearance (optional)**: pages ship a reader-facing appearance menu — palette (`aurora` indigo, `ember` gold, `verdant` forest, `sakura` pink-plum, `noir` ink), a dark/light toggle, and a component style pack (`manuscript` editorial marginalia, `classic` boxed cards, `shadcn` hairline-bordered minimal UI, `elastic` bordered observability panels). The shipped default is aurora × manuscript × light; choices persist in localStorage across both carriers. Bake different compile-time defaults with `--skin ember --default-mode dark --style classic` (or `CONCEPT_ATLAS_SKIN` / `CONCEPT_ATLAS_DEFAULT_MODE` / `CONCEPT_ATLAS_STYLE` on the repo build); `--default-mode` honors `dark`/`light` and resolves `system` to the carrier default (`light`). Bake a default only when the user asks for one — content MDX never sets appearance.
-8. For several documents, pass them all in one call: `npx concept-atlas-dense-explain a.mdx b.mdx c.mdx -o dist [--concurrency 3]` (`-o` is then a directory; everything validates first, then builds in parallel). Builds bundle only the renderers the content uses: no `<Math>` skips KaTeX's ~1.4MB inlined fonts, and no `<Mermaid>` drops Pele entirely. Never add dummy `<Math>`/`<Mermaid>` nodes to "enable" them.
-9. Report the shell, output path, validation result (errors/warnings), and limitations. Do not claim interactions you did not verify.
+   Fix every error and re-run. Address warnings when cheap; use `--strict` when the user wants a clean structural contract. See `references/diagnostics.md` for causes and fixes.
+6. **Compile.** Read `references/cli.md` for output, appearance, batching, and asset flags.
+   ```bash
+   npx concept-atlas-dense-explain <file>.mdx --mode atlas|scroll [-o out.html]
+   ```
+   Validation errors block the build. Use `--no-validate` only with an explicit reason.
+7. **Verify the result.** Confirm the HTML exists. When a browser tool is available, open it and check the title, shell navigation, and every diagram, chart, figure, tab, or citation you added. Fix blank widgets or broken interactions; otherwise state what remains unverified.
+8. **Report the outcome.** Name the shell, MDX and HTML paths, validation result, restructured/merged/dropped source material, and limitations that actually apply. Diagrams need no chart CDN, but fonts may load remotely and local images remain linked unless inlined. Do not claim interactions you did not verify.
 
-## Carriers
+## Shell decision
 
-- `atlas`: `ExplainPage` → `ConceptGraph` → `ConceptNode`, plus `Children`/`ConceptRef` and cross-branch `Relation`s. Exactly one `L0` root, several `L1` branches, depth to `L3`/`L4`. Shared components live inside nodes. `ConceptNode` also takes an optional `kind` (see Authoring rules) that labels a node's knowledge role independently of its level.
-- `scroll`: `ScrollDocument` → `ScrollHeader` + `ScrollSection` (+ `ScrollProse`, `ScrollGrid`). Shared components live inside sections. The shell auto-builds a table of contents and reading progress from section titles — do not hand-build navigation.
-- The browser tab comes from the shell, not the build flags: `ExplainPage title` (atlas) or `ScrollHeader title` (scroll) becomes the `<title>`, so give it a real, specific name — never a placeholder like "主题名称". Every page uses a fixed 📃 favicon.
-- Never make one MDX file both shells. When switching shells, convert only the outer structure.
+| Reader task | Shell | Structure |
+| --- | --- | --- |
+| Explore concepts, compare branches, follow relations | `atlas` | `ExplainPage` → `ConceptGraph` → `ConceptNode`, with `Children` / `ConceptRef` and cross-branch `Relation` |
+| Read an argument, tutorial, procedure, or report in order | `scroll` | `ScrollDocument` → `ScrollHeader` + `ScrollSection`, with shared content components inside sections |
+| Existing MDX | Detect and keep | Convert only the outer shell when requested; never combine both shells |
 
-## Component and prop reference
+For `atlas`, keep exactly one `L0` root and use `L1`–`L4` for progressively finer detail. For `scroll`, the shell builds the table of contents and reading progress from section titles; do not hand-build navigation. Give `ExplainPage title` or `ScrollHeader title` a real static string because it becomes the browser tab title.
 
-The component catalogue, every prop shape, and the syntax traps are in `references/components.md`. Read it before authoring, and search it by component name whenever a tag is new to this page — prop names and shapes are not guessable. Charts, the learning loop, provenance, data/behaviour and structure components are documented there in full; only the rules that must hold on every page are repeated below.
+## Authoring contract
 
-## Authoring rules
+- Give each important concept a claim-like title, a one-sentence summary where the shell supports it, and substance that adds new information. Merge stubs instead of padding them.
+- Density means information gain, not quotas. Cover what the concept is, why/how it works, evidence or an example when available, and a boundary or trade-off when relevant; stop when the reader's question is answered.
+- Use `kind` only when an atlas node's knowledge role is clear. A `mechanism` should carry an `Invariant` or `Evidence`; a `failure` should carry a structured `FailureMode`.
+- Use relation types for cross-branch meaning, never for parent-child hierarchy. Every `Relation` needs a meaningful `label`.
+- Check array shapes in `components.md`. Pass LaTeX and code through the documented string/template-literal forms so MDX does not parse them as expressions.
+- Always set figure `alt`; use `id` + `FigureRef` for automatic numbering. In `atlas`, keep `Cite` and `References` in the same node.
+- Configure reading rhythm and text size on the shell, not with manual CSS.
 
-- Keep MDX semantic. Never write CSS, coordinates, SVG, or replacement application code; never invent component names or props.
-- Give each important node a claim-like title, a one-sentence `summary`, and real substance (`Definition`, `Mechanism`, `Example`, `Boundary`, `Evidence`, a model, a chart, or math). Do not restate the same text across `Overview`, `Definition`, and `Insight`.
-- **`kind` (optional, atlas)**: tag a node's knowledge role independently of `level`. One of `system`, `stage`, `mechanism`, `artifact`, `failure`, `tool`, `boundary`, `decision`. It powers the graph's "知识类型" filter and a node badge, so use it where the role is clear rather than on every node. Two opt-in contracts fire once you declare one: `kind="mechanism"` should contain an `Invariant` or `Evidence`, and `kind="failure"` should contain a `FailureMode` (with `symptom`/`cause`/`evidence`/`remedy`).
-- Array props are arrays of objects: `Flow steps={[{title, description}]}`, `Timeline events={[{label, content}]}`, `MatrixModel cells={[{title, description, tone}]}`, `DecisionMatrix headers={[...]} rows={[[...]]}`, `Chart data={[{label, value}]}`, `References items={[{id, authors, year, title, url, source}]}`. The validator warns (`PROP_EXPECTS_ARRAY`) when an array prop gets a string or non-array.
-- `Relation type` must be one of `prerequisite`, `causes`, `produces`, `uses`, `implements`, `contrasts`, `depends-on`, `exception-of`, `precedes`, and each `Relation` needs a `label`. Parent/child hierarchy is implicit (via `parent` and `Children`/`ConceptRef`) — do not express it with a `Relation`.
-- **Math**: MDX parses `{ ... }` in children as expressions, so pass LaTeX with braces or backslashes through `formula`: `<Math formula="r_{\text{ann}} = (1 + r)^{12} - 1" />`, `<MathBlock formula="I(x) = -\log_2 p(x)" variables={[{symbol, description}]} />`. Brace-free children such as `<Math>\log_2 N</Math>` are fine. The validator warns (`MATH_CHILDREN_BRACES`).
-- **Code**: pass code as a string via `code` (or as children) wrapped in a template literal, so MDX does not read it as expressions: `<CodeBlock language="bash" lineNumbers>{`npm run validate`}</CodeBlock>`. Badges, captions and wrapping are documented in `references/components.md`.
-- **Figures**: always set `alt`; number with an `id` plus `<FigureRef>`, never hand-write "图 N"; relative links versus `--inline-assets` is a size trade-off — decide it with the user instead of choosing silently.
-- **Cite/References**: `<Cite id="..." />` renders `[n]` from the matching item's position in `<References items={...} />`. In `atlas`, keep the cites and the `References` block in the same node, because node content only renders when that node is open.
-- Continuous reading is configured on the shell, not with manual CSS: `spacing="compact|comfortable|airy"` for rhythm, `fontSize="compact|normal|large|xlarge"` (or numeric `scale`/`lineHeight`) for text size.
+## Reference router
 
-## Validation diagnostics
+| Need | Read |
+| --- | --- |
+| Component props, defaults, array shapes, aliases, traps | `references/components.md` |
+| Document conversion, source fidelity, density, stopping conditions | `references/authoring.md` |
+| Commands, flags, appearance, batching, assets, version mismatch | `references/cli.md` |
+| Diagnostic meaning and repair action | `references/diagnostics.md` |
+| Compilable composition examples | `references/atlas-guide.mdx` or `references/scroll-guide.mdx` |
 
-`validate` and the build print `CODE line:column message`. Fix every `error` before building; `references/diagnostics.md` lists the codes you may meet and separates errors from warnings. `NO_ROOT_LEVEL`, `MULTIPLE_ROOT_LEVEL`, `MECHANISM_KIND_UNVERIFIED` and `FAILURE_KIND_UNSTRUCTURED` are warnings that `--strict` promotes to errors.
+## Failure recovery
 
-## Before you report
-
-- All `error` diagnostics resolved (or `--no-validate` explicitly justified).
-- All `ConceptRef`, `Relation` endpoints, and `ConceptGraph root` point at existing node ids.
-- Every node has `title` + `summary`; every `Relation` has a `label`.
-- Pages with `<Mermaid>` are already fully offline: Pele ships inline, so you never need a CDN flag.
-- The HTML file exists at the reported path.
-
-If `npx` cannot reach the registry, report the blocker. Never copy implementation files into the skill directory.
+- If `npx` cannot reach the registry, report the blocker; do not switch to a repository build or copy implementation files.
+- If the CLI rejects a component that the current skill documents, check `--version` and report a likely skill/CLI version mismatch rather than inventing a workaround.
+- If validation still fails after the documented fix, report the remaining diagnostic and the file location instead of using `--no-validate` silently.

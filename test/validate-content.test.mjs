@@ -92,6 +92,20 @@ test('array props accept arrays and reject strings or non-array expressions', ()
   assert.ok(!warningsOf(arraySteps).includes('PROP_EXPECTS_ARRAY'));
 });
 
+test('array validation covers table of contents, math variables and chart labels', () => {
+  for (const [tag, prop] of [
+    ['ScrollToc', 'items'],
+    ['MathBlock', 'variables'],
+    ['Chart', 'labels']
+  ]) {
+    const source = `<ScrollDocument><ScrollHeader title="T">intro</ScrollHeader><${tag} ${prop}="nope" /></ScrollDocument>`;
+    assert.ok(
+      warningsOf(validateMdxSource(source)).includes('PROP_EXPECTS_ARRAY'),
+      `${tag}.${prop}`
+    );
+  }
+});
+
 test('math children containing braces are flagged; formula prop is fine', () => {
   const bad = validateMdxSource(atlas(`${rootNode}\n    <Math>r_{\\text{ann}}</Math>`));
   assert.ok(warningsOf(bad).includes('MATH_CHILDREN_BRACES'));
@@ -353,6 +367,30 @@ test('a large inlined asset warns, a small one does not', () => {
     !warningsOf(validateMdxSource(source, { ...base, assetSize: () => 1024 })).includes(
       'ASSET_LARGE'
     )
+  );
+
+  const perImage = atlas(`${rootNode}\n    <Figure src="./assets/big.png" inline={true} />`);
+  assert.ok(
+    warningsOf(
+      validateMdxSource(perImage, {
+        filePath: 'x.mdx',
+        inlineAssets: false,
+        assetExists: () => true,
+        assetSize: () => 2 * 1024 * 1024
+      })
+    ).includes('ASSET_LARGE')
+  );
+
+  const linked = atlas(`${rootNode}\n    <Figure src="./assets/big.png" inline={false} />`);
+  assert.ok(
+    !warningsOf(
+      validateMdxSource(linked, {
+        filePath: 'x.mdx',
+        inlineAssets: true,
+        assetExists: () => true,
+        assetSize: () => 2 * 1024 * 1024
+      })
+    ).includes('ASSET_LARGE')
   );
 });
 

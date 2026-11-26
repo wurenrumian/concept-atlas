@@ -40,6 +40,17 @@ test('a per-tag inline={false} overrides --inline-assets', () => {
   assert.equal(output, null);
 });
 
+test('quoted inline=false is respected and inline inside another attribute is ignored', () => {
+  assert.equal(
+    transform(`<Figure src="${IMG}" inline="false" />`, { __ATLAS_INLINE_ASSETS__: '"true"' }),
+    null
+  );
+  assert.match(
+    transform(`<Figure src="${IMG}" title="inline" />`, { __ATLAS_INLINE_ASSETS__: '"true"' }),
+    DATA_URI
+  );
+});
+
 test('remote, data and absolute sources are never inlined', () => {
   const code = [
     `<Figure src="https://example.com/a.png" />`,

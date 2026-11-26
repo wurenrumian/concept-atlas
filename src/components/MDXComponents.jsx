@@ -298,7 +298,7 @@ export function Compare({ items = [], children }) {
                   <tr key={rIdx}>
                     <td className="compare-row-label">{rowKey}</td>
                     {items.map((it, idx) => (
-                      <td key={idx}>{it.values?.[rIdx] || '-'}</td>
+                      <td key={idx}>{it.values?.[rIdx] ?? '-'}</td>
                     ))}
                   </tr>
                 ))
@@ -376,7 +376,10 @@ export function Timeline({ events = [], children }) {
         {events.map((ev, i) => (
           <div key={i} className="timeline-item">
             <div className="timeline-point" />
-            <div className="timeline-label">{ev.label || ev.time}</div>
+            <div className="timeline-label">
+              {ev.label || ev.time}
+              {ev.label && ev.time && <small className="timeline-time">{ev.time}</small>}
+            </div>
             <div className="timeline-content">{ev.content || ev.desc}</div>
           </div>
         ))}
@@ -1750,6 +1753,7 @@ export function Chart({
   y = 0,
   position = 'flow'
 }) {
+  const safeType = ['bar', 'line', 'pie'].includes(type) ? type : 'bar';
   const points = normalizePoints(data);
   const seriesList = (Array.isArray(series) ? series : []).filter(Boolean).map((entry, index) => ({
     name: entry.name || entry.label || `系列 ${index + 1}`,
@@ -1770,7 +1774,7 @@ export function Chart({
   const ticks = [0, 0.25, 0.5, 0.75, 1].map(ratio => ({ ratio, value: max * ratio }));
 
   const body = (() => {
-    if (type === 'pie') {
+    if (safeType === 'pie') {
       if (!points.length) return null;
       const total = points.reduce((sum, point) => sum + Math.max(0, point.value), 0) || 1;
       const radius = Math.min(innerW, innerH) / 2;
@@ -1828,7 +1832,7 @@ export function Chart({
       </g>
     );
 
-    if (type === 'line') {
+    if (safeType === 'line') {
       const count = Math.max(1, seriesList[0]?.values.length || 0, labels.length);
       const stepX = count > 1 ? innerW / (count - 1) : 0;
       const xFor = idx => PAD.left + idx * stepX;
@@ -1949,7 +1953,7 @@ export function Chart({
       <div className="semantic-widget-head">
         <span>{title}</span>
         <code>
-          CHART · {type.toUpperCase()}
+          CHART · {safeType.toUpperCase()}
           {unit ? ` · ${unit}` : ''}
         </code>
       </div>

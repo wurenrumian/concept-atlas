@@ -1,509 +1,213 @@
-# Concept Atlas 使用指南
+# Concept Atlas CLI 与开发指南
 
-Concept Atlas 是一个基于 React + MDX 的知识讲解画布。MDX 负责描述“知识是什么、节点之间有什么关系、笔记应该包含哪些组件”，应用负责把这些内容渲染成可缩放的概念草稿、层级导航和关系图。
+Concept Atlas 的 CLI 直接编译单个 MDX 文件，不需要初始化项目、复制模板或维护 Vite 配置。内容编写规范见 [`FRAMEWORK.md`](./FRAMEWORK.md)。
 
-## 1. 生成与构建
-
-Concept Atlas 的 CLI 直接编译单个 MDX 文件，不需要初始化项目或复制模板：
+## 1. 快速开始
 
 ```bash
+# 生成起稿；--mode 默认为 scroll
 npx concept-atlas-dense-explain create topic.mdx --mode atlas
-# 先取一份可编译的组件参考，学习全部组件与 prop
-npx concept-atlas-dense-explain guide --mode atlas -o atlas-guide.mdx
-# 用 AI 改写 topic.mdx 后，先校验再编译：
-npx concept-atlas-dense-explain validate topic.mdx
-npx concept-atlas-dense-explain topic.mdx
+
+# 校验后再编译
+npx concept-atlas-dense-explain validate topic.mdx --mode atlas
+npx concept-atlas-dense-explain topic.mdx --mode atlas
 ```
 
-连续阅读载体使用：
+默认输出是输入文件同目录下的同名 `.html`。`create`、`guide` 和编译输出都会覆盖已有文件；需要保留旧文件时先换一个输出路径。
+
+连续阅读文档：
 
 ```bash
 npx concept-atlas-dense-explain create article.mdx --mode scroll
-npx concept-atlas-dense-explain guide --mode scroll -o scroll-guide.mdx
 npx concept-atlas-dense-explain article.mdx --mode scroll -o dist/article.html
 ```
 
-默认输出为输入文件同目录下的同名 `.html`；已有输出会被直接覆盖（`--force` 保留为兼容用的空操作）。`--mode` 默认为 `scroll`。`validate` 支持 `--json` 和 `--strict`，校验未通过时会阻止构建，可用 `--no-validate` 跳过。
+`guide` 只用于生成一份可编译的组件示例。它会把示例资源复制到输出目录旁的 `assets/`，已有同名文件会被覆盖。skill 已经自带示例，不需要为了学习组件重复生成：
+
+```bash
+npx concept-atlas-dense-explain guide --mode atlas -o atlas-guide.mdx
+npx concept-atlas-dense-explain guide --mode scroll -o scroll-guide.mdx
+```
+
+## 2. 命令与参数
+
+| 命令 / 参数 | 作用 |
+| --- | --- |
+| `create <file.mdx>` | 生成起稿骨架 |
+| `guide` | 输出可编译的组件示例 |
+| `validate <file.mdx>` | 校验结构，不生成 HTML |
+| `<file.mdx>...` | 校验并编译一个或多个文件 |
+| `--mode atlas\|scroll` | 指定外壳；`create` / `guide` 默认 `scroll`，`validate` / 编译省略时自动识别 |
+| `-o <path>` | 输出文件；多输入时是输出目录 |
+| `--strict` | 把结构警告升级为错误 |
+| `--json` | 机器可读输出；批量模式返回数组 |
+| `--no-validate` | 跳过校验，允许生成已知有问题的页面 |
+| `--inline-assets` | 内联全部本地图片 |
+| `--link-assets` | 显式使用默认外链；不能与 `--inline-assets` 同用 |
+| `--concurrency <N>` | 批量构建并发，默认 2，上限 4 |
+| `--skin <id>` | 烘焙默认配色 |
+| `--default-mode dark\|light\|system` | 烘焙默认明暗模式 |
+| `--style <id>` | 烘焙默认组件风格 |
+| `--force` | 兼容性空操作；输出本来就会覆盖 |
+| `--version` | 打印 CLI 版本 |
+
+校验示例：
+
+```bash
+npx concept-atlas-dense-explain validate topic.mdx --mode atlas
+npx concept-atlas-dense-explain validate topic.mdx --mode atlas --json
+npx concept-atlas-dense-explain validate topic.mdx --mode atlas --strict
+```
 
 ### 批量编译
 
-一次传入多个 MDX 可以在同一进程内并行构建，省去每个目标重复启动 CLI 与 Vite 的开销。此时 `-o` 是输出目录：
-
 ```bash
 npx concept-atlas-dense-explain papers/a.mdx papers/b.mdx papers/c.mdx -o dist
-# 默认并发 2；单次构建峰值内存约 1–2GB，建议不超过 3
 npx concept-atlas-dense-explain papers/*.mdx -o dist --concurrency 3
 ```
 
-批量语义：**先整体校验，再整体构建**。任意一个文件存在 `error` 时不会开始构建（`--no-validate` 可跳过）；`--json` 在批量模式下输出数组，每项带 `file` 字段。
+批量模式会先校验全部文件，再开始构建。任意一个文件有错误时不会构建；`--no-validate` 可跳过。每个 Vite 构建会占用一定内存，建议并发不超过 3。
 
 ### 按需裁剪渲染器
 
-构建会扫描内容，只把真正用到的重型渲染器打进产物：
+- 没有 `<Math>` / `<MathBlock>` 时，KaTeX 及其约 1.4MB 内联字体不会进入产物。
+- 没有 `<Mermaid>` 时，Pele 不会进入产物。
+- 不要添加占位组件来“启用”渲染器；正常编写真正需要的内容即可。
 
-- 没有 `<Math>` / `<MathBlock>` 时，KaTeX 及其样式（约 1.4MB 内联字体）不会进入产物。
-- 没有 `<Mermaid>` 时，Pele（图表渲染器）不会进入产物。
+## 3. 图表、图片与离线行为
 
-构建结束会打印汇总，例如 `(KaTeX dropped on 3/3)`。一篇不使用公式和图表的 `scroll` 文章通常是约 250KB 而不是约 5MB。如果确实需要某个渲染器，正常写组件即可，无需任何开关。
+### Mermaid / Pele
 
-### 图表的渲染器：Pele
-
-`<Mermaid>` 的图表由 [Pele](https://pele.run) 渲染——它是 Obsidian 出的 Mermaid 语法渲染器：体积约为 Mermaid.js 的 1/6、同步渲染、零运行时依赖，产物无需联网。因此**不需要任何开关**：含图表的页面直接就是离线单文件。图表颜色来自 `--pele-*` CSS 变量（定义在 `src/styles/tokens.css`，由当前皮肤与明暗模式驱动），切换皮肤或明暗模式时颜色即时跟随，无需重绘。
-
-图表源码仍是标准 Mermaid 语法（flowchart、sequenceDiagram、stateDiagram 等，覆盖 Mermaid 12.1.0 的内置图类型）。Pele 使用自己的布局与视觉风格，节点位置、间距与 Mermaid.js 不完全一致；`themeVariables` 之类的 Mermaid 主题配置不再生效，请改用 CSS 变量。若 Pele 误读或拒绝了某个 Mermaid 12.1.0 语法，可在 [Pele 仓库](https://github.com/obsidianmd/pele/issues) 反馈差异。
-
-### 图片：默认外链与 `--inline-assets`
-
-默认情况下，`Figure` 的相对路径图片**保持为相对链接**：HTML 体积小，但页面需要和 MDX 的 `assets/` 目录一起分发（输出 HTML 放在资产旁边时相对路径才能解析）。如果 `-o` 指到别处，CLI 会打印警告。
-
-需要单文件、离线可开时，用 `--inline-assets` 把所有本地图片读成 base64 内联进 HTML：
-
-```bash
-# 默认：图片保持相对链接（HTML 小，适合站点/仓库）
-npx concept-atlas-dense-explain paper.mdx
-
-# 全部内联：单文件离线可开（截图多时 HTML 会变大）
-npx concept-atlas-dense-explain paper.mdx --inline-assets
-```
-
-也可以只对某张图覆盖。优先级为 **组件 `inline` prop > 全局开关 > 默认外链**：
-
-```mdx
-<Figure src="./arch.svg" caption="架构" />                  {/* 跟随默认/全局 */}
-<Figure src="./huge.png" inline={false} caption="大截图" />  {/* 强制外链 */}
-<Figure src="./logo.svg" inline={true} caption="图标" />     {/* 强制内联 */}
-```
-
-`--link-assets` 仍然可用，等价于默认的外链行为（显式声明），不能与 `--inline-assets` 同时使用。远程 `http(s)`、`data:` 和绝对路径图片永远不参与内联；远程图会提示 `ASSET_REMOTE`（离线打开时不可见），内联时单张图超过 512KB 会提示 `ASSET_LARGE`。实测同一个目标：内联 1.51MB → 链接 270KB。
-
-### 外观系统与编译期默认值
-
-每个产物页面右上有外观菜单（调色板图标），读者可随时切换三件事：
-
-- **配色皮肤**：五套可选，每套都有暗色/亮色两版色板——
-  - `aurora` 极光：冷调靛蓝 + 青，深空科技感（默认）；
-  - `ember` 炉火：暖调香槟金 + 赤陶，暗色如锻炉、亮色如旧纸；
-  - `verdant` 苔原：翡翠绿 + 青，森林与苔藓的清新感；
-  - `sakura` 樱雾：品红 + 兰紫，深梅暗色与胭脂纸亮色；
-  - `noir` 墨白：无彩印刷风，近黑/纸白为主，仅留一抹绯红信号色；
-- **明暗模式**：暗色 / 亮色一键切换；
-- **组件风格**：`manuscript`（手稿排版：索引戳记记录卡、双规线图版、页边注示例）、`classic`（经典卡片）、`shadcn`（极简界面：统一圆角、1px 发丝描边、扁平卡片与 150ms 动效）或 `elastic`（观测面板：Inter 标题、带边框面板、EuiCallOut 式批注与 250ms 动效）。
-
-选择保存在 localStorage，atlas 与 scroll 两个载体共享。发货默认外观为 **aurora × manuscript × 亮色**。
-
-需要不同的默认外观时，可在编译期烘焙（读者仍可切换）：
-
-```bash
-# CLI 参数
-npx concept-atlas-dense-explain paper.mdx --skin ember --default-mode dark --style classic
-
-# 仓库自身构建可用环境变量
-CONCEPT_ATLAS_SKIN=ember CONCEPT_ATLAS_DEFAULT_MODE=dark CONCEPT_ATLAS_STYLE=classic npm run build
-```
-
-默认外观在构建时写进防闪烁脚本，首屏渲染前即生效，不会闪白/闪黑。内容 MDX 不涉及外观——外观属于载体与工具层，内容层不要设置。
-
-仓库自身仍可以使用以下命令进行开发：
-
-```bash
-npm install
-npm run dev
-npm test          # 校验器单元测试 + 渲染冒烟测试
-npm run validate  # 校验 content/*.mdx
-npm run sync      # 把 src/ 同步到 npm 包模板（check:sync 只检查）
-```
-
-开发服务启动后，用浏览器打开终端显示的地址。
-
-生成离线单文件产物：
-
-```bash
-npm run build
-```
-
-构建会生成两个可直接分发的单文件入口，JS 和 CSS 均内联：
-
-- `dist/index.html`：概念探索与关系图。
-- `dist/scroll.html`：传统连续阅读示例，使用同一套语义组件但不依赖概念图谱框架。
-
-`atlas` 和 `scroll` 是渲染载体，不是两种项目模板。CLI 会根据顶层组件自动识别载体；也可以通过 `--mode` 明确指定。
-
-浏览器标签页标题取自 MDX 外壳：`atlas` 用 `<ExplainPage title="...">`，`scroll` 用 `<ScrollHeader title="...">`；未声明时保留载体默认标题。所有产物页面的标签页图标固定为 📃 文档 emoji。
-
-## 2. 内容入口
-
-默认展示内容位于：
-
-```text
-content/atlas-guide.mdx
-```
-
-这是一篇专门的组件展厅，集中展示完整组件族。原有的编译与运行示例仍保留在 `content/compile-runtime.mdx`，可作为内容型页面参考。
-
-连续阅读是另一种内容载体，示例位于 `content/scroll-guide.mdx`。它使用 `ScrollDocument`、`ScrollHeader`、`ScrollSection`、`ScrollProse` 和 `ScrollGrid` 作为文档外壳；`Flow`、`Insight`、`MatrixModel`、`Mermaid`、`Callout` 等信息组件与 Atlas 共用。两种外壳应在写作前选择其一，不要把同一份 MDX 同时写成两套顶层结构。模板同时附带两篇示例仅供参考；实际使用时直接维护自己的 MDX 文件。
-
-`src/main.jsx` 当前会加载组件展厅：
-
-```jsx
-import AtlasGuideDoc from '../content/atlas-guide.mdx';
-
-<App mdxContent={<AtlasGuideDoc components={Components} />} />
-```
-
-如果要接入另一篇文档，替换这里的 MDX 导入即可。MDX 中使用的组件需要从 `src/components/index.js` 导出。
-
-## 3. 最小知识模型
-
-一篇文档由 `ExplainPage`、`ConceptGraph`、`ConceptNode` 和 `Relation` 组成：
-
-```mdx
-<ExplainPage
-  id="http-request"
-  title="HTTP 请求"
-  summary="客户端通过请求消息与服务端交换资源。"
->
-  <ConceptGraph root="http-root">
-    <ConceptNode
-      id="http-root"
-      title="HTTP 请求"
-      level="L0"
-      parent={null}
-      summary="一次请求包含方法、目标、头部和可选消息体。"
-    >
-      <Overview>HTTP 请求是客户端发往服务端的结构化消息。</Overview>
-      <Children>
-        <ConceptRef id="request-line" />
-      </Children>
-    </ConceptNode>
-
-    <ConceptNode
-      id="request-line"
-      title="请求行"
-      level="L1"
-      parent="http-root"
-    >
-      <Definition>请求行声明方法、目标资源和协议版本。</Definition>
-    </ConceptNode>
-
-    <Relation
-      from="request-line"
-      to="http-root"
-      type="implements"
-      label="具体化"
-      description="请求行是请求消息的具体组成部分。"
-    />
-  </ConceptGraph>
-</ExplainPage>
-```
-
-### 树关系
-
-树关系由两个字段共同决定：
-
-- `ConceptGraph root="..."`：指定根节点。
-- `ConceptNode parent="..."`：指定父节点。
-
-`Children` / `ConceptRef` 用来声明下钻入口。即使只写 `parent`，引擎也会自动补齐父节点的子节点列表；推荐同时写 `Children`，这样内容结构更直观。
-
-节点层级建议使用：
-
-| 层级 | 用途 |
-| --- | --- |
-| `L0` | 全局主题 |
-| `L1` | 主要阶段或子系统 |
-| `L2` | 局部机制 |
-| `L3` | 实现细节 |
-| `L4` | 边界、反例和异常情况 |
-
-### 知识类型 `kind`
-
-`level` 描述「在缩放的哪一层」，`kind` 描述「这个节点在讲解里扮演什么角色」。两者互相独立：一个 `L2` 节点既可以是机制，也可以是边界。`kind` 完全可选，不写时不影响任何行为。
-
-```mdx
-<ConceptNode id="linking" title="符号解析与重定位" level="L2" kind="mechanism" parent="toolchain" summary="链接器把名字变成地址。">
-  <Definition>符号表描述定义与引用；重定位记录需要填入的地址或偏移。</Definition>
-  <Invariant title="链接不变量">每个已解析的符号引用必须指向唯一确定的定义。</Invariant>
-</ConceptNode>
-```
-
-可选值：
-
-| `kind` | 含义 |
-| --- | --- |
-| `system` | 整体系统、产品或问题域 |
-| `stage` | 生命周期阶段、处理步骤或子系统 |
-| `mechanism` | 可解释、可验证的工作机制 |
-| `artifact` | 阶段产出的实体、数据或文件 |
-| `failure` | 失败模式、异常与边界情况 |
-| `tool` | 使用的工具、库或外部依赖 |
-| `boundary` | 约束、前提、限制与非目标 |
-| `decision` | 设计取舍与选择点 |
-
-声明后有两项可选契约：`kind="mechanism"` 建议至少包含一个 `Invariant` 或 `Evidence`，`kind="failure"` 建议使用 `FailureMode`。它们让「知识网络」页可以按知识类型筛选，而不只是按 `L0`–`L4` 筛选。
-
-### 概念关系
-
-`Relation` 不改变树结构，只表示跨节点关系。常用类型包括：
-
-```text
-prerequisite  前置知识
-causes        因果推动
-produces      产出生成
-uses          消费使用
-implements    实现关系
-precedes      时序先后
-depends-on    依赖关系
-contrasts     对比关系
-exception-of  异常或反例
-```
-
-例如：
-
-```mdx
-<Relation
-  from="lexer"
-  to="ast"
-  type="produces"
-  label="生成"
-  description="词法和语法分析共同为 AST 提供输入。"
-/>
-```
-
-节点探索页使用这些关系生成中央笔记中的关系说明；知识网络页可以在“层级结构”和“概念关系”之间切换。
-
-## 4. 节点内容组件
-
-以下组件适合放在 `ConceptNode` 内部：
-
-```mdx
-<Overview>快速建立整体认知。</Overview>
-<Definition>给出严格定义。</Definition>
-<Mechanism>解释状态如何流动或机制如何工作。</Mechanism>
-<Prerequisite>需要先理解的知识。</Prerequisite>
-<Boundary>适用范围、限制和反例。</Boundary>
-<Implementation language="cpp" title="核心代码">
-{`int main() { return 0; }`}
-</Implementation>
-<Example title="典型示例">具体案例。</Example>
-<Counterexample title="常见误区">容易混淆的情况。</Counterexample>
-<Glossary term="AST">抽象语法树。</Glossary>
-```
-
-这些内容会进入当前节点的笔记画布，且会根据节点是否存在对应内容自动显示。
-
-## 5. 高密度展示组件
-
-组件不是只能生成固定卡片。可以使用短文本、表格、流程、时间线和关系组件组合成一张高密度知识草稿。
-
-### Mermaid 图
-
-`Mermaid` 接受标准的 Mermaid 图语法（流程图、时序图、状态图等），由 Pele 在浏览器中渲染为 SVG，并内联进产物、开箱离线：
+`<Mermaid>` 接受标准 Mermaid 语法，由 [Pele](https://pele.run) 在页面内渲染并内联为 SVG。图表本身不需要 CDN；Pele 的布局和视觉风格与 Mermaid.js 不同，`themeVariables` 不生效，颜色由页面的 `--pele-*` CSS 变量控制。
 
 ```mdx
 <Mermaid
   title="请求处理流程"
-  width="560px"
-  height="220px"
   chart={`flowchart LR
-  A[客户端] --> B[路由]
-  B --> C[控制器]
-  C --> D[服务层]
-  D --> E[响应]
-  style A fill:#172554,stroke:#38bdf8,color:#e0f2fe`}
+    A[客户端] --> B[路由]
+    B --> C[控制器]
+    C --> D[响应]`}
 />
 ```
 
-建议：一张 Mermaid 图只表达一个局部问题；复杂主题拆成多个图，避免图本身成为新的噪音。
+一张图只表达一个局部问题。复杂主题拆成多张图，避免图本身成为噪音。
 
-### 关系速览
+### 图片：默认外链
 
-适合把一组关系压缩成表格式摘要：
+相对路径图片默认保持外链，HTML 更小，但必须把 `assets/` 放在输出 HTML 能找到的位置。`-o` 指向其他目录时，CLI 会提示相对路径可能失效。
 
-```mdx
-<RelationMap
-  title="关键依赖"
-  items={[
-    { from: 'Parser', type: 'produces', to: 'AST', note: '输出结构化语法树' },
-    { from: 'Optimizer', type: 'uses', to: 'IR', note: '在中间表示上优化' },
-  ]}
-/>
+```bash
+# 默认外链
+npx concept-atlas-dense-explain paper.mdx
+
+# 全部内联，适合单文件分发
+npx concept-atlas-dense-explain paper.mdx --inline-assets
 ```
 
-### 关键判断
-
-`Insight` 适合 AI 输出结论、辨析或决策提醒：
+单图可以覆盖全局设置，优先级为 **组件 `inline` prop > 全局开关 > 默认外链**：
 
 ```mdx
-<Insight title="关键判断" tone="info">
-  编译不是一次翻译，而是多个约束逐步收敛的过程。
-</Insight>
-
-<Insight title="容易出错" tone="warn">
-  不要把编译期保证误认为运行期一定成立。
-</Insight>
+<Figure src="./arch.svg" alt="架构" caption="默认跟随全局" />
+<Figure src="./huge.png" alt="大截图" inline={false} />
+<Figure src="./logo.svg" alt="图标" inline={true} />
 ```
 
-`tone` 支持 `info`、`warn`、`success`。
+- 远程 `http(s)`、`data:` 和绝对路径不参与内联；远程图需要网络并会产生 `ASSET_REMOTE`。
+- 内联单图超过 512KB 会产生 `ASSET_LARGE`。
+- 找不到本地图片会产生 warning 和占位符，不阻断构建。
+- 字体默认可能从 Google Fonts 加载；离线时回退到系统字体栈。
 
-### 便签网格
+因此“单文件 HTML”不等于“所有外部资源都已内联”：JS/CSS 和图表已内联，字体与图片要按上述规则单独处理。
 
-`NoteGrid` 适合集中放置输入、输出、约束、指标或短结论：
+## 4. 外观系统
 
-```mdx
-<NoteGrid
-  notes={[
-    { title: '输入', content: '源码和编译选项' },
-    { title: '中间态', content: 'AST / IR / SSA' },
-    { title: '输出', content: '目标文件' },
-  ]}
-/>
+每个页面都提供读者可见的外观菜单：
+
+- 配色：`aurora`、`ember`、`verdant`、`sakura`、`noir`。
+- 明暗：亮色 / 暗色。
+- 组件风格：`manuscript`、`classic`、`shadcn`、`elastic`。
+
+默认是 **aurora × manuscript × 亮色**，选择保存在 localStorage，Atlas 与 Scroll 共享。需要不同的编译期默认值时：
+
+```bash
+npx concept-atlas-dense-explain paper.mdx \
+  --skin ember --default-mode dark --style classic
 ```
 
-项目还提供 `Compare`、`DecisionMatrix`、`Flow`、`Timeline`、`Callout`、`Details` 和 `Columns`，可以按内容需要组合使用。
+仓库自身构建也可以使用环境变量：
 
-### 经典结构模型
-
-对于结构化思考内容，优先用模型组件表达“关键元素”和“组织方式”，避免把相似内容重复写成多个普通卡片：
-
-```mdx
-<MatrixModel title="重要/紧急矩阵" xLabel="紧急程度" yLabel="重要程度" cells={[
-  { title: '优先处理', description: '重要且紧急', tone: 'danger' },
-  { title: '计划安排', description: '重要但不紧急', tone: 'success' },
-  { title: '授权处理', description: '不重要但紧急', tone: 'warn' },
-  { title: '减少投入', description: '不重要且不紧急' },
-]} />
-<FormulaModel title="业绩公式" formula="业绩 = 人数 × 人均产出" variables={[
-  { symbol: '人数', description: '有效销售人员数量' },
-  { symbol: '人均产出', description: '单人平均成交贡献' },
-]} />
-<PyramidModel title="从基础到结论" levels={[
-  { title: '事实', description: '可观察证据' },
-  { title: '归纳', description: '共同模式' },
-  { title: '结论', description: '可执行判断' },
-]} />
+```bash
+CONCEPT_ATLAS_SKIN=ember \
+CONCEPT_ATLAS_DEFAULT_MODE=dark \
+CONCEPT_ATLAS_STYLE=classic \
+npm run build
 ```
 
-`FrameworkModel` 适合一分为几、多因素并列、阶段、层级和循环；`FunnelModel` 适合 AIDA、销售转化和筛选收敛。`Flow`、`DecisionMatrix` 等旧组件仍然兼容。
+默认外观在首屏渲染前写入，避免闪烁。内容 MDX 不设置外观。
 
-### 公式、图表、配图与引用
+## 5. 仓库开发
 
-扩展组件让正文可以带上推导、数据和出处：
-
-```mdx
-{/* 行内公式；含大括号或反斜杠时用 formula prop */}
-<Overview>信息量为 <Math formula="\log_2 N" /> 比特。</Overview>
-<MathBlock title="复利" formula="V_t = V_0 \cdot (1 + r)^t" variables={[{symbol:'r',description:'增长率'}]} />
-
-{/* 图表：bar / line / pie */}
-<Chart title="各阶段耗时" type="bar" data={[{label:'收集',value:6},{label:'分析',value:14}]} />
-
-{/* 配图：默认外链；给 id 后正文用 FigureRef 自动引用“图 N” */}
-<Figure id="flow" src="./assets/diagram.svg" alt="示意" caption="从输入到输出。" />
-<ScrollProse>如 <FigureRef id="flow" /> 所示，处理分为三步。</ScrollProse>
-
-{/* 引用与文献：Cite 的 id 对应 References 条目的 id */}
-<ScrollProse>结论依赖可追溯证据<Cite id="tufte1983" />。</ScrollProse>
-<References items={[{id:'tufte1983',authors:'Tufte, E. R.',year:'1983',title:'The Visual Display of Quantitative Information'}]} />
+```bash
+npm install
+npm run dev          # 启动本地开发服务
+npm test             # 单元测试、渲染冒烟、文档与打包检查
+npm run validate     # 校验 content/*.mdx
+npm run lint
+npm run format:check
+npm run audit:css
+npm run check:sync   # 检查 npm 模板是否与 src/ 同步
+npm run sync         # 重新生成 npm 模板
+npm run build        # 校验并构建两个演示入口
 ```
 
-**选型速查：**
+构建产物：
 
-| 要表达的东西 | 用什么 | 说明 |
-| --- | --- | --- |
-| 数据趋势、对比 | `Chart` | bar / line / pie |
-| 流程、拓扑、时序 | `Mermaid` | 文本图，由 Pele 内联渲染，开箱离线 |
-| 概念之间的关系 | `RelationMap` / `RelationPath` | 复用知识网络的语义关系 |
-| 截图、示意图、照片 | `Figure`（别名 `Image`） | 默认外链，`--inline-assets` 内联 |
+- `dist/index.html`：Atlas 组件展厅。
+- `dist/scroll.html`：Scroll 连续阅读示例。
 
-`Figure` 给 `id` 后会按文档顺序自动编号，正文用 `<FigureRef id="..." />` 引用；插入新图时编号自动重排，显式 `label` 仍然优先。图号按作用域编号：`scroll` 全文共用一套，`atlas` 每个节点各自编号。`FigureRef` 指向不存在的 `id` 会提示 `FIGURE_REF_UNRESOLVED`。
+两个文件都内联 JS/CSS，可直接分发；仓库 demo 构建会强制内联示例图片，字体仍遵循上一节的远程加载与离线回退规则。
 
-`Math` 的子内容里出现 `{}` 会被 MDX 当成表达式，因此含花括号的 LaTeX 必须走 `formula` prop。找不到的本地图片只会产生 warning 并显示占位符。`Figure` / `Image` 的图片可以点击放大：滚轮或 `+` / `−` 缩放，拖拽平移，双击切换 1x / 2x，`0` 重置，`Esc` 或点击背景关闭。
-
-## 6. 组件尺寸与自由排布
-
-高密度组件默认按实际内容收缩，不会自动撑满整列。需要控制布局时，可以传入尺寸和位置：
-
-```mdx
-<Insight
-  title="局部结论"
-  width="280px"
-  height="120px"
-  position="absolute"
-  x={720}
-  y={260}
->
-  这个组件会被放在画布的指定坐标。
-</Insight>
-```
-
-参数含义：
-
-- `width`：宽度，例如 `280px`、`40%`。
-- `height`：高度，例如 `120px`。
-- `x` / `y`：画布坐标，单位为像素。
-- `position="absolute"`：脱离文档流，自由放置。
-- 不传 `position`：按普通笔记流排列。
-
-自由排布适合 Mermaid 图、关系总览和关键结论；长篇解释、代码和定义建议继续使用普通流式布局。
-
-## 7. 探索与导航
-
-探索页提供三种导航方式：
-
-1. 左侧祖先路径：点击任意祖先节点返回上层。
-2. 层级导航条：当前节点下方显示父级入口和子节点入口。
-3. 子概念卡片：在“深入下钻”区域点击进入子节点。
-
-画布操作：
-
-- 鼠标拖动：平移画布。
-- 鼠标滚轮：缩放画布。
-- 右下角工具组：放大、缩小、重置和进入全局关系图。
-- `Esc`：返回父节点。
-- `1` / `E`：概念探索。
-- `2` / `G`：知识网络。
-- `T`：切换主题。
-
-## 8. 写作建议
-
-适合交给 AI 的写作边界：
-
-- 一个 `ConceptNode` 只表达一个可以被命名的概念。
-- `Overview` 负责建立直觉，`Definition` 负责精确定义，`Mechanism` 负责解释过程。
-- 跨节点的关系写成 `Relation`，不要把所有内容塞进一段文字。
-- 用 `Insight` 写结论，用 `Boundary` 写限制，用 `Counterexample` 写反例。
-- 一个组件只承担一种信息组织方式；复杂页面拆成多个小组件。
-- 自由布局组件先确定坐标区域，再给出宽高，避免彼此覆盖。
-
-## 9. 目录与扩展位置
+## 6. 内容入口与源码结构
 
 ```text
-src/components/MDXComponents.jsx   # MDX 组件实现
-src/model/normalize-content.js     # MDX 语义提取
-src/model/validate-content.js      # 内容校验器（浏览器与 CLI 共用）
-src/model/citations.js             # Cite/References 引用编号
-src/model/concept-schema.js        # 概念树与关系图模型
-src/views/NodeExplorer.jsx         # 概念探索画布
-src/views/RelationGraph.jsx         # 层级图 / 概念关系图
-src/main.jsx                       # atlas 载体入口
-src/scroll-main.jsx                # scroll 载体入口
-src/styles/concept-explain.css     # 样式入口（按顺序 @import 下列文件）
-src/styles/core.css                # 结构样式：基础、布局、组件
-src/styles/tokens.css              # 设计变量（默认皮肤 + 字号角色）
-src/styles/skins.css               # 各配色皮肤覆盖
-src/styles/packs/*.css             # 组件风格包（manuscript / shadcn / elastic）
-src/styles/motion.css              # 动效与过渡样式
-content/*.mdx                      # 知识内容
-test/*.test.mjs                    # 校验器测试
-scripts/sync-template.mjs          # src/ 同步到 npm 包模板
+content/atlas-guide.mdx       # Atlas 组件展厅
+content/scroll-guide.mdx      # Scroll 连续阅读示例
+content/compile-runtime.mdx   # 长文编译与运行示例
+src/main.jsx                  # Atlas 演示入口
+src/scroll-main.jsx            # Scroll 演示入口
+src/components/               # MDX 组件实现
+src/model/                    # 语义提取、校验、引用与概念模型
+src/views/                    # Atlas 探索与关系图
+src/styles/                   # 基础样式、皮肤、组件风格与动效
+scripts/sync-template.mjs     # 将 src/ 同步到 npm 包模板
+test/                         # 测试
 ```
 
-`src/` 是唯一真相源，npm 包内的 `template/` 由 `npm run sync` 生成。各生成物的来源（见 `scripts/sync-template.mjs`）：
+`src/` 是运行时实现的唯一真相源。npm 包模板和 skill 中的示例由同步脚本生成。
 
-- `src/`（含 `vite.config.js` 与 `index.html` / `scroll.html` 两个入口）→ `packages/concept-atlas-dense-explain/template/`；
-- `content/` → `packages/concept-atlas-dense-explain/template/references/`，同时生成技能内的 `skills/concept-atlas-dense-explain/references/`；
-- `skills/` → `packages/concept-atlas-dense-explain/packaged-skill/`，仅 `prepack` 时生成且被 `.gitignore` 忽略，因此 clean clone 中不存在属正常状态。
+## 7. Skill 文档与生成物
 
-提交前可用 `npm run check:sync` 确认没有漂移。
+Skill 入口是 [`skills/concept-atlas-dense-explain/SKILL.md`](../skills/concept-atlas-dense-explain/SKILL.md)，按任务拆分：
 
-新增组件时，记得在 `src/components/index.js` 中导出，并把组件名加入 `src/model/validate-content.js` 的 `KNOWN_COMPONENTS`，使 MDX 可以使用且通过校验。
+- [`references/components.md`](../skills/concept-atlas-dense-explain/references/components.md)：组件 API、默认值、数组形状与陷阱。
+- [`references/authoring.md`](../skills/concept-atlas-dense-explain/references/authoring.md)：文档转换、溯源、密度与停止条件。
+- [`references/cli.md`](../skills/concept-atlas-dense-explain/references/cli.md)：命令、flag、外观、资源与版本不一致处理。
+- [`references/diagnostics.md`](../skills/concept-atlas-dense-explain/references/diagnostics.md)：诊断分类与修复动作。
+
+`components.md` / `diagnostics.md` 是手写作者文档，但必须与实现同步。`test/skill-docs.test.mjs` 会核对完整 prop API、数组契约和诊断分类；`test/package-skill.test.mjs` 检查发布包是否包含完整 skill。
+
+生成关系：
+
+- `src/` → `packages/concept-atlas-dense-explain/template/`。
+- `content/` → npm 模板的 `references/`，同时生成 skill 内的两份指南和示例资源。
+- `skills/` → npm 包的 `packaged-skill/`，仅在 `prepack` 时生成，被 `.gitignore` 忽略。
+
+提交前运行 `npm run check:sync`；发布前运行 `npm pack --dry-run` 核对 tarball。
+
+## 8. 新增组件
+
+1. 在 `src/components/MDXComponents.jsx` 实现并导出。
+2. 把组件名加入 `src/model/validate-content.js` 的 `KNOWN_COMPONENTS`。
+3. 如果是数组 prop，加入 `ARRAY_PROPS`。
+4. 更新 `skills/concept-atlas-dense-explain/references/components.md`。
+5. 运行 `npm run sync`、`npm test` 和 `npm run build`。
